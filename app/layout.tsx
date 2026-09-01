@@ -7,12 +7,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <head>
         {/* Google AdSense Verification Script */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7791595581454811"
+     crossOrigin="anonymous"></script>
       </head>
       <body className="bg-gray-50 text-gray-900 font-sans antialiased" suppressHydrationWarning>
         
