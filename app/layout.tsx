@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </main>
 
         <footer className="p-8 bg-gray-900 text-white text-center text-sm">
-          <p>© 2026 My Digital Canvas. All rights reserved.</p>
+          <p>Muhammad Qasim Imran. All rights reserved.</p>
         </footer>
         
       </body>

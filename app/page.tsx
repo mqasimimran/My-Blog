@@ -20,9 +20,9 @@ export default function Home() {
           <div className="flex flex-wrap items-center gap-4 text-xs font-bold tracking-[0.2em] text-gray-800 uppercase pt-4">
             <a href="https://youtube.com/@qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">YouTube</a>
             <span className="text-gray-300">/</span>
-            <a href="https://linkedin.com/in/your-profile" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">LinkedIn</a>
+            <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">LinkedIn</a>
             <span className="text-gray-300">/</span>
-            <a href="https://instagram.com/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">IG: Personal</a>
+            <a href="https://instagram.com/muhammadqasimimrann" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">IG: Personal</a>
             <span className="text-gray-300">/</span>
             <a href="https://instagram.com/qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600 transition-colors">IG: Dev</a>
             <span className="text-gray-300">/</span>
