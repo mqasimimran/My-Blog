@@ -1,84 +1,193 @@
-"use client"
+'use client'
 
-import { useState } from "react"
+import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
-export default function Contact() {
-  const [status, setStatus] = useState("idle")
+export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' })
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setStatus("submitting") // Changes the button text to let you know it clicked
+    setIsSubmitting(true)
+    setSubmitStatus({ type: null, message: '' })
+
+    // Save the form reference BEFORE the await so it doesn't become null
+    const form = e.currentTarget
+    const formData = new FormData(form)
     
-    const formData = new FormData(e.currentTarget)
-    
-    // Replace this string with the actual key you get from Web3Forms.com
-    formData.append("access_key", "5e1d89ca-5046-4196-a7a6-9d143c93fcd4")
+    const name = formData.get('name') as string
+    const email = formData.get('email') as string
+    const subject = formData.get('subject') as string
+    const message = formData.get('message') as string
 
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        body: formData
-      })
+      const { error } = await supabase.from('messages').insert([
+        { name, email, subject, message }
+      ])
 
-      if (response.ok) {
-        setStatus("submitted")
+      if (!error) {
+        setSubmitStatus({ type: 'success', message: 'Message sent successfully! I will get back to you soon.' })
+        form.reset() // Use the saved reference here
       } else {
-        setStatus("idle")
-        alert("Something went wrong. Please try again.")
+        console.error('Supabase Error:', error)
+        setSubmitStatus({ type: 'error', message: error.message || 'Something went wrong.' })
       }
-    } catch (error) {
-      setStatus("idle")
-      alert("Network error. Please check your connection.")
+    } catch (error: any) {
+      console.error('Caught Exception:', error)
+      setSubmitStatus({ type: 'error', message: `Error: ${error?.message || 'Check console for details'}` })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-20 flex flex-col items-center">
-      <h1 className="text-4xl font-light tracking-widest text-gray-900 uppercase mb-4">Contact</h1>
-      <p className="text-gray-500 mb-10 text-center">Have a project in mind? Let's build something together.</p>
-
-      {status === "submitted" ? (
-        <div className="bg-green-50 text-green-800 p-6 rounded-lg text-center w-full border border-green-200 shadow-sm">
-          Thank you! Your message has been received. I will be in touch shortly.
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="w-full space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input 
-              type="text" 
-              name="name"
-              placeholder="Name" 
-              required 
-              suppressHydrationWarning 
-              className="w-full bg-white border border-gray-200 text-sm p-4 focus:outline-none focus:border-[#d9534f] transition-colors" 
-            />
-            <input 
-              type="email" 
-              name="email"
-              placeholder="Email" 
-              required 
-              suppressHydrationWarning 
-              className="w-full bg-white border border-gray-200 text-sm p-4 focus:outline-none focus:border-[#d9534f] transition-colors" 
-            />
+    <main className="min-h-screen bg-slate-50 flex items-center justify-center py-20 px-6 font-sans">
+      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col md:flex-row">
+        
+        {/* Left Side: Contact Information */}
+        <div className="w-full md:w-5/12 bg-gray-900 text-white p-10 lg:p-12 flex flex-col justify-between">
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-light tracking-wide uppercase mb-4">
+              Get In Touch
+            </h1>
+            <p className="text-gray-400 text-sm leading-relaxed mb-10">
+              Whether you are a recruiter looking for a software engineer, a founder needing full-stack architecture, or a collaborator for a 3D game project, I'd love to hear from you.
+            </p>
+            
+            <div className="space-y-6">
+              <div>
+                <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-1">Email</span>
+                <a href="mailto:m.qasimimran01@gmail.com" className="text-sm hover:text-[#aa002a] transition-colors">
+                  m.qasimimran01@gmail.com
+                </a>
+              </div>
+              <div>
+                <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-1">Location</span>
+                <span className="text-sm">Lahore, Pakistan</span>
+              </div>
+            </div>
           </div>
-          <textarea 
-            name="message"
-            placeholder="Message" 
-            required 
-            rows={6} 
-            suppressHydrationWarning 
-            className="w-full bg-white border border-gray-200 text-sm p-4 focus:outline-none focus:border-[#d9534f] transition-colors resize-none"
-          ></textarea>
-          
-          <button 
-            type="submit" 
-            disabled={status === "submitting"} 
-            className="bg-gray-900 text-white px-8 py-4 text-sm font-bold tracking-[0.15em] uppercase hover:bg-[#d9534f] transition-colors w-full disabled:bg-gray-400"
-          >
-            {status === "submitting" ? "Sending..." : "Send Message"}
-          </button>
-        </form>
-      )}
-    </div>
+
+          <div className="mt-12">
+            <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3">Connect</span>
+            <div className="flex gap-6 text-xs font-bold tracking-widest uppercase">
+              <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">
+                LinkedIn
+              </a>
+              <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">
+                GitHub
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Form */}
+        <div className="w-full md:w-7/12 p-10 lg:p-12">
+          <form onSubmit={handleSubmit} suppressHydrationWarning className="h-full flex flex-col justify-center space-y-8">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              {/* Name Input */}
+              <div className="relative">
+                <input 
+                  type="text" 
+                  id="name" 
+                  name="name"
+                  placeholder=" " 
+                  required
+                  suppressHydrationWarning
+                  className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors"
+                />
+                <label 
+                  htmlFor="name" 
+                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+                >
+                  Full Name
+                </label>
+              </div>
+
+              {/* Email Input */}
+              <div className="relative">
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email"
+                  placeholder=" " 
+                  required
+                  suppressHydrationWarning
+                  className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors"
+                />
+                <label 
+                  htmlFor="email" 
+                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+                >
+                  Email Address
+                </label>
+              </div>
+            </div>
+
+            {/* Subject Input */}
+            <div className="relative mt-8">
+              <input 
+                type="text" 
+                id="subject" 
+                name="subject"
+                placeholder=" " 
+                required
+                suppressHydrationWarning
+                className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors"
+              />
+              <label 
+                htmlFor="subject" 
+                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+              >
+                Subject / Inquiry Type
+              </label>
+            </div>
+
+            {/* Message Input */}
+            <div className="relative mt-8">
+              <textarea 
+                id="message" 
+                name="message"
+                placeholder=" " 
+                rows={4}
+                required
+                suppressHydrationWarning
+                className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors resize-none"
+              ></textarea>
+              <label 
+                htmlFor="message" 
+                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+              >
+                Your Message
+              </label>
+            </div>
+
+            {/* Submit Button & Status Message */}
+            <div className="pt-4 flex flex-col items-start gap-4">
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="bg-gray-900 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-[#aa002a] transition-colors flex items-center gap-2 disabled:opacity-70"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Message'} <span>↗</span>
+              </button>
+
+              {/* Success / Error Feedback */}
+              {submitStatus.type && (
+                <p className={`text-xs font-medium tracking-wide ${
+                  submitStatus.type === 'success' ? 'text-green-600' : 'text-[#aa002a]'
+                }`}>
+                  {submitStatus.message}
+                </p>
+              )}
+            </div>
+            
+          </form>
+        </div>
+        
+      </div>
+    </main>
   )
 }

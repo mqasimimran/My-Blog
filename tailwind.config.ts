@@ -12,3 +12,16 @@ export default {
     require('@tailwindcss/typography'),
   ],
 } satisfies Config;
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          DEFAULT: '#800020',
+          dark: '#5c0017',
+          light: '#fdf2f2',
+        },
+      },
+    },
+  },
+}

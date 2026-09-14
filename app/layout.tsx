@@ -1,26 +1,37 @@
 import './globals.css'
 import Navbar from './Navbar'
 import Script from 'next/script'
+import ReadingProgress from '@/app/components/ReadingProgress'
+import Providers from '@/app/components/Providers'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
         {/* Google AdSense Verification Script */}
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7791595581454811"
-     crossOrigin="anonymous"></script>
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7791595581454811"
+          crossOrigin="anonymous"
+        ></script>
       </head>
       <body className="bg-gray-50 text-gray-900 font-sans antialiased" suppressHydrationWarning>
         
-        <Navbar />
+        {/* 2. Wrap everything inside the body with Providers */}
+        <Providers>
+          {/* Sticky Reading Progress Bar for Blog Posts */}
+          <ReadingProgress />
 
-        <main className="min-h-screen">
-          {children}
-        </main>
+          <Navbar />
 
-        <footer className="p-8 bg-gray-900 text-white text-center text-sm">
-          <p>Muhammad Qasim Imran. All rights reserved.</p>
-        </footer>
+          <main className="min-h-screen">
+            {children}
+          </main>
+
+          <footer className="p-8 bg-gray-900 text-white text-center text-sm">
+            <p>Muhammad Qasim Imran. All rights reserved.</p>
+          </footer>
+        </Providers>
         
       </body>
     </html>
