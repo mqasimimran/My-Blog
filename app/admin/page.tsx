@@ -12,8 +12,6 @@ export default function AdminDashboard() {
   const [articles, setArticles] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  
-
   useEffect(() => {
     async function fetchArticles() {
       const { data, error } = await supabase
@@ -24,7 +22,6 @@ export default function AdminDashboard() {
       if (error) {
         console.error('Supabase fetch error on articles:', error.message)
       } else {
-        console.log('Fetched articles successfully:', data)
         setArticles(data || [])
       }
       setIsLoading(false)
@@ -47,6 +44,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans">
+      {/* Sidebar Navigation */}
       <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col justify-between hidden md:flex">
         <div>
           <h2 className="text-xl font-light tracking-wide uppercase mb-10">Admin</h2>
@@ -62,6 +60,9 @@ export default function AdminDashboard() {
             </Link>
             <Link href="/admin/messages" className="text-gray-400 hover:text-white transition-colors">
               Messages
+            </Link>
+            <Link href="/admin/resume" className="text-gray-400 hover:text-white transition-colors pt-2 border-t border-gray-800">
+              Resume Manager
             </Link>
           </nav>
         </div>
@@ -91,6 +92,7 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
+          {/* Articles Table Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
             {articles.length === 0 ? (
               <div className="p-10 text-center text-sm text-gray-500">
