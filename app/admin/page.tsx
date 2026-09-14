@@ -109,7 +109,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {articles.map((article) => (
+                  {articles.map((article: any) => (
                     <tr key={article.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-medium text-gray-900">{article.title}</td>
                       <td className="px-6 py-4 text-xs text-gray-500 uppercase tracking-wider">{article.category}</td>
@@ -127,7 +127,7 @@ export default function AdminDashboard() {
                             Edit
                           </Link>
 
-                          <form onSubmit={async (e) => {
+                          <form onSubmit={async (e: React.FormEvent) => {
                             e.preventDefault()
                             if (!confirm(`Are you sure you want to delete "${article.title}"?`)) return
 
@@ -142,7 +142,7 @@ export default function AdminDashboard() {
                             } else if (!data || data.length === 0) {
                               alert('Delete blocked by Supabase RLS policies.')
                             } else {
-                              setArticles(prev => prev.filter(a => a.id !== article.id))
+                              setArticles(prev => prev.filter((a: any) => a.id !== article.id))
                             }
                           }}>
                             <button 

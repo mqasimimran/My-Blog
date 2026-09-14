@@ -4,12 +4,17 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 export default function ResumeDownloadBuilder() {
-  const [data, setData] = useState({
-    experiences: [],
-    projects: [],
-    education: [],
-    certifications: []
-  })
+ const [data, setData] = useState<{
+  experiences: any[];
+  projects: any[];
+  education: any[];
+  certifications: any[];
+}>({
+  experiences: [],
+  projects: [],
+  education: [],
+  certifications: []
+})
   const [selectedIds, setSelectedIds] = useState<{ [key: string]: boolean }>({})
   const [loading, setLoading] = useState(true)
 
