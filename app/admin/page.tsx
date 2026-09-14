@@ -6,10 +6,21 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
+// Define the exact shape of your data to keep TypeScript happy
+interface Article {
+  id: string
+  title: string
+  category: string
+  published: boolean
+  created_at?: string
+}
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [articles, setArticles] = useState<any[]>([])
+  
+  // Use the interface instead of any[]
+  const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -22,7 +33,7 @@ export default function AdminDashboard() {
       if (error) {
         console.error('Supabase fetch error on articles:', error.message)
       } else {
-        setArticles(data || [])
+        setArticles((data as Article[]) || [])
       }
       setIsLoading(false)
     }
@@ -109,7 +120,7 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {articles.map((article: any) => (
+                  {articles.map((article) => (
                     <tr key={article.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4 font-medium text-gray-900">{article.title}</td>
                       <td className="px-6 py-4 text-xs text-gray-500 uppercase tracking-wider">{article.category}</td>
@@ -142,7 +153,8 @@ export default function AdminDashboard() {
                             } else if (!data || data.length === 0) {
                               alert('Delete blocked by Supabase RLS policies.')
                             } else {
-                              setArticles(prev => prev.filter((a: any) => a.id !== article.id))
+                              // TypeScript now knows 'a' is of type Article
+                              setArticles(prev => prev.filter(a => a.id !== article.id))
                             }
                           }}>
                             <button 
