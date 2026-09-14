@@ -78,7 +78,7 @@ export default function EditCertification() {
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Title</label>
           <input 
             type="text" value={formData.title} required
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
             onChange={e => setFormData({...formData, title: e.target.value})}
           />
         </div>
@@ -86,7 +86,7 @@ export default function EditCertification() {
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Issuer</label>
           <input 
             type="text" value={formData.issuer} required
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
             onChange={e => setFormData({...formData, issuer: e.target.value})}
           />
         </div>
@@ -94,7 +94,7 @@ export default function EditCertification() {
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Date</label>
           <input 
             type="text" value={formData.date} required
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
             onChange={e => setFormData({...formData, date: e.target.value})}
           />
         </div>
@@ -102,7 +102,7 @@ export default function EditCertification() {
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Order Index</label>
           <input 
             type="number" value={formData.order_index} required
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
             onChange={e => setFormData({...formData, order_index: parseInt(e.target.value) || 0})}
           />
         </div>
@@ -110,6 +110,7 @@ export default function EditCertification() {
           <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Update Certificate Image (Optional)</label>
           <input 
             type="file" accept="image/*"
+            className="text-sm text-black"
             onChange={e => setFile(e.target.files?.[0] || null)}
           />
         </div>
