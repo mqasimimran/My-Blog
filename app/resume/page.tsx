@@ -3,14 +3,38 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
+// Define the exact shape of your data to satisfy TypeScript
+interface ResumeItem {
+  id: string
+  period?: string
+  date?: string
+  role?: string
+  title?: string
+  degree?: string
+  company?: string
+  issuer?: string
+  institution?: string
+  description?: string
+  tech?: string
+  image_url?: string
+}
+
 export default function Resume() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [data, setData] = useState({
+  
+  // Strongly type the state so TypeScript doesn't infer never[]
+  const [data, setData] = useState<{
+    experiences: ResumeItem[]
+    projects: ResumeItem[]
+    education: ResumeItem[]
+    certifications: ResumeItem[]
+  }>({
     experiences: [],
     projects: [],
     education: [],
     certifications: []
   })
+  
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -23,10 +47,10 @@ export default function Resume() {
       ])
 
       setData({
-        experiences: expRes.data || [],
-        projects: projRes.data || [],
-        education: eduRes.data || [],
-        certifications: certRes.data || []
+        experiences: (expRes.data as ResumeItem[]) || [],
+        projects: (projRes.data as ResumeItem[]) || [],
+        education: (eduRes.data as ResumeItem[]) || [],
+        certifications: (certRes.data as ResumeItem[]) || []
       })
       setLoading(false)
     }
@@ -34,7 +58,7 @@ export default function Resume() {
     fetchResumeData()
   }, [])
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Resume...</div>
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-mono text-sm text-gray-500">Loading Resume...</div>
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-20 relative">
@@ -59,7 +83,7 @@ export default function Resume() {
           Experience & Leadership
         </h2>
         <div className="relative border-l border-gray-200 ml-4 space-y-12">
-          {data.experiences.map((item: any) => (
+          {data.experiences.map((item) => (
             <div key={item.id} className="relative pl-8 group">
               <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-gray-300 group-hover:bg-[#aa002a] transition-colors ring-4 ring-white" />
               <span className="inline-block text-xs font-mono text-gray-400 tracking-wider uppercase mb-1">{item.period}</span>
@@ -76,7 +100,7 @@ export default function Resume() {
           Key Projects
         </h2>
         <div className="space-y-10">
-          {data.projects.map((item: any) => (
+          {data.projects.map((item) => (
             <div key={item.id} className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-xs font-medium text-[#aa002a] tracking-wider uppercase md:pt-1">{item.tech}</div>
               <div className="md:col-span-3">
@@ -93,7 +117,7 @@ export default function Resume() {
           Education
         </h2>
         <div className="space-y-10">
-          {data.education.map((item: any) => (
+          {data.education.map((item) => (
             <div key={item.id} className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-xs font-medium text-gray-400 tracking-wider uppercase md:pt-1">{item.period}</div>
               <div className="md:col-span-3">
@@ -111,10 +135,10 @@ export default function Resume() {
           Licenses & Certifications
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {data.certifications.map((cert: any) => (
+          {data.certifications.map((cert) => (
             <div 
               key={cert.id} 
-              onClick={() => setSelectedImage(cert.image_url)}
+              onClick={() => setSelectedImage(cert.image_url || null)}
               className="bg-white border border-gray-200 p-4 rounded-md shadow-sm hover:border-[#aa002a] transition-all flex flex-col justify-between cursor-pointer group"
             >
               <div>

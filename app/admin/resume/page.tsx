@@ -4,16 +4,37 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
+// 1. Define allowed tab keys
+type TabKey = 'experiences' | 'projects_resume' | 'education' | 'certifications'
+
+// 2. Define a flexible interface covering all possible resume item fields
+interface ResumeItem {
+  id: string
+  order_index: number
+  period?: string
+  date?: string
+  role?: string
+  title?: string
+  degree?: string
+  company?: string
+  issuer?: string
+  institution?: string
+  description?: string
+  tech?: string
+}
+
 export default function ResumeManagerHub() {
-  const [activeTab, setActiveTab] = useState<'experiences' | 'projects_resume' | 'education' | 'certifications'>('experiences')
-  const [items, setItems] = useState<any[]>([])
+  const [activeTab, setActiveTab] = useState<TabKey>('experiences')
+  
+  // 3. Replace any[] with ResumeItem[]
+  const [items, setItems] = useState<ResumeItem[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchData(activeTab)
   }, [activeTab])
 
-  async function fetchData(table: string) {
+  async function fetchData(table: TabKey) {
     setLoading(true)
     const { data, error } = await supabase
       .from(table)
@@ -23,7 +44,7 @@ export default function ResumeManagerHub() {
     if (error) {
       console.error('Error fetching data:', error.message)
     } else {
-      setItems(data || [])
+      setItems((data as ResumeItem[]) || [])
     }
     setLoading(false)
   }
@@ -94,7 +115,7 @@ export default function ResumeManagerHub() {
         ].map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key as any)}
+            onClick={() => setActiveTab(tab.key as TabKey)}
             className={`pb-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === tab.key 
                 ? 'border-[#aa002a] text-[#aa002a]' 
