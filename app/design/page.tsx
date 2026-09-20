@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { SkeletonMasonryGrid } from '@/app/components/Skeleton'
 
 type DesignItem = {
   id: string
@@ -113,9 +114,7 @@ function DesignGalleryInner() {
 
         {/* Masonry Grid Layout */}
         {isLoading ? (
-          <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">
-            Loading design gallery...
-          </div>
+          <SkeletonMasonryGrid count={9} />
         ) : filteredDesigns.length === 0 ? (
           <div className="text-center py-20 text-gray-400 text-sm">
             No design entries found in this category.
@@ -132,6 +131,7 @@ function DesignGalleryInner() {
                   <img 
                     src={item.images[0]} 
                     alt={item.title} 
+                    loading="lazy"
                     className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
                 )}

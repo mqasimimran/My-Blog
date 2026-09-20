@@ -53,7 +53,7 @@ export default function Navbar() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      router.push(`/blog?q=${encodeURIComponent(searchQuery)}`)
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
       setIsSearchOpen(false)
       setSearchQuery('')
       setIsMobileMenuOpen(false)

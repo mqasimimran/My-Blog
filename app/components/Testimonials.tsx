@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 
 type Testimonial = {
@@ -53,7 +54,9 @@ export default function Testimonials() {
             <p className="text-gray-700 text-sm leading-relaxed mb-6 flex-1">{t.quote}</p>
             <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
               {t.avatar_url ? (
-                <img src={t.avatar_url} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
+                <div className="relative w-10 h-10 shrink-0">
+                  <Image src={t.avatar_url} alt={t.name} fill sizes="40px" className="rounded-full object-cover" />
+                </div>
               ) : (
                 <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs font-bold uppercase">
                   {t.name.charAt(0)}

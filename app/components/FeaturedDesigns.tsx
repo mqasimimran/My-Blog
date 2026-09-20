@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { SkeletonMasonryGrid } from '@/app/components/Skeleton'
 
 type DesignItem = {
   id: string
@@ -56,22 +57,21 @@ export default function FeaturedDesigns() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">
-          Loading featured design...
-        </div>
+        <SkeletonMasonryGrid count={4} />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="columns-1 sm:columns-2 lg:columns-4 gap-6 space-y-6">
           {designs.map((item) => (
             <Link
               href={`/design?item=${item.id}`}
               key={item.id}
-              className="group relative block h-72 rounded-lg overflow-hidden bg-gray-100 shadow-sm hover:shadow-xl transition-shadow"
+              className="group break-inside-avoid relative block rounded-lg overflow-hidden bg-gray-100 shadow-sm hover:shadow-xl transition-shadow"
             >
               {item.images?.[0] && (
                 <img
                   src={item.images[0]}
                   alt={item.title}
-                  className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-700 ease-out"
+                  loading="lazy"
+                  className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
               )}
               <div className="absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/70 transition-colors duration-300 flex flex-col justify-end p-5 opacity-0 group-hover:opacity-100">

@@ -4,6 +4,7 @@ import Navbar from './Navbar'
 import Script from 'next/script'
 import ReadingProgress from '@/app/components/ReadingProgress'
 import Providers from '@/app/components/Providers'
+import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 
 // TODO: replace with your real production domain once you know it for sure —
@@ -44,6 +45,45 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
+        {/* Site-wide Person structured data — helps Google associate this
+            site with you specifically (knowledge panel, rich results) */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Person',
+              name: 'Muhammad Qasim Imran',
+              url: SITE_URL,
+              jobTitle: 'Software Engineer & Graphic Designer',
+              sameAs: [
+                'https://linkedin.com/in/muhammadqasimimran',
+                'https://github.com/mqasimimran',
+                'https://youtube.com/@qasimdevelops',
+                'https://instagram.com/muhammadqasimimrann',
+              ],
+            }),
+          }}
+        />
+
+        {/* Privacy-friendly analytics (Plausible or Umami) — only loads if
+            you've set the relevant env var. Neither requires a cookie
+            banner, unlike Google Analytics. See handoff notes for setup. */}
+        {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
+          <script
+            defer
+            data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+            src="https://plausible.io/js/script.js"
+          ></script>
+        )}
+        {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
+          <script
+            defer
+            src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL || 'https://cloud.umami.is/script.js'}
+            data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+          ></script>
+        )}
+
         {/* Google AdSense Verification Script */}
         <script 
           async 
@@ -103,6 +143,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </footer>
         </Providers>
+
+        <Analytics />
         
       </body>
     </html>

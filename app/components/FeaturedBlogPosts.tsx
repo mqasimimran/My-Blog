@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
+import { SkeletonCardGrid } from '@/app/components/Skeleton'
 
 type Article = {
   id: string
@@ -60,9 +62,7 @@ export default function FeaturedBlogPosts() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">
-          Loading featured posts...
-        </div>
+        <SkeletonCardGrid count={3} columns={3} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {articles.map((article) => (
@@ -72,11 +72,13 @@ export default function FeaturedBlogPosts() {
               className="group bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow"
             >
               {article.feature_image && (
-                <div className="w-full h-44 overflow-hidden bg-gray-100">
-                  <img
+                <div className="relative w-full h-44 overflow-hidden bg-gray-100">
+                  <Image
                     src={article.feature_image}
                     alt={article.title}
-                    className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
               )}

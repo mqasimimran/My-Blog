@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import Image from 'next/image'
 import ShareButtons from '@/app/components/ShareButtons'
 
 const SITE_URL = 'https://muhammadqasimimran.vercel.app'
@@ -83,8 +84,28 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
     )
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: project.title,
+    description: project.description,
+    image: project.feature_image || undefined,
+    keywords: project.tech_stack || undefined,
+    genre: project.category,
+    url: `${SITE_URL}/projects/${slug}`,
+    creator: {
+      '@type': 'Person',
+      name: 'Muhammad Qasim Imran',
+      url: `${SITE_URL}/about`,
+    },
+  }
+
   return (
     <article className="min-h-screen bg-white pt-24 pb-32 font-sans overflow-x-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       
       {/* Editorial Header */}
       <div className="max-w-4xl mx-auto px-6 text-center mb-16">
@@ -171,7 +192,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
           {project.screenshots && project.screenshots.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {project.screenshots.map((src, i) => (
-                <img key={i} src={src} alt={`${project.title} screenshot ${i + 1}`} className="w-full h-auto rounded-lg border border-gray-100 shadow-sm" />
+                <img key={i} src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="w-full h-auto rounded-lg border border-gray-100 shadow-sm" />
               ))}
             </div>
           )}
@@ -216,11 +237,13 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
             {relatedProjects.map((related) => (
               <Link key={related.slug} href={`/projects/${related.slug}`} className="group block">
                 {related.feature_image && (
-                  <div className="aspect-video mb-3 overflow-hidden rounded bg-gray-50">
-                    <img
+                  <div className="relative aspect-video mb-3 overflow-hidden rounded bg-gray-50">
+                    <Image
                       src={related.feature_image}
                       alt={related.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                 )}

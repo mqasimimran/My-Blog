@@ -1,9 +1,11 @@
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import ShareButtons from '@/app/components/ShareButtons'
 import ReactionButton from '@/app/components/ReactionButton'
+import Comments from '@/app/components/Comments'
 
 const SITE_URL = 'https://muhammadqasimimran.vercel.app'
 
@@ -56,8 +58,35 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const readTime = calculateReadTime(article.content)
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: article.title,
+    description: article.excerpt,
+    image: article.feature_image ? [article.feature_image] : undefined,
+    datePublished: article.created_at,
+    dateModified: article.updated_at || article.created_at,
+    author: {
+      '@type': 'Person',
+      name: 'Muhammad Qasim Imran',
+      url: `${SITE_URL}/about`,
+    },
+    publisher: {
+      '@type': 'Person',
+      name: 'Muhammad Qasim Imran',
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/blog/${slug}`,
+    },
+  }
+
   return (
     <article className="min-h-screen bg-transparent py-20 px-6 font-sans">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-4xl mx-auto">
         
         <div className="text-center mb-16">
@@ -125,11 +154,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
               {relatedArticles.map((related) => (
                 <Link key={related.slug} href={`/blog/${related.slug}`} className="group block">
                   {related.feature_image && (
-                    <div className="aspect-video mb-3 overflow-hidden rounded">
-                      <img
+                    <div className="relative aspect-video mb-3 overflow-hidden rounded">
+                      <Image
                         src={related.feature_image}
                         alt={related.title}
-                        className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   )}
@@ -141,6 +172,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             </div>
           </div>
         )}
+
+        <Comments />
       </div>
     </article>
   )

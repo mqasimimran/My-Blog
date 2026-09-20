@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { SkeletonTextCardGrid } from '@/app/components/Skeleton'
 
 type Project = {
   id: string
@@ -79,9 +80,7 @@ export default function AllProjectsPage() {
 
         {/* 3-Column Card Grid */}
         {isLoading ? (
-          <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">
-            Loading portfolio archive...
-          </div>
+          <SkeletonTextCardGrid count={6} columns={3} />
         ) : filteredProjects.length === 0 ? (
           <div className="text-center py-20 text-gray-400 text-sm">
             No projects found in this category.

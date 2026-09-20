@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import AvailabilityBadge from '@/app/components/AvailabilityBadge'
+import { SkeletonCardGrid } from '@/app/components/Skeleton'
 
 type ServicePackage = {
   id: string
@@ -93,9 +95,7 @@ export default function ServicesPage() {
       {/* Gig Cards */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         {isLoading ? (
-          <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">
-            Loading services...
-          </div>
+          <SkeletonCardGrid count={6} columns={3} />
         ) : services.length === 0 ? (
           <div className="text-center py-20 text-gray-400 text-sm">
             No services listed yet.
@@ -117,9 +117,9 @@ export default function ServicesPage() {
 
               const cardInner = (
                 <>
-                  <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
+                  <div className="relative h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
                     {service.cover_image ? (
-                      <img src={service.cover_image} alt={service.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                      <Image src={service.cover_image} alt={service.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
                       <span className="text-5xl">{service.icon || '✦'}</span>
                     )}

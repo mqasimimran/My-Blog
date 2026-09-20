@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import NewsletterSignup from '@/app/components/NewsletterSignup'
+import { SkeletonBlogList } from '@/app/components/Skeleton'
 
 type Article = {
   id: string
@@ -105,9 +106,7 @@ export default function BlogPage() {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">
-          Loading archive...
-        </div>
+        <SkeletonBlogList count={3} />
       ) : filteredArticles.length === 0 ? (
         <div className="text-center py-20 text-gray-400 text-sm">
           No articles found for this category.
@@ -122,6 +121,7 @@ export default function BlogPage() {
                   <img 
                     src={article.feature_image} 
                     alt={article.title}
+                    loading="lazy"
                     className="w-full h-auto max-h-[80vh] object-cover transition-opacity hover:opacity-90"
                   />
                 </Link>

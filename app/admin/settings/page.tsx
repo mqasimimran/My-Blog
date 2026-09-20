@@ -12,6 +12,7 @@ export default function AdminSettingsPage() {
   const [nowText, setNowText] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
@@ -44,6 +45,47 @@ export default function AdminSettingsPage() {
       setTimeout(() => setSaved(false), 2000)
     }
     setIsSaving(false)
+  }
+
+  async function handleExport() {
+    setIsExporting(true)
+    try {
+      const [projects, articles, designs, services, servicePackages, testimonials, journeyEntries] = await Promise.all([
+        supabase.from('projects').select('*'),
+        supabase.from('articles').select('*'),
+        supabase.from('designs').select('*'),
+        supabase.from('services').select('*'),
+        supabase.from('service_packages').select('*'),
+        supabase.from('testimonials').select('*'),
+        supabase.from('journey_entries').select('*'),
+      ])
+
+      const exportData = {
+        exported_at: new Date().toISOString(),
+        projects: projects.data || [],
+        articles: articles.data || [],
+        designs: designs.data || [],
+        services: services.data || [],
+        service_packages: servicePackages.data || [],
+        testimonials: testimonials.data || [],
+        journey_entries: journeyEntries.data || [],
+      }
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `portfolio-export-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      alert('Export failed — check the console for details.')
+      console.error(err)
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   if (status === 'loading' || isLoading) {
@@ -111,6 +153,20 @@ export default function AdminSettingsPage() {
             <button onClick={handleSave} disabled={isSaving} className="w-full bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase py-4 rounded hover:bg-gray-900 transition-colors">
               {isSaving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
             </button>
+
+            <div className="pt-6 border-t border-gray-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-2">Data Export</p>
+              <p className="text-[11px] text-gray-400 mb-4">
+                Download everything — projects, articles, designs, services, testimonials, and your journey entries — as a single JSON file. Good insurance before any big change.
+              </p>
+              <button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="w-full bg-gray-100 text-gray-900 text-xs font-bold tracking-widest uppercase py-3 rounded hover:bg-gray-200 transition-colors"
+              >
+                {isExporting ? 'Exporting...' : 'Export Everything As JSON'}
+              </button>
+            </div>
           </div>
         </div>
       </main>

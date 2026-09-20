@@ -1,15 +1,18 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Links() {
   return (
     <div className="max-w-md mx-auto px-6 py-20 flex flex-col items-center">
       
       {/* Profile Section */}
-      <div className="w-28 h-28 rounded-full mb-6 overflow-hidden shadow-lg border-4 border-white">
-         <img 
+      <div className="relative w-28 h-28 rounded-full mb-6 overflow-hidden shadow-lg border-4 border-white">
+         <Image 
             src="/profile.jpg" 
             alt="Profile" 
-            className="w-full h-full object-cover" 
+            fill
+            sizes="112px"
+            className="object-cover" 
          />
       </div>
       <h1 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">Muhammad Qasim Imran</h1>

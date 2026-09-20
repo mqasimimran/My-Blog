@@ -7,6 +7,7 @@ import NewsletterSignup from '@/app/components/NewsletterSignup'
 import AvailabilityBadge from '@/app/components/AvailabilityBadge'
 import NowWidget from '@/app/components/NowWidget'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function AboutPage() {
   return (
@@ -48,10 +49,13 @@ export default function AboutPage() {
 
           {/* Right Column: Profile Image with Responsive Height */}
           <div className="relative h-[400px] sm:h-[500px] lg:h-[600px] w-full rounded-lg overflow-hidden shadow-2xl">
-            <img 
+            <Image 
               src="/profile.jpg" 
               alt="Portrait" 
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-center"
             />
           </div>
 
