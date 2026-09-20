@@ -1,9 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
-export default function ContactPage() {
+function ContactForm() {
+  const searchParams = useSearchParams()
+  const prefillSubject = searchParams.get('subject') || ''
+  const prefillMessage = searchParams.get('message') || ''
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' })
 
@@ -15,6 +20,17 @@ export default function ContactPage() {
     // Save the form reference BEFORE the await so it doesn't become null
     const form = e.currentTarget
     const formData = new FormData(form)
+
+    // Honeypot — a real visitor never sees or fills this field in; a bot
+    // filling out every input on the page will. If it's filled, pretend to
+    // succeed without actually sending anything anywhere.
+    const honeypot = formData.get('website') as string
+    if (honeypot) {
+      setSubmitStatus({ type: 'success', message: 'Message sent successfully! I will get back to you soon.' })
+      form.reset()
+      setIsSubmitting(false)
+      return
+    }
     
     const name = formData.get('name') as string
     const email = formData.get('email') as string
@@ -29,6 +45,15 @@ export default function ContactPage() {
       if (!error) {
         setSubmitStatus({ type: 'success', message: 'Message sent successfully! I will get back to you soon.' })
         form.reset() // Use the saved reference here
+
+        // Best-effort email notification — if this fails for any reason
+        // (missing API key, network issue), the message is still safely
+        // saved in Supabase/the admin inbox regardless.
+        fetch('/api/notify-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, subject, message }),
+        }).catch((err) => console.error('Email notification failed (message was still saved):', err))
       } else {
         console.error('Supabase Error:', error)
         setSubmitStatus({ type: 'error', message: error.message || 'Something went wrong.' })
@@ -85,6 +110,14 @@ export default function ContactPage() {
         {/* Right Side: Form */}
         <div className="w-full md:w-7/12 p-10 lg:p-12">
           <form onSubmit={handleSubmit} suppressHydrationWarning className="h-full flex flex-col justify-center space-y-8">
+
+            {/* Honeypot field — hidden from real visitors via CSS, not just "display:none"
+                (some bots skip display:none fields), but genuinely off-screen and
+                unreachable by tab order so a human never notices or fills it in. */}
+            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+              <label htmlFor="website">Leave this field empty</label>
+              <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
+            </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {/* Name Input */}
@@ -134,6 +167,7 @@ export default function ContactPage() {
                 name="subject"
                 placeholder=" " 
                 required
+                defaultValue={prefillSubject}
                 suppressHydrationWarning
                 className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors"
               />
@@ -153,6 +187,7 @@ export default function ContactPage() {
                 placeholder=" " 
                 rows={4}
                 required
+                defaultValue={prefillMessage}
                 suppressHydrationWarning
                 className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors resize-none"
               ></textarea>
@@ -189,5 +224,17 @@ export default function ContactPage() {
         
       </div>
     </main>
+  )
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Loading...</p>
+      </main>
+    }>
+      <ContactForm />
+    </Suspense>
   )
 }

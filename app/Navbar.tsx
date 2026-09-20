@@ -2,7 +2,10 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+
+type SearchItem = { title: string; type: string; url: string }
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -10,28 +13,42 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [searchableItems, setSearchableItems] = useState<SearchItem[]>([])
 
   const isActive = (path: string) => pathname === path
 
-  const searchableItems = [
-    { title: "Bilingual AI Urdu Teaching Assistant", type: "Project", url: "/resume" },
-    { title: "Brain Tumor MRI Classifier", type: "Project", url: "/resume" },
-    { title: "Agentic LinkedIn Automator with Playwright", type: "Project", url: "/resume" },
-    { title: "Beyond The Code My Journey Of Fundraising", type: "Blog", url: "/blog/Beyond-the-Code-My-Journey-of-Fundraising" },
-    { title: "My Experience With The Amal Brain Declutter Project", type: "Blog", url: "/blog/My-Experience-with-the-Amal-Brain-Declutter-Project" },
-    { title: "The Code Of Asthetics", type: "Blog", url: "/blog/the-code-of-ashetics" },
-    { title: "The Daily Obstacle Course My Journey", type: "Blog", url: "/blog/the-daily-obstacle-course-my-journey" },
-    { title: "The Full Stack Creators Toolkit", type: "Blog", url: "/blog/The-Full-Stack-Creators-Toolkit" },
-    { title: "Unity 3D Physics and Character Controllers", type: "Tech Stack", url: "/tech-stack" },
-    { title: "PC Specs: Ryzen 5 7500F & RX 6750 XT", type: "Hardware", url: "/tech-stack" }
-  ]
+  // Pull live titles from Supabase so search never goes stale when new
+  // content is published — fetched once when the search box is first opened.
+  useEffect(() => {
+    if (!isSearchOpen || searchableItems.length > 0) return
+
+    async function fetchSearchableItems() {
+      const [projectsRes, articlesRes, designsRes, servicesRes] = await Promise.all([
+        supabase.from('projects').select('title, slug'),
+        supabase.from('articles').select('title, slug').eq('published', true),
+        supabase.from('designs').select('id, title, category'),
+        supabase.from('services').select('name, slug').eq('active', true),
+      ])
+
+      const items: SearchItem[] = [
+        ...(projectsRes.data || []).map((p) => ({ title: p.title, type: 'Project', url: `/projects/${p.slug}` })),
+        ...(articlesRes.data || []).map((a) => ({ title: a.title, type: 'Blog', url: `/blog/${a.slug}` })),
+        ...(designsRes.data || []).map((d) => ({ title: d.title, type: 'Design', url: `/design?item=${d.id}` })),
+        ...(servicesRes.data || []).map((s) => ({ title: s.name, type: 'Service', url: s.slug ? `/services/${s.slug}` : '/services' })),
+      ]
+
+      setSearchableItems(items)
+    }
+
+    fetchSearchableItems()
+  }, [isSearchOpen, searchableItems.length])
 
   const filteredSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return []
     return searchableItems.filter(item => 
       item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    ).slice(0, 5)
-  }, [searchQuery])
+    ).slice(0, 6)
+  }, [searchQuery, searchableItems])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -76,7 +93,7 @@ export default function Navbar() {
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center gap-10 text-[11px] font-bold tracking-[0.15em] uppercase">
           <Link href="/" className={`${isActive('/') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Home</Link>
-          <Link href="/about" className={`${isActive('/about') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>About</Link>
+          <Link href="/about" className={`${isActive('/about') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>My Journey</Link>
           <Link href="/shop" className={`${isActive('/shop') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Shop</Link>
           <Link href="/design" className={`${isActive('/design') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Design</Link>
           <Link href="/blog" className={`${isActive('/blog') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Blog</Link>
@@ -84,6 +101,7 @@ export default function Navbar() {
 
           <Link href="/tech-stack" className={`${isActive('/tech-stack') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Tech Stack</Link>
           <Link href="/resume" className={`${isActive('/resume') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Resume</Link>
+          <Link href="/services" className={`${isActive('/services') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Services</Link>
                     <Link href="/contact" className={`${isActive('/contact') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Contact</Link>
         </div>
 
@@ -133,7 +151,7 @@ export default function Navbar() {
       {isMobileMenuOpen && (
         <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-lg py-6 px-8 flex flex-col gap-4 text-xs font-bold tracking-[0.15em] uppercase z-40">
           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Home</Link>
-          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/about') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>About</Link>
+          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/about') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>My Journey</Link>
           <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/shop') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Shop</Link>
           <Link href="/design" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/design') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Design</Link>
           <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/blog') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Blog</Link>
@@ -141,6 +159,7 @@ export default function Navbar() {
          
           <Link href="/tech-stack" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/tech-stack') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Tech Stack</Link>
           <Link href="/resume" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/resume') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Resume</Link>
+          <Link href="/services" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/services') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Services</Link>
            <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/contact') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Contact</Link>
         </div>
       )}

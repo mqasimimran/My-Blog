@@ -12,6 +12,7 @@ export default function NewDesignPage() {
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('Graphic Design')
   const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [featured, setFeatured] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   
@@ -66,7 +67,8 @@ export default function NewDesignPage() {
     const { error } = await supabase.from('designs').insert([{
       title,
       category,
-      images: uploadedImageUrls
+      images: uploadedImageUrls,
+      featured
     }])
 
     if (error) {
@@ -117,10 +119,16 @@ export default function NewDesignPage() {
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Category</label>
               <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 bg-white text-gray-900 text-sm">
-                <option value="Graphic Design">Graphic Design</option>
+                <option value="Branding &amp; Identity">Branding &amp; Identity</option>
+                <option value="Logo Design">Logo Design</option>
+                <option value="Social Media Posts">Social Media Posts</option>
                 <option value="Print Design">Print Design</option>
-                <option value="UI/UX">UI/UX</option>
-                <option value="Social Media">Social Media</option>
+                <option value="Packaging Design">Packaging Design</option>
+                <option value="Product Design">Product Design</option>
+                <option value="Advertising">Advertising</option>
+                <option value="UI/UX Design">UI/UX Design</option>
+                <option value="Illustration">Illustration</option>
+                <option value="Graphic Design">Graphic Design (Other)</option>
               </select>
             </div>
 
@@ -155,6 +163,13 @@ export default function NewDesignPage() {
                 </div>
               </div>
             )}
+
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="w-4 h-4 text-[#aa002a] focus:ring-[#aa002a] rounded border-gray-300" />
+                <span className="text-xs font-bold tracking-widest uppercase text-gray-700">Feature on Homepage</span>
+              </label>
+            </div>
 
             <button type="submit" disabled={isSubmitting} className="w-full bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase py-4 rounded hover:bg-gray-900 transition-colors mt-6">
               {isSubmitting ? 'Uploading & Publishing...' : 'Publish Design Entry'}

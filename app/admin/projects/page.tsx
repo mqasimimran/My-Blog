@@ -42,6 +42,15 @@ export default function AdminProjectsPage() {
     }
   }, [status])
 
+  async function toggleFeatured(project: Project) {
+    const { error } = await supabase.from('projects').update({ featured: !project.featured }).eq('id', project.id)
+    if (error) {
+      alert('Error updating: ' + error.message)
+    } else {
+      setProjects(prev => prev.map(p => p.id === project.id ? { ...p, featured: !p.featured } : p))
+    }
+  }
+
   if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-sm text-gray-500">
@@ -67,8 +76,26 @@ export default function AdminProjectsPage() {
             <Link href="/admin/designs" className="text-gray-400 hover:text-white transition-colors">
               Design Gallery
             </Link>
+            <Link href="/admin/services" className="text-gray-400 hover:text-white transition-colors">
+              Services
+            </Link>
+            <Link href="/admin/journey" className="text-gray-400 hover:text-white transition-colors">
+              My Journey
+            </Link>
+            <Link href="/admin/testimonials" className="text-gray-400 hover:text-white transition-colors">
+              Testimonials
+            </Link>
+            <Link href="/admin/newsletter" className="text-gray-400 hover:text-white transition-colors">
+              Newsletter
+            </Link>
+            <Link href="/admin/settings" className="text-gray-400 hover:text-white transition-colors">
+              Site Settings
+            </Link>
             <Link href="/admin/messages" className="text-gray-400 hover:text-white transition-colors">
               Messages
+            </Link>
+            <Link href="/admin/resume" className="text-gray-400 hover:text-white transition-colors pt-2 border-t border-gray-800">
+              Resume Manager
             </Link>
           </nav>
         </div>
@@ -109,7 +136,14 @@ export default function AdminProjectsPage() {
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <span className="text-[10px] font-bold tracking-widest uppercase text-[#aa002a]">{project.category}</span>
-                      {project.featured && <span className="text-[9px] font-bold tracking-widest uppercase bg-gray-100 text-gray-900 px-2 py-0.5 rounded">Featured</span>}
+                      <button
+                        onClick={() => toggleFeatured(project)}
+                        className={`text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded transition-colors cursor-pointer ${
+                          project.featured ? 'bg-[#aa002a] text-white hover:bg-gray-900' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        }`}
+                      >
+                        {project.featured ? '★ Featured' : '☆ Feature'}
+                      </button>
                     </div>
                     <h2 className="text-base font-medium text-gray-900">{project.title}</h2>
                   </div>

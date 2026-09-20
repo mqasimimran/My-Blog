@@ -12,6 +12,7 @@ interface Article {
   title: string
   category: string
   published: boolean
+  featured: boolean
   created_at?: string
 }
 
@@ -22,6 +23,12 @@ export default function AdminDashboard() {
   // Use the interface instead of any[]
   const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [stats, setStats] = useState<{
+    unreadMessages: number
+    subscribers: number
+    activeTestimonials: number
+    mostLovedPost: { title: string; slug: string; reaction_count: number } | null
+  } | null>(null)
 
   useEffect(() => {
     async function fetchArticles() {
@@ -38,10 +45,36 @@ export default function AdminDashboard() {
       setIsLoading(false)
     }
 
+    async function fetchStats() {
+      const [messagesRes, subscribersRes, testimonialsRes, topPostRes] = await Promise.all([
+        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('is_read', false),
+        supabase.from('newsletter_subscribers').select('*', { count: 'exact', head: true }),
+        supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('active', true),
+        supabase.from('articles').select('title, slug, reaction_count').order('reaction_count', { ascending: false }).limit(1).single(),
+      ])
+
+      setStats({
+        unreadMessages: messagesRes.count || 0,
+        subscribers: subscribersRes.count || 0,
+        activeTestimonials: testimonialsRes.count || 0,
+        mostLovedPost: topPostRes.data && topPostRes.data.reaction_count > 0 ? topPostRes.data : null,
+      })
+    }
+
     if (status === 'authenticated') {
       fetchArticles()
+      fetchStats()
     }
   }, [status])
+
+  async function toggleFeatured(article: Article) {
+    const { error } = await supabase.from('articles').update({ featured: !article.featured }).eq('id', article.id)
+    if (error) {
+      alert('Error updating: ' + error.message)
+    } else {
+      setArticles(prev => prev.map(a => a.id === article.id ? { ...a, featured: !a.featured } : a))
+    }
+  }
 
   if (status === 'loading' || isLoading) {
     return (
@@ -68,6 +101,21 @@ export default function AdminDashboard() {
             </Link>
             <Link href="/admin/designs" className="text-gray-400 hover:text-white transition-colors">
               Design Gallery
+            </Link>
+            <Link href="/admin/services" className="text-gray-400 hover:text-white transition-colors">
+              Services
+            </Link>
+            <Link href="/admin/journey" className="text-gray-400 hover:text-white transition-colors">
+              My Journey
+            </Link>
+            <Link href="/admin/testimonials" className="text-gray-400 hover:text-white transition-colors">
+              Testimonials
+            </Link>
+            <Link href="/admin/newsletter" className="text-gray-400 hover:text-white transition-colors">
+              Newsletter
+            </Link>
+            <Link href="/admin/settings" className="text-gray-400 hover:text-white transition-colors">
+              Site Settings
             </Link>
             <Link href="/admin/messages" className="text-gray-400 hover:text-white transition-colors">
               Messages
@@ -103,6 +151,35 @@ export default function AdminDashboard() {
             </Link>
           </div>
 
+          {/* Quick Stats */}
+          {stats && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+              <Link href="/admin/messages" className="bg-white rounded-lg border border-gray-100 p-4 shadow-sm hover:border-[#aa002a]/30 transition-colors">
+                <p className="text-2xl font-light text-gray-900">{stats.unreadMessages}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Unread Messages</p>
+              </Link>
+              <Link href="/admin/newsletter" className="bg-white rounded-lg border border-gray-100 p-4 shadow-sm hover:border-[#aa002a]/30 transition-colors">
+                <p className="text-2xl font-light text-gray-900">{stats.subscribers}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Subscribers</p>
+              </Link>
+              <Link href="/admin/testimonials" className="bg-white rounded-lg border border-gray-100 p-4 shadow-sm hover:border-[#aa002a]/30 transition-colors">
+                <p className="text-2xl font-light text-gray-900">{stats.activeTestimonials}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">Testimonials Live</p>
+              </Link>
+              {stats.mostLovedPost ? (
+                <Link href={`/blog/${stats.mostLovedPost.slug}`} target="_blank" className="bg-white rounded-lg border border-gray-100 p-4 shadow-sm hover:border-[#aa002a]/30 transition-colors">
+                  <p className="text-2xl font-light text-gray-900">🔥 {stats.mostLovedPost.reaction_count}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1 truncate">{stats.mostLovedPost.title}</p>
+                </Link>
+              ) : (
+                <div className="bg-white rounded-lg border border-gray-100 p-4 shadow-sm">
+                  <p className="text-2xl font-light text-gray-300">—</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mt-1">No Reactions Yet</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Articles Table Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
             {articles.length === 0 ? (
@@ -116,6 +193,7 @@ export default function AdminDashboard() {
                     <th className="px-6 py-4">Title</th>
                     <th className="px-6 py-4">Category</th>
                     <th className="px-6 py-4">Status</th>
+                    <th className="px-6 py-4">Featured</th>
                     <th className="px-6 py-4 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -128,6 +206,16 @@ export default function AdminDashboard() {
                         <span className={`text-[10px] uppercase tracking-widest px-2 py-1 rounded ${article.published ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
                           {article.published ? 'Published' : 'Draft'}
                         </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <button
+                          onClick={() => toggleFeatured(article)}
+                          className={`text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded transition-colors cursor-pointer ${
+                            article.featured ? 'bg-[#aa002a] text-white hover:bg-gray-900' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          }`}
+                        >
+                          {article.featured ? '★ Featured' : '☆ Feature'}
+                        </button>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-4">

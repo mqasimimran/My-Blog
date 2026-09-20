@@ -1,5 +1,11 @@
 import TechMarquee from '@/app/components/TechMarquee'
 import ProjectFilters from '@/app/components/ProjectFilters'
+import FeaturedDesigns from '@/app/components/FeaturedDesigns'
+import FeaturedBlogPosts from '@/app/components/FeaturedBlogPosts'
+import Testimonials from '@/app/components/Testimonials'
+import NewsletterSignup from '@/app/components/NewsletterSignup'
+import AvailabilityBadge from '@/app/components/AvailabilityBadge'
+import NowWidget from '@/app/components/NowWidget'
 import Link from 'next/link'
 
 export default function AboutPage() {
@@ -12,6 +18,7 @@ export default function AboutPage() {
           
           {/* Left Column: Bio & Socials */}
           <div className="space-y-8">
+            <AvailabilityBadge />
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-light tracking-wide text-gray-900 uppercase">
               About Me
             </h1>
@@ -21,7 +28,7 @@ export default function AboutPage() {
                 I am a Software Engineer and Graphic Designer bridging the gap between highly functional code and minimalist aesthetic design. Currently pursuing a BS in Computer Science, my focus lies in crafting seamless digital experiences.
               </p>
               <p>
-                From engineering robust game mechanics in Unity and building scalable web architecture with Next.js, to designing complete brand identities utilizing the Adobe Suite, I thrive at the intersection of logic and creativity.
+                From engineering robust game mechanics in Unity and building scalable web architecture with Next.js, to designing complete brand identities utilizing the Adobe Suite, I thrive at the intersection of logic and creativity. I've also sharpened that eye for detail through a Software Quality Engineering internship at Big Brains Learning, focused on UI/UX testing and boundary-value analysis.
               </p>
             </div>
 
@@ -54,8 +61,23 @@ export default function AboutPage() {
         <TechMarquee />
       </section>
 
+      {/* "Right Now" widget — hidden unless set in /admin/settings */}
+      <NowWidget />
+
       {/* Interactive Filtered Portfolio Section */}
       <ProjectFilters />
+
+      {/* Featured Design pieces (from the /design gallery, marked featured in admin) */}
+      <FeaturedDesigns />
+
+      {/* Featured blog posts (from /blog, marked featured in admin) */}
+      <FeaturedBlogPosts />
+
+      {/* Testimonials (add real ones via /admin/testimonials — hidden until you do) */}
+      <Testimonials />
+
+      {/* Newsletter signup */}
+      <NewsletterSignup />
 
       {/* NEW: Final CTA to drive engagement */}
       <section className="bg-gray-900 text-white py-24 px-6 mt-auto">

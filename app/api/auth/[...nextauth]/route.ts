@@ -25,6 +25,31 @@ const handler = NextAuth({
   pages: {
     signIn: '/admin/login',
   },
+  session: {
+    strategy: 'jwt',
+    // Backstop expiry even if the browser session somehow survives being
+    // closed (see the cookie config below) — logs out automatically after
+    // 8 hours of the session being issued either way.
+    maxAge: 8 * 60 * 60, // 8 hours, in seconds
+  },
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === 'production'
+          ? '__Secure-next-auth.session-token'
+          : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        // Deliberately no `maxAge` here — this makes it a browser *session*
+        // cookie rather than a persistent one, so closing the browser
+        // (all windows, not just the tab) clears it and the next visit to
+        // /admin requires logging in again.
+      },
+    },
+  },
   secret: process.env.NEXTAUTH_SECRET,
 })
 

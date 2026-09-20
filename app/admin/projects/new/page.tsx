@@ -16,6 +16,10 @@ export default function NewProjectPage() {
   const [statusVal, setStatusVal] = useState('')
   const [description, setDescription] = useState('')
   const [content, setContent] = useState('') // <--- Added for case study
+  const [problem, setProblem] = useState('')
+  const [approach, setApproach] = useState('')
+  const [outcome, setOutcome] = useState('')
+  const [screenshotFiles, setScreenshotFiles] = useState<File[]>([])
   const [liveUrl, setLiveUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [featured, setFeatured] = useState(false)
@@ -48,6 +52,20 @@ export default function NewProjectPage() {
       imageUrl = publicUrlData.publicUrl
     }
 
+    let screenshotUrls: string[] = []
+    for (const file of screenshotFiles) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `screenshot_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, file)
+      if (uploadError) {
+        alert('Error uploading a screenshot: ' + uploadError.message)
+        setIsSubmitting(false)
+        return
+      }
+      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      screenshotUrls.push(publicUrlData.publicUrl)
+    }
+
     const { error } = await supabase.from('projects').insert([{
       title,
       slug,
@@ -56,6 +74,10 @@ export default function NewProjectPage() {
       status: statusVal,
       description,
       content, // <--- Saved to database
+      problem,
+      approach,
+      outcome,
+      screenshots: screenshotUrls,
       live_url: liveUrl,
       github_url: githubUrl,
       featured,
@@ -139,14 +161,40 @@ export default function NewProjectPage() {
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
             </div>
 
-            {/* Case Study Content Editor */}
+            {/* Structured Case Study — for your top projects */}
+            <div className="pt-2 border-t border-gray-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-1 mt-4">Case Study (optional)</p>
+              <p className="text-[11px] text-gray-400 mb-4">Fill these in for the projects you want recruiters to actually read — problem, approach, and outcome, with a couple of screenshots.</p>
+            </div>
+
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Full Case Study Content (HTML supported)</label>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Problem</label>
+              <textarea value={problem} onChange={(e) => setProblem(e.target.value)} rows={3} placeholder="What need or gap prompted this project?" className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Approach</label>
+              <textarea value={approach} onChange={(e) => setApproach(e.target.value)} rows={3} placeholder="How did you tackle it? Key decisions, trade-offs, architecture." className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Outcome</label>
+              <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={3} placeholder="What shipped, what you learned, results if measurable." className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Screenshots (optional, multiple)</label>
+              <input type="file" accept="image/*" multiple onChange={(e) => setScreenshotFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+            </div>
+
+            {/* Legacy freeform content — still supported, shown below the structured sections if filled in */}
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Additional Content (HTML, optional)</label>
               <textarea 
                 value={content} 
                 onChange={(e) => setContent(e.target.value)} 
-                rows={8} 
-                placeholder="<p>Write your detailed case study breakdown here using HTML tags like &lt;p&gt;, &lt;h2&gt;, etc.</p>"
+                rows={6} 
+                placeholder="Optional — anything extra beyond Problem/Approach/Outcome, as HTML."
                 className="w-full border border-gray-200 p-4 font-mono text-xs outline-none focus:border-gray-900 text-gray-700 rounded" 
               />
             </div>

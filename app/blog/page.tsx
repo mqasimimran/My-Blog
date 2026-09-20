@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import NewsletterSignup from '@/app/components/NewsletterSignup'
 
 type Article = {
   id: string
@@ -154,6 +155,7 @@ export default function BlogPage() {
           ))}
         </div>
       )}
+      <NewsletterSignup />
     </main>
   )
 }

@@ -12,6 +12,7 @@ type Design = {
   category: string
   images: string[]
   created_at: string
+  featured: boolean
 }
 
 export default function AdminDesignsPage() {
@@ -53,6 +54,15 @@ export default function AdminDesignsPage() {
     }
   }
 
+  async function toggleFeatured(design: Design) {
+    const { error } = await supabase.from('designs').update({ featured: !design.featured }).eq('id', design.id)
+    if (error) {
+      alert('Error updating: ' + error.message)
+    } else {
+      setDesigns(prev => prev.map(d => d.id === design.id ? { ...d, featured: !d.featured } : d))
+    }
+  }
+
   if (status === 'loading' || isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-sm text-gray-500">
@@ -80,9 +90,27 @@ export default function AdminDesignsPage() {
             <Link href="/admin/designs" className="text-[#aa002a]">
               Design Gallery
             </Link>
+            <Link href="/admin/services" className="text-gray-400 hover:text-white transition-colors">
+              Services
+            </Link>
+            <Link href="/admin/journey" className="text-gray-400 hover:text-white transition-colors">
+              My Journey
+            </Link>
+            <Link href="/admin/testimonials" className="text-gray-400 hover:text-white transition-colors">
+              Testimonials
+            </Link>
+            <Link href="/admin/newsletter" className="text-gray-400 hover:text-white transition-colors">
+              Newsletter
+            </Link>
+            <Link href="/admin/settings" className="text-gray-400 hover:text-white transition-colors">
+              Site Settings
+            </Link>
             <Link href="/admin/messages" className="text-gray-400 hover:text-white transition-colors">
   Messages
 </Link>
+            <Link href="/admin/resume" className="text-gray-400 hover:text-white transition-colors pt-2 border-t border-gray-800">
+              Resume Manager
+            </Link>
           </nav>
         </div>
 
@@ -126,7 +154,17 @@ export default function AdminDesignsPage() {
                       <img src={design.images[0]} alt={design.title} className="w-12 h-12 object-cover rounded border" />
                     )}
                     <div>
-                      <span className="text-[10px] font-bold tracking-widest uppercase text-[#aa002a] block mb-0.5">{design.category}</span>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-[#aa002a]">{design.category}</span>
+                        <button
+                          onClick={() => toggleFeatured(design)}
+                          className={`text-[9px] font-bold tracking-widest uppercase px-2 py-0.5 rounded transition-colors cursor-pointer ${
+                            design.featured ? 'bg-[#aa002a] text-white hover:bg-gray-900' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                          }`}
+                        >
+                          {design.featured ? '★ Featured' : '☆ Feature'}
+                        </button>
+                      </div>
                       <h2 className="text-base font-medium text-gray-900">{design.title}</h2>
                       <span className="text-[10px] text-gray-400 font-mono">{design.images?.length || 0} image(s) attached</span>
                     </div>

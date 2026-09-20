@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 type DesignItem = {
@@ -10,7 +11,8 @@ type DesignItem = {
   images: string[]
 }
 
-export default function DesignGalleryPage() {
+function DesignGalleryInner() {
+  const searchParams = useSearchParams()
   const [designPortfolio, setDesignPortfolio] = useState<DesignItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('ALL')
@@ -32,7 +34,21 @@ export default function DesignGalleryPage() {
     fetchDesigns()
   }, [])
 
-  const categories = ['ALL', 'Graphic Design', 'Print Design', 'UI/UX', 'Social Media']
+  // If arriving via a link like /design?item=<id> (e.g. from the homepage's
+  // Featured Design section), open that specific piece's lightbox directly
+  // instead of just landing on the gallery.
+  useEffect(() => {
+    const itemId = searchParams.get('item')
+    if (itemId && designPortfolio.length > 0) {
+      const match = designPortfolio.find((d) => d.id === itemId)
+      if (match) {
+        setSelectedItem(match)
+        setCurrentImageIndex(0)
+      }
+    }
+  }, [searchParams, designPortfolio])
+
+  const categories = ['ALL', 'Branding & Identity', 'Logo Design', 'Social Media Posts', 'Print Design', 'Packaging Design', 'Product Design', 'Advertising', 'UI/UX Design', 'Illustration', 'Graphic Design']
 
   const filteredDesigns = activeCategory === 'ALL'
     ? designPortfolio
@@ -217,5 +233,17 @@ export default function DesignGalleryPage() {
       )}
 
     </main>
+  )
+}
+
+export default function DesignGalleryPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Loading design gallery...</p>
+      </main>
+    }>
+      <DesignGalleryInner />
+    </Suspense>
   )
 }

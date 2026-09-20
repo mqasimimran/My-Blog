@@ -3,6 +3,9 @@
 import { useEffect, useState, use } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import ShareButtons from '@/app/components/ShareButtons'
+
+const SITE_URL = 'https://muhammadqasimimran.vercel.app'
 
 type Project = {
   title: string
@@ -14,11 +17,23 @@ type Project = {
   live_url: string | null
   github_url: string | null
   content: string | null
+  problem: string | null
+  approach: string | null
+  outcome: string | null
+  screenshots: string[] | null
+}
+
+type RelatedProject = {
+  title: string
+  slug: string
+  category: string
+  feature_image: string | null
 }
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
   const [project, setProject] = useState<Project | null>(null)
+  const [relatedProjects, setRelatedProjects] = useState<RelatedProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -33,6 +48,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
         console.error('Error fetching project:', error)
       } else {
         setProject(data)
+
+        const { data: related } = await supabase
+          .from('projects')
+          .select('title, slug, category, feature_image')
+          .eq('category', data.category)
+          .neq('slug', slug)
+          .limit(3)
+
+        setRelatedProjects(related || [])
       }
       setIsLoading(false)
     }
@@ -116,15 +140,99 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       )}
 
       {/* Case Study Content */}
-      <div className="max-w-2xl mx-auto px-6 text-gray-600 prose prose-lg prose-headings:font-serif prose-headings:text-gray-900 prose-a:text-[#aa002a] prose-a:no-underline hover:prose-a:underline">
-        {project.content ? (
-          <div dangerouslySetInnerHTML={{ __html: project.content }} />
-        ) : (
-          <div className="text-center italic text-gray-400 py-10">
-            A detailed case study for this project is currently in development.
-          </div>
-        )}
+      {(project.problem || project.approach || project.outcome) ? (
+        <div className="max-w-3xl mx-auto px-6 space-y-16">
+          {project.problem && (
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Problem</p>
+              <p className="text-gray-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.problem}</p>
+            </div>
+          )}
+          {project.approach && (
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Approach</p>
+              <p className="text-gray-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.approach}</p>
+            </div>
+          )}
+          {project.tech_stack && (
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Stack</p>
+              <div className="flex flex-wrap gap-2">
+                {project.tech_stack.split(',').map((tech) => (
+                  <span key={tech} className="text-xs font-mono uppercase tracking-wide text-gray-700 bg-gray-100 px-3 py-1.5 rounded">
+                    {tech.trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Screenshots */}
+          {project.screenshots && project.screenshots.length > 0 && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {project.screenshots.map((src, i) => (
+                <img key={i} src={src} alt={`${project.title} screenshot ${i + 1}`} className="w-full h-auto rounded-lg border border-gray-100 shadow-sm" />
+              ))}
+            </div>
+          )}
+
+          {project.outcome && (
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Outcome</p>
+              <p className="text-gray-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.outcome}</p>
+            </div>
+          )}
+
+          {project.content && (
+            <div className="prose prose-lg prose-headings:font-serif prose-headings:text-gray-900 prose-a:text-[#aa002a] prose-a:no-underline hover:prose-a:underline text-gray-600 pt-4 border-t border-gray-100">
+              <div dangerouslySetInnerHTML={{ __html: project.content }} />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="max-w-2xl mx-auto px-6 text-gray-600 prose prose-lg prose-headings:font-serif prose-headings:text-gray-900 prose-a:text-[#aa002a] prose-a:no-underline hover:prose-a:underline">
+          {project.content ? (
+            <div dangerouslySetInnerHTML={{ __html: project.content }} />
+          ) : (
+            <div className="text-center italic text-gray-400 py-10">
+              A detailed case study for this project is currently in development.
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Share */}
+      <div className="max-w-3xl mx-auto px-6 flex justify-center mt-16 pt-10 border-t border-gray-100">
+        <ShareButtons url={`${SITE_URL}/projects/${slug}`} title={project.title} />
       </div>
+
+      {/* Related Projects */}
+      {relatedProjects.length > 0 && (
+        <div className="max-w-5xl mx-auto px-6 mt-24 pt-16 border-t border-gray-100">
+          <h2 className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-8 text-center">
+            More {project.category} Projects
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {relatedProjects.map((related) => (
+              <Link key={related.slug} href={`/projects/${related.slug}`} className="group block">
+                {related.feature_image && (
+                  <div className="aspect-video mb-3 overflow-hidden rounded bg-gray-50">
+                    <img
+                      src={related.feature_image}
+                      alt={related.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                )}
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a] mb-1">{related.category}</p>
+                <h3 className="text-sm font-medium text-gray-900 group-hover:text-[#aa002a] transition-colors leading-snug">
+                  {related.title}
+                </h3>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
     </article>
   )

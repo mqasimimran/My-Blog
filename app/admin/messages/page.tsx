@@ -93,7 +93,15 @@ export default function AdminMessagesPage() {
             <Link href="/admin" className="text-gray-400 hover:text-white transition-colors">Blogs / Articles</Link>
             <Link href="/admin/projects" className="text-gray-400 hover:text-white transition-colors">Projects</Link>
             <Link href="/admin/designs" className="text-gray-400 hover:text-white transition-colors">Design Gallery</Link>
+            <Link href="/admin/services" className="text-gray-400 hover:text-white transition-colors">Services</Link>
+            <Link href="/admin/journey" className="text-gray-400 hover:text-white transition-colors">My Journey</Link>
+            <Link href="/admin/testimonials" className="text-gray-400 hover:text-white transition-colors">Testimonials</Link>
+            <Link href="/admin/newsletter" className="text-gray-400 hover:text-white transition-colors">Newsletter</Link>
+            <Link href="/admin/settings" className="text-gray-400 hover:text-white transition-colors">Site Settings</Link>
             <Link href="/admin/messages" className="text-[#aa002a]">Messages</Link>
+            <Link href="/admin/resume" className="text-gray-400 hover:text-white transition-colors pt-2 border-t border-gray-800">
+              Resume Manager
+            </Link>
           </nav>
         </div>
         <div>

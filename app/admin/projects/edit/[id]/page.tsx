@@ -18,6 +18,11 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const [statusVal, setStatusVal] = useState('')
   const [description, setDescription] = useState('')
   const [content, setContent] = useState('') // <--- Added for case study
+  const [problem, setProblem] = useState('')
+  const [approach, setApproach] = useState('')
+  const [outcome, setOutcome] = useState('')
+  const [existingScreenshots, setExistingScreenshots] = useState<string[]>([])
+  const [screenshotFiles, setScreenshotFiles] = useState<File[]>([])
   const [liveUrl, setLiveUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [featured, setFeatured] = useState(false)
@@ -40,6 +45,10 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         setStatusVal(data.status || '')
         setDescription(data.description || '')
         setContent(data.content || '') // <--- Loaded from database
+        setProblem(data.problem || '')
+        setApproach(data.approach || '')
+        setOutcome(data.outcome || '')
+        setExistingScreenshots(data.screenshots || [])
         setLiveUrl(data.live_url || '')
         setGithubUrl(data.github_url || '')
         setFeatured(data.featured)
@@ -56,6 +65,24 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
     e.preventDefault()
     setIsSubmitting(true)
 
+    let screenshotUrls = existingScreenshots
+    if (screenshotFiles.length > 0) {
+      const newUrls: string[] = []
+      for (const file of screenshotFiles) {
+        const fileExt = file.name.split('.').pop()
+        const fileName = `screenshot_${Math.random().toString(36).substring(2)}.${fileExt}`
+        const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, file)
+        if (uploadError) {
+          alert('Error uploading a screenshot: ' + uploadError.message)
+          setIsSubmitting(false)
+          return
+        }
+        const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+        newUrls.push(publicUrlData.publicUrl)
+      }
+      screenshotUrls = [...existingScreenshots, ...newUrls]
+    }
+
     const { error } = await supabase.from('projects').update({
       title,
       slug,
@@ -64,6 +91,10 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       status: statusVal,
       description,
       content, // <--- Updated in database
+      problem,
+      approach,
+      outcome,
+      screenshots: screenshotUrls,
       live_url: liveUrl,
       github_url: githubUrl,
       featured
@@ -146,14 +177,56 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
             </div>
 
-            {/* Case Study Content Editor */}
+            {/* Structured Case Study — for your top projects */}
+            <div className="pt-2 border-t border-gray-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-1 mt-4">Case Study (optional)</p>
+              <p className="text-[11px] text-gray-400 mb-4">Fill these in for the projects you want recruiters to actually read.</p>
+            </div>
+
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Full Case Study Content (HTML supported)</label>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Problem</label>
+              <textarea value={problem} onChange={(e) => setProblem(e.target.value)} rows={3} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Approach</label>
+              <textarea value={approach} onChange={(e) => setApproach(e.target.value)} rows={3} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Outcome</label>
+              <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={3} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Screenshots</label>
+              {existingScreenshots.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {existingScreenshots.map((src, i) => (
+                    <div key={i} className="relative group">
+                      <img src={src} alt="" className="w-full h-16 object-cover rounded border border-gray-200" />
+                      <button
+                        type="button"
+                        onClick={() => setExistingScreenshots(prev => prev.filter((_, idx) => idx !== i))}
+                        className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <input type="file" accept="image/*" multiple onChange={(e) => setScreenshotFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+              <p className="text-[10px] text-gray-400 mt-1">New uploads are added to the existing screenshots above.</p>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Additional Content (HTML, optional)</label>
               <textarea 
                 value={content} 
                 onChange={(e) => setContent(e.target.value)} 
-                rows={8} 
-                placeholder="<p>Write your detailed case study breakdown here using HTML tags...</p>"
+                rows={6} 
+                placeholder="Optional — anything extra beyond Problem/Approach/Outcome, as HTML."
                 className="w-full border border-gray-200 p-4 font-mono text-xs outline-none focus:border-gray-900 text-gray-700 rounded" 
               />
             </div>
