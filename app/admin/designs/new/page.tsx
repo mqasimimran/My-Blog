@@ -12,6 +12,7 @@ export default function NewDesignPage() {
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('Graphic Design')
   const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [beforeImageFile, setBeforeImageFile] = useState<File | null>(null)
   const [featured, setFeatured] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -64,10 +65,25 @@ export default function NewDesignPage() {
       uploadedImageUrls.push(publicUrlData.publicUrl)
     }
 
+    let beforeImageUrl: string | null = null
+    if (beforeImageFile) {
+      const fileExt = beforeImageFile.name.split('.').pop()
+      const fileName = `design_before_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, beforeImageFile)
+      if (uploadError) {
+        alert('Error uploading before-image: ' + uploadError.message)
+        setIsSubmitting(false)
+        return
+      }
+      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      beforeImageUrl = publicUrlData.publicUrl
+    }
+
     const { error } = await supabase.from('designs').insert([{
       title,
       category,
       images: uploadedImageUrls,
+      before_image: beforeImageUrl,
       featured
     }])
 
@@ -135,6 +151,13 @@ export default function NewDesignPage() {
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Upload Images</label>
               <input type="file" accept="image/*" multiple onChange={handleFileChange} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">
+                "Before" Image (optional — enables a drag-to-compare slider in the lightbox)
+              </label>
+              <input type="file" accept="image/*" onChange={(e) => setBeforeImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
             </div>
 
             {imageFiles.length > 0 && (

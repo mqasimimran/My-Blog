@@ -49,6 +49,7 @@ export default function NewsletterSignup() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
+              suppressHydrationWarning
               className="flex-1 border border-gray-300 rounded px-4 py-3 text-sm outline-none focus:border-[#aa002a] transition-colors"
             />
             <button

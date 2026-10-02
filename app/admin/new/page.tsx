@@ -67,6 +67,14 @@ export default function NewArticle() {
       alert('Failed to save article.')
       setIsSubmitting(false)
     } else {
+      if (publishStatus) {
+        // Best-effort — don't block navigation on this
+        fetch('/api/newsletter/notify-subscribers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ articleTitle: title, articleSlug: slug, articleExcerpt: excerpt }),
+        }).catch((err) => console.error('Newsletter notification failed (article was still saved):', err))
+      }
       router.push('/admin')
     }
   }

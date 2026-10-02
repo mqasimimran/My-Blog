@@ -19,7 +19,9 @@ export default function NewProjectPage() {
   const [problem, setProblem] = useState('')
   const [approach, setApproach] = useState('')
   const [outcome, setOutcome] = useState('')
+  const [stats, setStats] = useState('')
   const [screenshotFiles, setScreenshotFiles] = useState<File[]>([])
+  const [previewVideoFile, setPreviewVideoFile] = useState<File | null>(null)
   const [liveUrl, setLiveUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [featured, setFeatured] = useState(false)
@@ -66,6 +68,20 @@ export default function NewProjectPage() {
       screenshotUrls.push(publicUrlData.publicUrl)
     }
 
+    let previewVideoUrl: string | null = null
+    if (previewVideoFile) {
+      const fileExt = previewVideoFile.name.split('.').pop()
+      const fileName = `preview_video_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, previewVideoFile)
+      if (uploadError) {
+        alert('Error uploading preview video: ' + uploadError.message)
+        setIsSubmitting(false)
+        return
+      }
+      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      previewVideoUrl = publicUrlData.publicUrl
+    }
+
     const { error } = await supabase.from('projects').insert([{
       title,
       slug,
@@ -77,7 +93,9 @@ export default function NewProjectPage() {
       problem,
       approach,
       outcome,
+      stats,
       screenshots: screenshotUrls,
+      preview_video_url: previewVideoUrl,
       live_url: liveUrl,
       github_url: githubUrl,
       featured,
@@ -183,8 +201,21 @@ export default function NewProjectPage() {
             </div>
 
             <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Stat Callouts (optional, one "value|label" per line)</label>
+              <textarea value={stats} onChange={(e) => setStats(e.target.value)} rows={3} placeholder={'94%|Classification accuracy\n3|Custom systems shipped'} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm font-mono" />
+            </div>
+
+            <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Screenshots (optional, multiple)</label>
               <input type="file" accept="image/*" multiple onChange={(e) => setScreenshotFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">
+                Hover-Preview Video (optional — plays when someone hovers the project card on the homepage)
+              </label>
+              <input type="file" accept="video/*" onChange={(e) => setPreviewVideoFile(e.target.files?.[0] || null)} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+              <p className="text-[10px] text-gray-400 mt-1">Keep this short and small (a few seconds, muted) — it autoplays on hover.</p>
             </div>
 
             {/* Legacy freeform content — still supported, shown below the structured sections if filled in */}

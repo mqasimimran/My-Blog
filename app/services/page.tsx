@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabase'
 import AvailabilityBadge from '@/app/components/AvailabilityBadge'
+import MagneticButton from '@/app/components/MagneticButton'
 import { SkeletonCardGrid } from '@/app/components/Skeleton'
 
 type ServicePackage = {
@@ -211,12 +212,14 @@ export default function ServicesPage() {
             Tell me a bit about what you need and I'll get back to you with a quote and timeline.
           </p>
           <div className="pt-4">
-            <Link
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-[#aa002a] text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-white hover:text-gray-900 transition-colors"
-            >
-              Request A Quote <span>↗</span>
-            </Link>
+            <MagneticButton>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 bg-[#aa002a] text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-white hover:text-gray-900 transition-colors"
+              >
+                Request A Quote <span>↗</span>
+              </Link>
+            </MagneticButton>
           </div>
         </div>
       </section>

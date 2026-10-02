@@ -1,0 +1,150 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0].trim()
+  return request.headers.get('x-real-ip') || 'unknown'
+}
+
+const METHOD_LABELS: Record<string, string> = {
+  jazzcash: 'JazzCash',
+  easypaisa: 'EasyPaisa',
+  bank_transfer: 'Bank Transfer',
+  payoneer: 'Payoneer',
+}
+
+function generateOrderNumber(): string {
+  const date = new Date()
+  const y = date.getFullYear().toString().slice(-2)
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
+  return `ORD-${y}${m}${d}-${rand}`
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { productId, customerName, customerEmail, paymentMethod, customerTransactionId, website } = body
+
+    // Honeypot
+    if (website) {
+      return NextResponse.json({ success: true, orderNumber: 'N/A' })
+    }
+
+    if (!productId || !customerName || !customerEmail || !paymentMethod || !customerTransactionId) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Rate limit: max 5 order submissions per hour per IP
+    const ip = getClientIp(request)
+    const windowStart = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count } = await supabase
+      .from('rate_limit_log')
+      .select('*', { count: 'exact', head: true })
+      .eq('identifier', ip)
+      .eq('action', 'order')
+      .gte('created_at', windowStart)
+
+    if ((count || 0) >= 5) {
+      return NextResponse.json({ error: 'Too many submissions recently. Please try again later.' }, { status: 429 })
+    }
+
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select('name, price')
+      .eq('id', productId)
+      .single()
+
+    if (productError || !product) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    const orderNumber = generateOrderNumber()
+
+    // Capture the converted amount NOW, at purchase time — never trust a
+    // client-supplied amount for money, and never recompute with a later
+    // day's rate when verifying, since that could drift from what the
+    // buyer actually saw and sent.
+    const isPkrMethod = paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa' || paymentMethod === 'bank_transfer'
+    let amountLocal = product.price
+    let currencyLocal = 'USD'
+
+    if (isPkrMethod) {
+      try {
+        const rateRes = await fetch(`${request.nextUrl.origin}/api/exchange-rate`)
+        const rateData = await rateRes.json()
+        amountLocal = Math.round(product.price * rateData.usdToPkr)
+        currencyLocal = 'PKR'
+      } catch (rateError) {
+        console.warn('Could not fetch exchange rate for order, storing USD amount instead:', rateError)
+      }
+    }
+
+    const { error: insertError } = await supabase.from('orders').insert([{
+      order_number: orderNumber,
+      product_id: productId,
+      product_name: product.name,
+      product_price: product.price,
+      amount_local: amountLocal,
+      currency_local: currencyLocal,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      payment_method: paymentMethod,
+      customer_transaction_id: customerTransactionId,
+      status: 'pending_verification',
+    }])
+
+    if (insertError) {
+      console.error('Error creating order:', insertError)
+      return NextResponse.json({ error: insertError.message }, { status: 500 })
+    }
+
+    await supabase.from('rate_limit_log').insert([{ identifier: ip, action: 'order' }])
+
+    // Notify me to go verify the payment
+    const apiKey = process.env.RESEND_API_KEY
+    const toEmail = process.env.NOTIFY_TO_EMAIL
+    if (apiKey && toEmail) {
+      try {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: 'Portfolio Store <onboarding@resend.dev>',
+            to: [toEmail],
+            reply_to: customerEmail,
+            subject: `New order: ${product.name} (${orderNumber})`,
+            html: `
+              <div style="font-family: sans-serif; max-width: 500px;">
+                <h2 style="color: #aa002a;">New order awaiting verification</h2>
+                <p><strong>Order:</strong> ${orderNumber}</p>
+                <p><strong>Product:</strong> ${product.name} — $${product.price}</p>
+                <p><strong>Amount to verify:</strong> ${currencyLocal === 'PKR' ? `Rs ${amountLocal.toLocaleString('en-PK')}` : `$${amountLocal}`}</p>
+                <p><strong>Customer:</strong> ${customerName} (${customerEmail})</p>
+                <p><strong>Paid via:</strong> ${METHOD_LABELS[paymentMethod] || paymentMethod}</p>
+                <p><strong>Transaction ID given:</strong> ${customerTransactionId}</p>
+                <p style="color: #9ca3af; font-size: 12px; margin-top: 16px;">
+                  Confirm this transaction via ${METHOD_LABELS[paymentMethod] || paymentMethod}, then go to /admin/orders to verify and release the download link.
+                </p>
+              </div>
+            `,
+          }),
+        })
+      } catch (emailError) {
+        console.error('Order notification email failed (order was still saved):', emailError)
+      }
+    }
+
+    return NextResponse.json({ success: true, orderNumber })
+  } catch (error) {
+    console.error('Orders route error:', error)
+    return NextResponse.json({ error: 'Unexpected error' }, { status: 500 })
+  }
+}

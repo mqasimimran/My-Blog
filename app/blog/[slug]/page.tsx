@@ -7,7 +7,7 @@ import ShareButtons from '@/app/components/ShareButtons'
 import ReactionButton from '@/app/components/ReactionButton'
 import Comments from '@/app/components/Comments'
 
-const SITE_URL = 'https://muhammadqasimimran.vercel.app'
+const SITE_URL = 'https://www.muhammadqasimimran.me/'
 
 function calculateReadTime(html: string | null): string {
   if (!html) return '1 min read'
@@ -58,6 +58,20 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const readTime = calculateReadTime(article.content)
 
+  let seriesArticles: { title: string; slug: string; series_order: number }[] = []
+  if (article.series_name) {
+    const { data } = await supabase
+      .from('articles')
+      .select('title, slug, series_order')
+      .eq('series_name', article.series_name)
+      .eq('published', true)
+      .order('series_order', { ascending: true })
+    seriesArticles = data || []
+  }
+  const seriesIndex = seriesArticles.findIndex((a) => a.slug === slug)
+  const prevInSeries = seriesIndex > 0 ? seriesArticles[seriesIndex - 1] : null
+  const nextInSeries = seriesIndex >= 0 && seriesIndex < seriesArticles.length - 1 ? seriesArticles[seriesIndex + 1] : null
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -99,6 +113,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         </div>
 
         <header className="mb-12 text-center">
+          {article.series_name && seriesIndex >= 0 && (
+            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-4">
+              {article.series_name} — Part {seriesIndex + 1} of {seriesArticles.length}
+            </p>
+          )}
           <div className="flex flex-wrap items-center justify-center gap-3 text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-6">
             <span className="text-gray-900">{article.category}</span>
             <span className="text-gray-300">/</span>
@@ -137,6 +156,43 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                      prose-img:rounded-none prose-img:border-none prose-img:shadow-none prose-img:w-full prose-img:bg-transparent"
           dangerouslySetInnerHTML={{ __html: article.content }}
         />
+
+        {/* Series Navigation */}
+        {article.series_name && seriesArticles.length > 1 && (
+          <div className="max-w-2xl mx-auto mt-16 pt-10 border-t border-gray-100">
+            <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-4 text-center">
+              More in "{article.series_name}"
+            </p>
+            <ol className="space-y-2 mb-8">
+              {seriesArticles.map((a, i) => (
+                <li key={a.slug}>
+                  <Link
+                    href={`/blog/${a.slug}`}
+                    className={`flex items-center gap-3 text-sm py-1 ${
+                      a.slug === slug ? 'text-[#aa002a] font-medium' : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    <span className="text-xs font-mono w-5">{i + 1}.</span>
+                    {a.title}
+                    {a.slug === slug && <span className="text-[10px] uppercase tracking-widest">(you are here)</span>}
+                  </Link>
+                </li>
+              ))}
+            </ol>
+            <div className="flex justify-between gap-4 text-sm">
+              {prevInSeries ? (
+                <Link href={`/blog/${prevInSeries.slug}`} className="text-gray-500 hover:text-[#aa002a] transition-colors">
+                  ← {prevInSeries.title}
+                </Link>
+              ) : <span />}
+              {nextInSeries && (
+                <Link href={`/blog/${nextInSeries.slug}`} className="text-gray-500 hover:text-[#aa002a] transition-colors text-right">
+                  {nextInSeries.title} →
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Reactions + Share */}
         <div className="max-w-2xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 mt-16 pt-10 border-t border-gray-100">

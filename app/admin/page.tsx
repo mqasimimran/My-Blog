@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import AdminNav from '@/app/admin/AdminNav'
 
 // Define the exact shape of your data to keep TypeScript happy
 interface Article {
@@ -87,54 +88,9 @@ export default function AdminDashboard() {
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col justify-between hidden md:flex">
-        <div>
-          <h2 className="text-xl font-light tracking-wide uppercase mb-10">Admin</h2>
-          <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-            <Link href="/admin" className="text-[#aa002a]">
-              Blogs / Articles
-            </Link>
-            <Link href="/admin/projects" className="text-gray-400 hover:text-white transition-colors">
-              Projects
-            </Link>
-            <Link href="/admin/designs" className="text-gray-400 hover:text-white transition-colors">
-              Design Gallery
-            </Link>
-            <Link href="/admin/services" className="text-gray-400 hover:text-white transition-colors">
-              Services
-            </Link>
-            <Link href="/admin/journey" className="text-gray-400 hover:text-white transition-colors">
-              My Journey
-            </Link>
-            <Link href="/admin/testimonials" className="text-gray-400 hover:text-white transition-colors">
-              Testimonials
-            </Link>
-            <Link href="/admin/newsletter" className="text-gray-400 hover:text-white transition-colors">
-              Newsletter
-            </Link>
-            <Link href="/admin/settings" className="text-gray-400 hover:text-white transition-colors">
-              Site Settings
-            </Link>
-            <Link href="/admin/messages" className="text-gray-400 hover:text-white transition-colors">
-              Messages
-            </Link>
-            <Link href="/admin/resume" className="text-gray-400 hover:text-white transition-colors pt-2 border-t border-gray-800">
-              Resume Manager
-            </Link>
-          </nav>
-        </div>
-
-        <div>
-          <button 
-            onClick={() => signOut({ callbackUrl: '/admin/login' })}
-            className="w-full text-left text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-red-400 transition-colors pt-6 border-t border-gray-800"
-          >
-            ← Log Out
-          </button>
-        </div>
-      </aside>
+      <AdminNav />
 
       <main className="flex-1 p-10 overflow-y-auto">
         <div className="max-w-5xl mx-auto">

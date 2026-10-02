@@ -21,8 +21,11 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const [problem, setProblem] = useState('')
   const [approach, setApproach] = useState('')
   const [outcome, setOutcome] = useState('')
+  const [stats, setStats] = useState('')
   const [existingScreenshots, setExistingScreenshots] = useState<string[]>([])
   const [screenshotFiles, setScreenshotFiles] = useState<File[]>([])
+  const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null)
+  const [previewVideoFile, setPreviewVideoFile] = useState<File | null>(null)
   const [liveUrl, setLiveUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [featured, setFeatured] = useState(false)
@@ -48,7 +51,9 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         setProblem(data.problem || '')
         setApproach(data.approach || '')
         setOutcome(data.outcome || '')
+        setStats(data.stats || '')
         setExistingScreenshots(data.screenshots || [])
+        setPreviewVideoUrl(data.preview_video_url || null)
         setLiveUrl(data.live_url || '')
         setGithubUrl(data.github_url || '')
         setFeatured(data.featured)
@@ -83,6 +88,20 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       screenshotUrls = [...existingScreenshots, ...newUrls]
     }
 
+    let finalPreviewVideoUrl = previewVideoUrl
+    if (previewVideoFile) {
+      const fileExt = previewVideoFile.name.split('.').pop()
+      const fileName = `preview_video_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, previewVideoFile)
+      if (uploadError) {
+        alert('Error uploading preview video: ' + uploadError.message)
+        setIsSubmitting(false)
+        return
+      }
+      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      finalPreviewVideoUrl = publicUrlData.publicUrl
+    }
+
     const { error } = await supabase.from('projects').update({
       title,
       slug,
@@ -94,7 +113,9 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       problem,
       approach,
       outcome,
+      stats,
       screenshots: screenshotUrls,
+      preview_video_url: finalPreviewVideoUrl,
       live_url: liveUrl,
       github_url: githubUrl,
       featured
@@ -199,6 +220,11 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Stat Callouts (optional, one "value|label" per line)</label>
+              <textarea value={stats} onChange={(e) => setStats(e.target.value)} rows={3} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm font-mono" />
+            </div>
+
+            <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Screenshots</label>
               {existingScreenshots.length > 0 && (
                 <div className="grid grid-cols-4 gap-2 mb-3">
@@ -218,6 +244,16 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               )}
               <input type="file" accept="image/*" multiple onChange={(e) => setScreenshotFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
               <p className="text-[10px] text-gray-400 mt-1">New uploads are added to the existing screenshots above.</p>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">
+                Hover-Preview Video (optional — plays when someone hovers the project card on the homepage)
+              </label>
+              {previewVideoUrl && !previewVideoFile && (
+                <p className="text-xs text-gray-500 mb-2 truncate">Current: {previewVideoUrl}</p>
+              )}
+              <input type="file" accept="video/*" onChange={(e) => setPreviewVideoFile(e.target.files?.[0] || null)} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
             </div>
 
             <div>

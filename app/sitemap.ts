@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
 // Keep this in sync with SITE_URL in app/layout.tsx
-const SITE_URL = 'https://muhammadqasimimran.vercel.app'
+const SITE_URL = 'https://www.muhammadqasimimran.me/'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,6 +20,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/resume`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${SITE_URL}/tech-stack`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE_URL}/contact`, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.3 },
   ]
 
   const [projectsRes, articlesRes, servicesRes] = await Promise.all([

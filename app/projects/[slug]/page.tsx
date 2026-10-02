@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import ShareButtons from '@/app/components/ShareButtons'
 
-const SITE_URL = 'https://muhammadqasimimran.vercel.app'
+const SITE_URL = 'https://www.muhammadqasimimran.me/'
 
 type Project = {
   title: string
@@ -22,6 +22,7 @@ type Project = {
   approach: string | null
   outcome: string | null
   screenshots: string[] | null
+  stats: string | null
 }
 
 type RelatedProject = {
@@ -157,6 +158,24 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
             alt={project.title}
             className="w-full h-auto max-h-[80vh] object-cover"
           />
+        </div>
+      )}
+
+      {/* Stat Callouts */}
+      {project.stats && (
+        <div className="max-w-3xl mx-auto px-6 mb-16">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 py-8 border-y border-gray-100">
+            {project.stats.split('\n').map((line) => {
+              const [value, label] = line.split('|').map((s) => s.trim())
+              if (!value) return null
+              return (
+                <div key={line} className="text-center">
+                  <p className="text-3xl md:text-4xl font-light text-[#aa002a] mb-1">{value}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{label}</p>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 

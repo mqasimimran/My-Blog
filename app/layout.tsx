@@ -5,11 +5,14 @@ import Script from 'next/script'
 import ReadingProgress from '@/app/components/ReadingProgress'
 import Providers from '@/app/components/Providers'
 import { Analytics } from '@vercel/analytics/next'
+import ConsoleEasterEgg from '@/app/components/ConsoleEasterEgg'
+import CommandPalette from '@/app/components/CommandPalette'
+import ColorPickerToy from '@/app/components/ColorPickerToy'
 import type { Metadata } from 'next'
 
 // TODO: replace with your real production domain once you know it for sure —
 // this powers absolute URLs for Open Graph/Twitter card previews.
-const SITE_URL = 'https://muhammadqasimimran.vercel.app'
+const SITE_URL = 'https://www.muhammadqasimimran.me/'
 const SITE_DESCRIPTION =
   'Software Engineer and Graphic Designer building Unity games, AI/ML projects, and web apps — bridging functional code with minimalist design.'
 
@@ -121,6 +124,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Link href="/design" className="hover:text-[#aa002a] transition-colors">Design</Link>
                   <Link href="/blog" className="hover:text-[#aa002a] transition-colors">Blog</Link>
                   <Link href="/resume" className="hover:text-[#aa002a] transition-colors">Resume</Link>
+                  <Link href="/roadmap" className="hover:text-[#aa002a] transition-colors">Roadmap</Link>
                 </div>
               </div>
 
@@ -131,20 +135,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">LinkedIn</a>
                   <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">GitHub</a>
                   <a href="https://youtube.com/@qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">YouTube</a>
+                  <a href="/api/stats" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors font-mono text-xs">/api/stats ↗</a>
                 </div>
               </div>
 
             </div>
 
-            <div className="border-t border-white/10">
-              <p className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-500">
+            <div className="border-t border-white/10  ">
+           
+              <p className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-500 ">
+                 <span className="text-gray-700  ">
                 © {new Date().getFullYear()} Muhammad Qasim Imran. All rights reserved.
+                </span>
               </p>
+              <Link href="/privacy"  className="hover:text-[#aa002a] transition-colors  flex flex-wrap items-center justify-center gap-x-3 gap-y-1  ">Privacy Policy</Link>
             </div>
           </footer>
         </Providers>
 
         <Analytics />
+        <ConsoleEasterEgg />
+        <CommandPalette />
+        <ColorPickerToy />
         
       </body>
     </html>

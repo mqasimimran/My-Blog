@@ -14,6 +14,26 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          // Prevents this site from being embedded in an <iframe> elsewhere
+          // (clickjacking protection)
+          { key: 'X-Frame-Options', value: 'DENY' },
+          // Stops browsers from guessing content types in ways that can
+          // enable certain XSS attacks
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // Limits how much referrer info leaks to other sites when someone
+          // clicks a link off this site
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          // Disables browser features this site has no legitimate use for
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ]
+  },
 };
 
 const withMDX = createMDX({

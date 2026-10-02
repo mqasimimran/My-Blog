@@ -4,12 +4,14 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { SkeletonMasonryGrid } from '@/app/components/Skeleton'
+import BeforeAfterSlider from '@/app/components/BeforeAfterSlider'
 
 type DesignItem = {
   id: string
   title: string
   category: string
   images: string[]
+  before_image?: string | null
 }
 
 function DesignGalleryInner() {
@@ -187,11 +189,21 @@ function DesignGalleryInner() {
                 </button>
               )}
 
-              <img 
-                src={selectedItem.images[currentImageIndex]} 
-                alt={`${selectedItem.title} - ${currentImageIndex + 1}`} 
-                className="max-h-[80vh] w-auto object-contain rounded shadow-2xl transition-opacity duration-300"
-              />
+              {selectedItem.before_image ? (
+                <div className="w-full max-w-2xl">
+                  <BeforeAfterSlider
+                    beforeSrc={selectedItem.before_image}
+                    afterSrc={selectedItem.images[currentImageIndex]}
+                    alt={selectedItem.title}
+                  />
+                </div>
+              ) : (
+                <img 
+                  src={selectedItem.images[currentImageIndex]} 
+                  alt={`${selectedItem.title} - ${currentImageIndex + 1}`} 
+                  className="max-h-[80vh] w-auto object-contain rounded shadow-2xl transition-opacity duration-300"
+                />
+              )}
 
               {selectedItem.images.length > 1 && (
                 <button 

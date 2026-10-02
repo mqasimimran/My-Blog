@@ -121,7 +121,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
             <Link href="/admin/services" className="text-[10px] font-bold tracking-widest uppercase text-gray-400 hover:text-gray-900 md:hidden">
               ← Back to Services
             </Link>
-            <Link href={`/admin/services/${id}/packages`} className="text-[10px] font-bold tracking-widest uppercase text-[#aa002a] hover:text-gray-900 ml-auto">
+            <Link href={`/admin/services/edit/${id}/packages`} className="text-[10px] font-bold tracking-widest uppercase text-[#aa002a] hover:text-gray-900 ml-auto">
               Manage Packages →
             </Link>
           </div>

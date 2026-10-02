@@ -15,6 +15,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
   const [category, setCategory] = useState('Graphic Design')
   const [images, setImages] = useState<string[]>([])
   const [newImageFiles, setNewImageFiles] = useState<File[]>([])
+  const [beforeImage, setBeforeImage] = useState<string | null>(null)
+  const [beforeImageFile, setBeforeImageFile] = useState<File | null>(null)
   const [featured, setFeatured] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -30,6 +32,7 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
         setCategory(data.category)
         setImages(data.images || [])
         setFeatured(data.featured || false)
+        setBeforeImage(data.before_image || null)
       }
       setIsLoading(false)
     }
@@ -86,7 +89,21 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
       return
     }
 
-    const { error } = await supabase.from('designs').update({ title, category, images: finalImages, featured }).eq('id', id)
+    let finalBeforeImage = beforeImage
+    if (beforeImageFile) {
+      const fileExt = beforeImageFile.name.split('.').pop()
+      const fileName = `design_before_${Math.random().toString(36).substring(2)}.${fileExt}`
+      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, beforeImageFile)
+      if (uploadError) {
+        alert('Error uploading before-image: ' + uploadError.message)
+        setIsSubmitting(false)
+        return
+      }
+      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      finalBeforeImage = publicUrlData.publicUrl
+    }
+
+    const { error } = await supabase.from('designs').update({ title, category, images: finalImages, before_image: finalBeforeImage, featured }).eq('id', id)
     if (error) {
       alert('Error updating design: ' + error.message)
       setIsSubmitting(false)
@@ -173,6 +190,16 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Add More Images</label>
               <input type="file" accept="image/*" multiple onChange={(e) => e.target.files && setNewImageFiles(Array.from(e.target.files))} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">
+                "Before" Image (optional — enables a drag-to-compare slider)
+              </label>
+              {beforeImage && !beforeImageFile && (
+                <img src={beforeImage} alt="Current before-image" className="w-32 h-24 object-cover rounded mb-2 border border-gray-200" />
+              )}
+              <input type="file" accept="image/*" onChange={(e) => setBeforeImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
             </div>
 
             <div>

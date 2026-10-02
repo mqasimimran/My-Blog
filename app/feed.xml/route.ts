@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 
-const SITE_URL = 'https://muhammadqasimimran.vercel.app'
+const SITE_URL = 'https://www.muhammadqasimimran.me/'
 
 function escapeXml(str: string): string {
   return str

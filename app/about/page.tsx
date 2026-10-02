@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import MagneticButton from '@/app/components/MagneticButton'
 import { supabase } from '@/lib/supabase'
 
 type JourneyEntry = {
@@ -121,12 +122,14 @@ export default function AboutJourneyPage() {
             Still figuring a lot of this out as I go. If any part of it overlaps
             with something you're building, I'd like to hear about it.
           </p>
-          <Link
-            href="/contact"
-            className="inline-flex items-center gap-2 bg-[#aa002a] text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-gray-900 transition-colors"
-          >
-            Get In Touch <span>↗</span>
-          </Link>
+          <MagneticButton>
+            <Link
+              href="/contact"
+              className="inline-flex items-center gap-2 bg-[#aa002a] text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-gray-900 transition-colors"
+            >
+              Get In Touch <span>↗</span>
+            </Link>
+          </MagneticButton>
         </div>
       </section>
 

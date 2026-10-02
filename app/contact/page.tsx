@@ -2,7 +2,6 @@
 
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
 
 function ContactForm() {
   const searchParams = useSearchParams()
@@ -21,42 +20,25 @@ function ContactForm() {
     const form = e.currentTarget
     const formData = new FormData(form)
 
-    // Honeypot — a real visitor never sees or fills this field in; a bot
-    // filling out every input on the page will. If it's filled, pretend to
-    // succeed without actually sending anything anywhere.
-    const honeypot = formData.get('website') as string
-    if (honeypot) {
-      setSubmitStatus({ type: 'success', message: 'Message sent successfully! I will get back to you soon.' })
-      form.reset()
-      setIsSubmitting(false)
-      return
-    }
-    
     const name = formData.get('name') as string
     const email = formData.get('email') as string
     const subject = formData.get('subject') as string
     const message = formData.get('message') as string
+    const website = formData.get('website') as string // honeypot
 
     try {
-      const { error } = await supabase.from('messages').insert([
-        { name, email, subject, message }
-      ])
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message, website }),
+      })
+      const data = await res.json()
 
-      if (!error) {
+      if (res.ok) {
         setSubmitStatus({ type: 'success', message: 'Message sent successfully! I will get back to you soon.' })
-        form.reset() // Use the saved reference here
-
-        // Best-effort email notification — if this fails for any reason
-        // (missing API key, network issue), the message is still safely
-        // saved in Supabase/the admin inbox regardless.
-        fetch('/api/notify-message', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, subject, message }),
-        }).catch((err) => console.error('Email notification failed (message was still saved):', err))
+        form.reset()
       } else {
-        console.error('Supabase Error:', error)
-        setSubmitStatus({ type: 'error', message: error.message || 'Something went wrong.' })
+        setSubmitStatus({ type: 'error', message: data.error || 'Something went wrong.' })
       }
     } catch (error: any) {
       console.error('Caught Exception:', error)

@@ -25,7 +25,7 @@ function LoginForm() {
     })
 
     if (result?.error) {
-      setError('Invalid username or password.')
+      setError('Invalid username or password, or too many attempts — please wait a few minutes.')
       setIsLoading(false)
     } else {
       router.push('/admin')

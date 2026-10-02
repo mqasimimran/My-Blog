@@ -24,6 +24,8 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
   const [readTime, setReadTime] = useState('5 min read')
   const [featureImage, setFeatureImage] = useState('')
   const [isPublished, setIsPublished] = useState(false)
+  const [wasPublished, setWasPublished] = useState(false)
+  const [articleSlug, setArticleSlug] = useState('')
 
   useEffect(() => {
     async function fetchArticle() {
@@ -41,6 +43,8 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
         setReadTime(data.read_time || '')
         setFeatureImage(data.feature_image || '')
         setIsPublished(data.published)
+        setWasPublished(data.published)
+        setArticleSlug(data.slug || '')
       } else if (error) {
         console.error('Error fetching article:', error)
       }
@@ -94,6 +98,16 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
       alert('Failed to update article.')
       setIsSubmitting(false)
     } else {
+      // Only notify on the draft → published transition — never on a
+      // re-save of a post that was already live, which would otherwise
+      // re-email every subscriber on every minor edit.
+      if (isPublished && !wasPublished) {
+        fetch('/api/newsletter/notify-subscribers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ articleTitle: title, articleSlug: articleSlug, articleExcerpt: excerpt }),
+        }).catch((err) => console.error('Newsletter notification failed (article was still saved):', err))
+      }
       router.push('/admin')
     }
   }

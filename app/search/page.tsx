@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { SkeletonTextCardGrid } from '@/app/components/Skeleton'
+import EmptyState from '@/app/components/EmptyState'
 
 type Result = {
   id: string
@@ -107,9 +108,9 @@ function SearchResults() {
         {isLoading ? (
           <SkeletonTextCardGrid count={6} columns={2} />
         ) : !q ? (
-          <p className="text-gray-400 text-sm text-center py-20">Type something above to search the whole site.</p>
+          <EmptyState icon="search" title="Search the whole site" description="Projects, blog posts, design work, and services — all in one place." />
         ) : filtered.length === 0 ? (
-          <p className="text-gray-400 text-sm text-center py-20">No results for "{query}".</p>
+          <EmptyState icon="search" title={`No results for "${query}"`} description="Try a different word, or browse from the main nav instead." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {filtered.map((result) => (
