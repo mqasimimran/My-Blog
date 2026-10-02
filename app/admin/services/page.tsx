@@ -146,7 +146,7 @@ export default function AdminServicesPage() {
                     <Link href={`/admin/services/${service.id}/packages`} className="text-xs font-bold tracking-widest text-gray-500 hover:text-[#aa002a] uppercase">
                       Packages
                     </Link>
-                    <Link href={`/admin/services/edit/${service.id}`} className="text-xs font-bold tracking-widest text-gray-500 hover:text-[#aa002a] uppercase">
+                    <Link href={`/admin/services/edit/${service.id}/packages`} className="text-xs font-bold tracking-widest text-gray-500 hover:text-[#aa002a] uppercase">
                       Edit
                     </Link>
                     <form onSubmit={async (e) => {
