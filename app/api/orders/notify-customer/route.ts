@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const SITE_URL = 'https://www.muhammadqasimimran.me/'
+const SITE_URL = 'https://www.muhammadqasimimran.me'
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,13 +28,22 @@ export async function POST(request: NextRequest) {
     const downloadUrl = `${SITE_URL}/shop/download/${downloadToken}`
 
     const apiKey = process.env.RESEND_API_KEY
-    if (apiKey) {
+    let emailSent = false
+    let emailError: string | null = null
+
+    if (!apiKey) {
+      emailError = 'RESEND_API_KEY is not set'
+    } else {
       try {
-        await fetch('https://api.resend.com/emails', {
+        const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            from: 'Muhammad Qasim Imran <onboarding@resend.dev>',
+            // Requires muhammadqasimimran.me to be a VERIFIED domain in your
+            // Resend dashboard. Until it's verified, this send will fail —
+            // switch to 'onboarding@resend.dev' temporarily, which only
+            // works when `to` matches your own Resend account email.
+            from: 'Muhammad Qasim Imran <orders@muhammadqasimimran.me>',
             to: [order.customer_email],
             subject: `Your order is confirmed — ${order.product_name}`,
             html: `
@@ -50,12 +59,23 @@ export async function POST(request: NextRequest) {
             `,
           }),
         })
-      } catch (emailError) {
-        console.error('Customer notification email failed (order was still marked paid):', emailError)
+
+        if (res.ok) {
+          emailSent = true
+        } else {
+          emailError = await res.text()
+          console.error('Customer notification email failed (order was still marked paid):', emailError)
+        }
+      } catch (err) {
+        emailError = err instanceof Error ? err.message : 'Unknown email error'
+        console.error('Customer notification email failed (order was still marked paid):', err)
       }
     }
 
-    return NextResponse.json({ success: true, downloadUrl })
+    // The order is paid either way — that part always succeeds. But the
+    // caller (admin UI) needs to know if the email itself failed, instead
+    // of assuming success just because the order update worked.
+    return NextResponse.json({ success: true, downloadUrl, emailSent, emailError })
   } catch (error) {
     console.error('notify-customer error:', error)
     return NextResponse.json({ error: 'Unexpected error' }, { status: 500 })

@@ -7,7 +7,7 @@ import Providers from '@/app/components/Providers'
 import { Analytics } from '@vercel/analytics/next'
 import ConsoleEasterEgg from '@/app/components/ConsoleEasterEgg'
 import CommandPalette from '@/app/components/CommandPalette'
-import ColorPickerToy from '@/app/components/ColorPickerToy'
+import WhatsAppButton from '@/app/components/WhatsAppButton'
 import type { Metadata } from 'next'
 
 // TODO: replace with your real production domain once you know it for sure —
@@ -156,7 +156,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Analytics />
         <ConsoleEasterEgg />
         <CommandPalette />
-        <ColorPickerToy />
+        <WhatsAppButton />
         
       </body>
     </html>

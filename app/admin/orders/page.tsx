@@ -62,6 +62,16 @@ export default function AdminOrdersPage() {
       const data = await res.json()
       if (res.ok) {
         setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'paid' } : o))
+        if (data.emailSent) {
+          alert(`✓ Order marked paid, and the download link was emailed to ${order.customer_email}.`)
+        } else {
+          alert(
+            `⚠️ Order marked paid, but the email to ${order.customer_email} FAILED to send.\n\n` +
+            `Reason: ${data.emailError || 'unknown'}\n\n` +
+            `This almost always means your sending domain isn't verified in Resend yet. ` +
+            `You'll need to send this customer their download link yourself for now: ${data.downloadUrl}`
+          )
+        }
       } else {
         alert('Error: ' + data.error)
       }

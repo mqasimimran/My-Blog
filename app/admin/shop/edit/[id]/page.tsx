@@ -26,6 +26,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
   const [newImageFiles, setNewImageFiles] = useState<File[]>([])
   const [digitalFileUrl, setDigitalFileUrl] = useState<string | null>(null)
   const [digitalFile, setDigitalFile] = useState<File | null>(null)
+  const [digitalLinkUrl, setDigitalLinkUrl] = useState('')
   const [stockQuantity, setStockQuantity] = useState('')
   const [weightGrams, setWeightGrams] = useState('')
   const [active, setActive] = useState(true)
@@ -75,7 +76,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     }
 
     let finalDigitalFileUrl = digitalFileUrl
-    if (digitalFile) {
+    if (digitalLinkUrl.trim()) {
+      finalDigitalFileUrl = digitalLinkUrl.trim()
+    } else if (digitalFile) {
       const fileExt = digitalFile.name.split('.').pop()
       const fileName = `digital_${Math.random().toString(36).substring(2)}.${fileExt}`
       const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, digitalFile)
@@ -190,8 +193,22 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             {type === 'digital' ? (
               <div>
                 <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Digital File</label>
-                {digitalFileUrl && !digitalFile && <p className="text-xs text-gray-500 mb-2 truncate">Current: {digitalFileUrl}</p>}
-                <input type="file" onChange={(e) => setDigitalFile(e.target.files?.[0] || null)} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+                {digitalFileUrl && !digitalFile && !digitalLinkUrl.trim() && <p className="text-xs text-gray-500 mb-2 truncate">Current: {digitalFileUrl}</p>}
+                <input type="file" onChange={(e) => setDigitalFile(e.target.files?.[0] || null)} disabled={!!digitalLinkUrl.trim()} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer disabled:opacity-40" />
+                <div className="flex items-center gap-3 my-3">
+                  <div className="h-px bg-gray-200 flex-1" />
+                  <span className="text-[10px] text-gray-400 uppercase tracking-widest">Or</span>
+                  <div className="h-px bg-gray-200 flex-1" />
+                </div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Paste a Link Instead</label>
+                <input
+                  type="url"
+                  value={digitalLinkUrl}
+                  onChange={(e) => setDigitalLinkUrl(e.target.value)}
+                  placeholder="e.g. a Canva template link, Google Drive, or Adobe Creative Cloud share"
+                  className="w-full border-b border-gray-300 py-2 outline-none focus:border-[#aa002a] text-sm"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">Replaces the file above if filled in.</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">

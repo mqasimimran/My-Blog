@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const SITE_URL = 'https://my-blog-beta-red.vercel.app'
+const SITE_URL = 'https://www.muhammadqasimimran.me'
 
 export async function POST(request: NextRequest) {
   try {
@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
         method: 'POST',
         headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: 'Muhammad Qasim Imran <onboarding@resend.dev>',
+          // Requires muhammadqasimimran.me to be verified in Resend — see
+          // the same note in app/api/orders/notify-customer/route.ts.
+          from: 'Muhammad Qasim Imran <newsletter@muhammadqasimimran.me>',
           to: [subscriber.email],
           subject: `New post: ${articleTitle}`,
           html: `

@@ -15,6 +15,7 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
   const [order, setOrder] = useState<Order | null>(null)
   const [fileUrl, setFileUrl] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isDownloading, setIsDownloading] = useState(false)
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
@@ -44,6 +45,44 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
     fetchOrder()
   }, [token])
 
+  // A real file we're hosting (via Supabase storage) should be force-
+  // downloaded to the buyer's device. An external link (a Canva template,
+  // a Google Drive share, etc.) is NOT a file to download — it should just
+  // open normally, exactly like following any other link.
+  const isHostedFile = fileUrl?.includes('.supabase.co/storage/') ?? false
+
+  async function handleDownload() {
+    if (!fileUrl || !order) return
+    setIsDownloading(true)
+    try {
+      // Browsers display images/PDFs inline by default, and the plain
+      // HTML `download` attribute is unreliable across origins (Chrome in
+      // particular often ignores it for cross-domain URLs). Fetching the
+      // bytes ourselves and handing the browser a same-origin blob URL is
+      // the reliable way to force an actual download regardless of file
+      // type or hosting domain.
+      const res = await fetch(fileUrl)
+      const blob = await res.blob()
+      const extMatch = fileUrl.match(/\.([a-zA-Z0-9]+)(?:\?|$)/)
+      const ext = extMatch ? extMatch[1] : 'zip'
+      const safeName = order.product_name.replace(/[^a-z0-9]+/gi, '-').replace(/(^-|-$)/g, '').toLowerCase()
+
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = `${safeName}.${ext}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+    } catch (err) {
+      console.error('Forced download failed, falling back to opening the file directly:', err)
+      window.open(fileUrl, '_blank')
+    } finally {
+      setIsDownloading(false)
+    }
+  }
+
   if (isLoading) {
     return <main className="min-h-screen flex items-center justify-center"><p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Loading...</p></main>
   }
@@ -63,14 +102,22 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
       <h1 className="text-2xl font-light text-gray-900">Thanks, {order.customer_name}!</h1>
       <p className="text-gray-500 text-sm">Here's your download for <strong>{order.product_name}</strong>.</p>
 
-      {fileUrl ? (
+      {fileUrl && isHostedFile ? (
+        <button
+          onClick={handleDownload}
+          disabled={isDownloading}
+          className="inline-block bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase px-8 py-4 rounded hover:bg-gray-900 transition-colors disabled:opacity-60"
+        >
+          {isDownloading ? 'Preparing...' : 'Download Now'}
+        </button>
+      ) : fileUrl ? (
         <a
           href={fileUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase px-8 py-4 rounded hover:bg-gray-900 transition-colors"
         >
-          Download Now
+          Open Link
         </a>
       ) : (
         <p className="text-sm text-amber-600 bg-amber-50 rounded-lg p-4">
