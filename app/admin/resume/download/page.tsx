@@ -79,22 +79,22 @@ export default function ResumeDownloadBuilder() {
     <div className="max-w-6xl mx-auto py-10 px-6 font-sans grid grid-cols-1 lg:grid-cols-3 gap-8">
       
       {/* Left Column: Customization Controls (Hidden when printing) */}
-      <div className="lg:col-span-1 bg-white p-6 border rounded-lg shadow-sm h-fit space-y-6 print:hidden">
+      <div className="lg:col-span-1 bg-paper p-6 border rounded-none shadow-sm h-fit space-y-6 print:hidden">
         <div>
           <h1 className="text-xl font-bold uppercase tracking-wide mb-1">Tailor Resume</h1>
-          <p className="text-xs text-gray-500">Uncheck items to customize this specific job application.</p>
+          <p className="text-xs text-ink-500">Uncheck items to customize this specific job application.</p>
         </div>
 
         <button 
           onClick={handlePrint}
-          className="w-full bg-[#000000] text-white text-xs font-bold uppercase tracking-widest py-3 rounded hover:bg-[#aa002a] transition-colors cursor-pointer"
+          className="w-full bg-[#000000] text-white text-xs font-bold uppercase tracking-widest py-3 rounded-none hover:bg-accent-600 transition-colors cursor-pointer"
         >
           Print / Save as PDF ↓
         </button>
 
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 text-xs">
           <div>
-            <h3 className="font-bold uppercase tracking-wider text-gray-400 mb-2">Education</h3>
+            <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Education</h3>
             {data.education.map((item: any) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
@@ -102,13 +102,13 @@ export default function ResumeDownloadBuilder() {
                   checked={!!selectedIds[item.id]} 
                   onChange={() => toggleSelection(item.id)}
                 />
-                <span className="truncate text-gray-700">{item.degree}</span>
+                <span className="truncate text-ink-700">{item.degree}</span>
               </label>
             ))}
           </div>
 
           <div>
-            <h3 className="font-bold uppercase tracking-wider text-gray-400 mb-2">Experience & Leadership</h3>
+            <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Experience & Leadership</h3>
             {data.experiences.map((item: any) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
@@ -116,13 +116,13 @@ export default function ResumeDownloadBuilder() {
                   checked={!!selectedIds[item.id]} 
                   onChange={() => toggleSelection(item.id)}
                 />
-                <span className="truncate text-gray-700">{item.role} @ {item.company}</span>
+                <span className="truncate text-ink-700">{item.role} @ {item.company}</span>
               </label>
             ))}
           </div>
 
           <div>
-            <h3 className="font-bold uppercase tracking-wider text-gray-400 mb-2">Projects</h3>
+            <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Projects</h3>
             {data.projects.map((item: any) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
@@ -130,13 +130,13 @@ export default function ResumeDownloadBuilder() {
                   checked={!!selectedIds[item.id]} 
                   onChange={() => toggleSelection(item.id)}
                 />
-                <span className="truncate text-gray-700">{item.title}</span>
+                <span className="truncate text-ink-700">{item.title}</span>
               </label>
             ))}
           </div>
 
           <div>
-            <h3 className="font-bold uppercase tracking-wider text-gray-400 mb-2">Certifications</h3>
+            <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Certifications</h3>
             {data.certifications.map((item: any) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
@@ -144,7 +144,7 @@ export default function ResumeDownloadBuilder() {
                   checked={!!selectedIds[item.id]} 
                   onChange={() => toggleSelection(item.id)}
                 />
-                <span className="truncate text-gray-700">{item.title}</span>
+                <span className="truncate text-ink-700">{item.title}</span>
               </label>
             ))}
           </div>
@@ -152,7 +152,7 @@ export default function ResumeDownloadBuilder() {
       </div>
 
       {/* Right Column: Printable Resume Sheet */}
-      <div className="lg:col-span-2 bg-gray-100 p-6 rounded-lg overflow-x-auto flex justify-center print:p-0 print:bg-white print:w-full">
+      <div className="lg:col-span-2 bg-ink-100 p-6 rounded-none overflow-x-auto flex justify-center print:p-0 print:bg-paper print:w-full">
         <div 
           id="resume-print-area"
           style={{ 

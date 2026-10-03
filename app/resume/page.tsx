@@ -17,6 +17,7 @@ interface ResumeItem {
   description?: string
   tech?: string
   image_url?: string
+  verify_url?: string
 }
 
 export default function Resume() {
@@ -58,20 +59,21 @@ export default function Resume() {
     fetchResumeData()
   }, [])
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-mono text-sm text-gray-500">Loading Resume...</div>
+  if (loading) return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">Loading Resume...</div>
 
   return (
+    <div className="min-h-screen bg-paper">
     <div className="max-w-4xl mx-auto px-6 py-20 relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
         <div>
-          <h1 className="text-4xl font-light tracking-widest text-gray-900 uppercase mb-2">Resume</h1>
-          <p className="text-gray-500">Computer Science undergraduate, developer, and technical creator.</p>
+          <h1 className="text-4xl font-light tracking-widest text-ink-900 uppercase mb-2">Resume</h1>
+          <p className="text-ink-500">Computer Science undergraduate, developer, and technical creator.</p>
         </div>
         
         <a
           href="/resume.pdf"
           download="Muhammad_Qasim_Imran_Resume.pdf"
-          className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold uppercase tracking-[0.15em] px-5 py-3 rounded-md hover:bg-[#aa002a] transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold uppercase tracking-[0.15em] px-5 py-3 rounded-none hover:bg-accent-600 transition-colors shadow-sm"
         >
           <span>Download CV</span>
           <span>↓</span>
@@ -79,33 +81,33 @@ export default function Resume() {
       </div>
 
       <section className="mb-16">
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-gray-900 mb-8 border-b border-gray-100 pb-4">
+        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
           Experience & Leadership
         </h2>
-        <div className="relative border-l border-gray-200 ml-4 space-y-12">
+        <div className="relative border-l border-ink-100 ml-4 space-y-12">
           {data.experiences.map((item) => (
             <div key={item.id} className="relative pl-8 group">
-              <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-gray-300 group-hover:bg-[#aa002a] transition-colors ring-4 ring-white" />
-              <span className="inline-block text-xs font-mono text-gray-400 tracking-wider uppercase mb-1">{item.period}</span>
-              <h3 className="text-lg font-medium text-gray-900">{item.role}</h3>
-              <p className="text-sm font-semibold text-[#aa002a] mb-2">{item.company}</p>
-              <p className="text-sm text-gray-600 leading-relaxed">{item.description}</p>
+              <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-ink-100 group-hover:bg-accent-600 transition-colors ring-4 ring-white" />
+              <span className="inline-block text-xs font-mono text-ink-300 tracking-wider uppercase mb-1">{item.period}</span>
+              <h3 className="text-lg font-medium text-ink-900">{item.role}</h3>
+              <p className="text-sm font-semibold text-accent-600 mb-2">{item.company}</p>
+              <p className="text-sm text-ink-700 leading-relaxed">{item.description}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section className="mb-16">
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-gray-900 mb-8 border-b border-gray-100 pb-4">
+        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
           Key Projects
         </h2>
         <div className="space-y-10">
           {data.projects.map((item) => (
             <div key={item.id} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-xs font-medium text-[#aa002a] tracking-wider uppercase md:pt-1">{item.tech}</div>
+              <div className="text-xs font-medium text-accent-600 tracking-wider uppercase md:pt-1">{item.tech}</div>
               <div className="md:col-span-3">
-                <h3 className="text-lg font-medium text-gray-900">{item.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed mt-1">{item.description}</p>
+                <h3 className="text-lg font-medium text-ink-900">{item.title}</h3>
+                <p className="text-ink-700 text-sm leading-relaxed mt-1">{item.description}</p>
               </div>
             </div>
           ))}
@@ -113,17 +115,17 @@ export default function Resume() {
       </section>
 
       <section className="mb-16">
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-gray-900 mb-8 border-b border-gray-100 pb-4">
+        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
           Education
         </h2>
         <div className="space-y-10">
           {data.education.map((item) => (
             <div key={item.id} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-xs font-medium text-gray-400 tracking-wider uppercase md:pt-1">{item.period}</div>
+              <div className="text-xs font-medium text-ink-300 tracking-wider uppercase md:pt-1">{item.period}</div>
               <div className="md:col-span-3">
-                <h3 className="text-lg font-medium text-gray-900">{item.degree}</h3>
-                <p className="text-sm text-gray-500 mb-2">{item.institution}</p>
-                <p className="text-gray-600 text-sm leading-relaxed">{item.description}</p>
+                <h3 className="text-lg font-medium text-ink-900">{item.degree}</h3>
+                <p className="text-sm text-ink-500 mb-2">{item.institution}</p>
+                <p className="text-ink-700 text-sm leading-relaxed">{item.description}</p>
               </div>
             </div>
           ))}
@@ -131,39 +133,81 @@ export default function Resume() {
       </section>
 
       <section>
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-gray-900 mb-8 border-b border-gray-100 pb-4">
+        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
           Licenses & Certifications
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {data.certifications.map((cert) => (
-            <div 
-              key={cert.id} 
-              onClick={() => setSelectedImage(cert.image_url || null)}
-              className="bg-white border border-gray-200 p-4 rounded-md shadow-sm hover:border-[#aa002a] transition-all flex flex-col justify-between cursor-pointer group"
-            >
-              <div>
-                <div className="flex justify-between items-start">
-                  <h3 className="text-sm font-medium text-gray-900 group-hover:text-[#aa002a] transition-colors">{cert.title}</h3>
-                  <span className="text-xs text-gray-400 group-hover:text-[#aa002a] transition-colors ml-2 font-mono">View ↗</span>
+          {data.certifications.map((cert) => {
+            const hasVerifyLink = !!cert.verify_url
+            const hasImage = !!cert.image_url
+            const cardClass = `bg-paper border border-ink-100 p-4 rounded-none shadow-sm hover:border-accent-600 transition-all flex flex-col justify-between group ${
+              hasVerifyLink || hasImage ? 'cursor-pointer' : ''
+            }`
+            const cardContent = (
+              <>
+                <div>
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-sm font-medium text-ink-900 group-hover:text-accent-600 transition-colors">{cert.title}</h3>
+                    {(hasVerifyLink || hasImage) && (
+                      <span className="text-xs text-ink-300 group-hover:text-accent-600 transition-colors ml-2 font-mono">
+                        {hasVerifyLink ? 'Verify ↗' : 'View ↗'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-ink-500 mt-1">{cert.issuer}</p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{cert.issuer}</p>
+                <div className="text-[10px] tracking-wider uppercase text-ink-300 mt-4">Issued {cert.date}</div>
+              </>
+            )
+
+            if (hasVerifyLink) {
+              return (
+                <a key={cert.id} href={cert.verify_url} target="_blank" rel="noopener noreferrer" className={cardClass}>
+                  {cardContent}
+                </a>
+              )
+            }
+
+            if (hasImage) {
+              return (
+                <div
+                  key={cert.id}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setSelectedImage(cert.image_url || null)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      setSelectedImage(cert.image_url || null)
+                    }
+                  }}
+                  className={cardClass}
+                >
+                  {cardContent}
+                </div>
+              )
+            }
+
+            return (
+              <div key={cert.id} className={cardClass}>
+                {cardContent}
               </div>
-              <div className="text-[10px] tracking-wider uppercase text-gray-400 mt-4">Issued {cert.date}</div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
       {selectedImage && (
         <div onClick={() => setSelectedImage(null)} className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="relative max-w-4xl w-full bg-white p-2 rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setSelectedImage(null)} className="absolute -top-10 right-0 text-white text-xl font-bold hover:text-[#aa002a] transition-colors">✕ Close</button>
-            <div className="bg-gray-100 rounded overflow-hidden flex items-center justify-center min-h-[300px] relative">
-              <img src={selectedImage} alt="Credential" className="max-h-[80vh] w-auto object-contain mx-auto rounded" />
+          <div className="relative max-w-4xl w-full bg-paper p-2 rounded-none shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setSelectedImage(null)} className="absolute -top-10 right-0 text-white text-xl font-bold hover:text-accent-600 transition-colors">✕ Close</button>
+            <div className="bg-ink-100 rounded-none overflow-hidden flex items-center justify-center min-h-[300px] relative">
+              <img src={selectedImage} alt="Credential" className="max-h-[80vh] w-auto object-contain mx-auto rounded-none" />
             </div>
           </div>
         </div>
       )}
+    </div>
     </div>
   )
 }

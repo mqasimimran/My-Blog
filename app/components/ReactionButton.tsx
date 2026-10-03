@@ -30,8 +30,8 @@ export default function ReactionButton({ slug, initialCount }: { slug: string; i
       disabled={hasReacted}
       className={`inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full border transition-colors ${
         hasReacted
-          ? 'border-[#aa002a]/30 bg-[#aa002a]/5 text-[#aa002a] cursor-default'
-          : 'border-gray-200 text-gray-600 hover:border-[#aa002a] hover:text-[#aa002a]'
+          ? 'border-accent-600/30 bg-accent-600/5 text-accent-600 cursor-default'
+          : 'border-ink-100 text-ink-700 hover:border-accent-600 hover:text-accent-600'
       }`}
     >
       <span>🔥</span>

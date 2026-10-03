@@ -3,6 +3,8 @@ import ProjectFilters from '@/app/components/ProjectFilters'
 import FeaturedDesigns from '@/app/components/FeaturedDesigns'
 import FeaturedBlogPosts from '@/app/components/FeaturedBlogPosts'
 import Testimonials from '@/app/components/Testimonials'
+import CertificationsWall from '@/app/components/CertificationsWall'
+import LogosStrip from '@/app/components/LogosStrip'
 import NewsletterSignup from '@/app/components/NewsletterSignup'
 import AvailabilityBadge from '@/app/components/AvailabilityBadge'
 import NowWidget from '@/app/components/NowWidget'
@@ -14,24 +16,42 @@ import Image from 'next/image'
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen flex flex-col bg-white">
-      
-      {/* Hero Section */}
-      <section className="bg-white flex flex-col justify-between pt-16 md:pt-20 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 pb-0 md:pb-0 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-end w-full">
-          
-          {/* Left Column: Bio & Socials */}
-          <div className="space-y-8 pb-16 md:pb-20 min-w-0">
+    <main className="min-h-screen flex flex-col bg-paper">
+
+      {/* Hero Section — note: the photo is anchored to THIS section's own
+          height (absolute, bottom:0). The tech ticker below is a SEPARATE
+          sibling <section>, not nested in here — nesting it would grow this
+          section's height and push the photo past the divider line. */}
+      <section className="relative pt-16 md:pt-20 overflow-hidden" style={{ minHeight: 560 }}>
+
+        {/* Desktop: frameless photo bleeding to the right edge, anchored to
+            the bottom of the hero — relies on /profile.png having a
+            transparent background for the "floating" cutout look. */}
+        <div className="hidden lg:flex absolute top-0 right-0 bottom-0 items-end justify-end" style={{ width: '46%' }}>
+          <Image
+            src="/profile.png"
+            alt="Portrait"
+            width={806}
+            height={1050}
+            priority
+            className="h-full w-auto max-w-full object-contain object-bottom"
+          />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex items-end" style={{ minHeight: 560 }}>
+          <div className="space-y-8 pb-16 md:pb-20 lg:max-w-[46%] min-w-0">
             <AvailabilityBadge />
 
             <div>
-              <p className="text-sm font-bold tracking-[0.2em] uppercase text-gray-400 mb-3">Hi, I'm Qasim</p>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 leading-[1.2] break-words">
+              <p className="text-ink-500 text-sm font-bold tracking-[0.2em] uppercase mb-3">
+                Hi, I'm Qasim
+              </p>
+              <h1 className="font-display text-ink-900 text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] break-words">
                 I'm <RoleCycler />
               </h1>
             </div>
-            
-            <div className="space-y-6 text-gray-600 leading-relaxed max-w-lg text-sm sm:text-base">
+
+            <div className="text-ink-700 space-y-6 leading-relaxed max-w-lg text-sm sm:text-base">
               <p>
                 I am a Software Engineer and Graphic Designer bridging the gap between highly functional code and minimalist aesthetic design. Currently pursuing a BS in Computer Science, my focus lies in crafting seamless digital experiences.
               </p>
@@ -41,45 +61,52 @@ export default function AboutPage() {
             </div>
 
             <MagneticButton>
-              <Link href="/projects" className="inline-block text-sm font-bold uppercase tracking-widest text-gray-900 border-b-2 border-[#aa002a] pb-1 hover:text-[#aa002a] transition-colors">
+              <Link
+                href="/projects"
+                className="text-ink-900 border-accent-600 hover:text-accent-600 inline-block text-sm font-bold uppercase tracking-widest pb-1 transition-colors border-b-2"
+              >
                 View My Work →
               </Link>
             </MagneticButton>
 
             {/* Social Links with Maroon Hover Accent */}
-            <div className="flex flex-wrap items-center gap-3 text-xs font-bold tracking-[0.2em] text-gray-800 uppercase pt-4">
-              <a href="https://youtube.com/@qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">YouTube</a>
-              <span className="text-gray-300">/</span>
-              <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">LinkedIn</a>
-              <span className="text-gray-300">/</span>
-              <a href="https://instagram.com/muhammadqasimimrann" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">IG: Personal</a>
-              <span className="text-gray-300">/</span>
-              <a href="https://instagram.com/qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">IG: Dev</a>
-              <span className="text-gray-300">/</span>
-              <a href="https://muhammadqasimimran1.myportfolio.com/" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">Portfolio</a>
+            <div className="text-ink-900 flex flex-wrap items-center gap-3 text-xs font-bold tracking-[0.2em] uppercase pt-4">
+              <a href="https://youtube.com/@qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">YouTube</a>
+              <span className="text-ink-300">/</span>
+              <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">LinkedIn</a>
+              <span className="text-ink-300">/</span>
+              <a href="https://instagram.com/muhammadqasimimrann" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">IG: Personal</a>
+              <span className="text-ink-300">/</span>
+              <a href="https://instagram.com/qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">IG: Dev</a>
+              <span className="text-ink-300">/</span>
+              <a href="https://muhammadqasimimran1.myportfolio.com/" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">Portfolio</a>
+            </div>
+
+            {/* Mobile/tablet: photo falls back in-flow below the bio since
+                there's no room to bleed it off the edge at this width.
+                The negative bottom margin cancels this column's own
+                pb-16/md:pb-20, pulling the photo flush against the hero's
+                bottom edge — same zero-gap divider treatment as desktop. */}
+            <div className="lg:hidden pt-8 -mb-16 md:-mb-20 flex justify-center">
+              <Image
+                src="/profile.png"
+                alt="Portrait"
+                width={560}
+                height={729}
+                className="w-auto max-h-[360px] max-w-full object-contain"
+              />
             </div>
           </div>
-
-          {/* Right Column: Frameless photo, bleeding off the bottom edge —
-              swap /profile.jpg for a transparent-background PNG cutout to
-              get the fully "floating" look; with a rectangular photo this
-              will render as a rectangle without a border, not a cutout. */}
-          <div className="relative h-[380px] sm:h-[480px] lg:h-[560px] w-full flex items-end justify-center lg:justify-end">
-            <Image 
-              src="/profile.jpg" 
-              alt="Portrait" 
-              width={560}
-              height={640}
-              priority
-              className="w-auto h-full max-w-full object-contain object-bottom"
-            />
-          </div>
-
         </div>
-
-        {/* Infinite Auto-Scrolling Tech Stack Ticker */}
-        <TechMarquee />
       </section>
+
+      {/* Infinite Auto-Scrolling Tech Stack Ticker — its own section, so it
+          can't stretch the hero section (and the photo pinned to it) past
+          where the divider line sits. */}
+      <TechMarquee />
+
+      {/* Client/event logos — "work seen at" trust signal */}
+      <LogosStrip />
 
       {/* "Right Now" widget — hidden unless set in /admin/settings */}
       <NowWidget />
@@ -93,16 +120,19 @@ export default function AboutPage() {
       {/* Featured blog posts (from /blog, marked featured in admin) */}
       <Reveal><FeaturedBlogPosts /></Reveal>
 
+      {/* Certifications wall (seed via seed-certifications.sql, manage via /admin/resume/certifications — hidden until any exist) */}
+      <Reveal><CertificationsWall /></Reveal>
+
       {/* Testimonials (add real ones via /admin/testimonials — hidden until you do) */}
       <Reveal><Testimonials /></Reveal>
 
       {/* Newsletter signup */}
       <Reveal><NewsletterSignup /></Reveal>
 
-      {/* NEW: Final CTA to drive engagement */}
-      <section className="bg-gray-900 text-white py-24 px-6 mt-auto">
+      {/* Final CTA */}
+      <section className="bg-[#0a0a0a] text-white py-24 px-6 mt-auto">
         <div className="max-w-3xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl md:text-5xl font-light tracking-wide uppercase">
+          <h2 className="font-display text-3xl md:text-5xl font-semibold tracking-wide uppercase">
             Let's Build Something
           </h2>
           <p className="text-gray-400 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
@@ -110,9 +140,9 @@ export default function AboutPage() {
           </p>
           <div className="pt-4">
             <MagneticButton>
-              <Link 
-                href="/contact" 
-                className="inline-flex items-center gap-2 bg-[#aa002a] text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-white hover:text-gray-900 transition-colors"
+              <Link
+                href="/contact"
+                className="bg-accent-600 hover:bg-white hover:text-gray-900 inline-flex items-center gap-2 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded-none transition-colors"
               >
                 Get In Touch <span>↗</span>
               </Link>

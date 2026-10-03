@@ -21,16 +21,16 @@ export default function CodeSnippet({ code, language = 'text' }: CodeSnippetProp
   }
 
   return (
-    <div className="my-8 rounded-md overflow-hidden bg-[#0d1117] border border-gray-800 shadow-sm">
+    <div className="my-8 rounded-none overflow-hidden bg-[#0d1117] border border-gray-800 shadow-sm">
       {/* Header bar with language and copy button */}
       <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-gray-800">
-        <span className="text-[10px] font-mono tracking-widest uppercase text-gray-400">
+        <span className="text-[10px] font-mono tracking-widest uppercase text-ink-300">
           {language}
         </span>
         <button
           onClick={handleCopy}
           className={`text-[10px] font-mono tracking-widest uppercase transition-colors ${
-            copied ? 'text-[#d9534f]' : 'text-gray-400 hover:text-white'
+            copied ? 'text-[#d9534f]' : 'text-ink-300 hover:text-white'
           }`}
         >
           {copied ? 'Copied ✓' : 'Copy'}
@@ -39,7 +39,7 @@ export default function CodeSnippet({ code, language = 'text' }: CodeSnippetProp
       
       {/* Scrollable code block */}
       <div className="p-4 overflow-x-auto">
-        <pre className="text-sm font-mono text-gray-300 leading-relaxed">
+        <pre className="text-sm font-mono text-ink-100 leading-relaxed">
           <code>{code}</code>
         </pre>
       </div>

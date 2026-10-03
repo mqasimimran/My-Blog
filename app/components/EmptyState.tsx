@@ -31,8 +31,8 @@ export default function EmptyState({ icon = 'sparkle', title, description }: { i
   return (
     <div className="flex flex-col items-center justify-center text-center py-20 px-6">
       {ICONS[icon]}
-      <p className="text-sm font-medium text-gray-500 mt-5">{title}</p>
-      {description && <p className="text-xs text-gray-400 mt-1.5 max-w-xs">{description}</p>}
+      <p className="text-sm font-medium text-ink-500 mt-5">{title}</p>
+      {description && <p className="text-xs text-ink-300 mt-1.5 max-w-xs">{description}</p>}
     </div>
   )
 }

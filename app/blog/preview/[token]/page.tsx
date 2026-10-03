@@ -21,10 +21,10 @@ export default async function PreviewPage({ params }: { params: Promise<{ token:
   }
 
   return (
-    <article className="min-h-screen bg-transparent py-20 px-6 font-sans">
+    <article className="min-h-screen bg-paper py-20 px-6 font-sans">
       <div className="max-w-4xl mx-auto">
 
-        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold uppercase tracking-widest text-center py-3 px-4 rounded mb-12">
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold uppercase tracking-widest text-center py-3 px-4 rounded-none mb-12">
           🔒 Draft Preview — not published, not indexed, only visible via this link
         </div>
 

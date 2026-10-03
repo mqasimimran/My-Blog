@@ -32,25 +32,25 @@ export default function AddProject() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input 
           type="text" placeholder="Project Title (e.g., Agentic LinkedIn Automator)" required
-          className="w-full p-3 border border-gray-200 rounded text-sm"
+          className="w-full p-3 border border-ink-100 rounded-none text-sm"
           onChange={e => setFormData({...formData, title: e.target.value})}
         />
         <input 
           type="text" placeholder="Technologies (e.g., Node.js • React.js)" required
-          className="w-full p-3 border border-gray-200 rounded text-sm"
+          className="w-full p-3 border border-ink-100 rounded-none text-sm"
           onChange={e => setFormData({...formData, tech: e.target.value})}
         />
         <textarea 
           placeholder="Description" required rows={4}
-          className="w-full p-3 border border-gray-200 rounded text-sm"
+          className="w-full p-3 border border-ink-100 rounded-none text-sm"
           onChange={e => setFormData({...formData, description: e.target.value})}
         />
         <input 
           type="number" placeholder="Order Index (0 is first)" required
-          className="w-full p-3 border border-gray-200 rounded text-sm"
+          className="w-full p-3 border border-ink-100 rounded-none text-sm"
           onChange={e => setFormData({...formData, order_index: parseInt(e.target.value) || 0})}
         />
-        <button type="submit" disabled={loading} className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded hover:bg-[#aa002a] transition-colors">
+        <button type="submit" disabled={loading} className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none hover:bg-accent-600 transition-colors">
           {loading ? 'Saving...' : 'Save Project'}
         </button>
       </form>

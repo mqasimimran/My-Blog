@@ -72,7 +72,7 @@ function SearchResults() {
   const tabs: Array<'All' | Result['type']> = ['All', 'Project', 'Blog', 'Design', 'Service']
 
   return (
-    <main className="min-h-screen bg-white font-sans pt-24 pb-24 px-6">
+    <main className="min-h-screen bg-paper font-sans pt-24 pb-24 px-6">
       <div className="max-w-4xl mx-auto">
 
         <form onSubmit={handleSearchSubmit} className="mb-10">
@@ -82,7 +82,7 @@ function SearchResults() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search projects, blog posts, design work, services..."
             autoFocus
-            className="w-full text-2xl md:text-3xl font-light border-b-2 border-gray-200 focus:border-[#aa002a] outline-none py-3 transition-colors"
+            className="w-full text-2xl md:text-3xl font-light border-b-2 border-ink-100 focus:border-accent-600 outline-none py-3 transition-colors"
           />
         </form>
 
@@ -95,7 +95,7 @@ function SearchResults() {
                   key={tab}
                   onClick={() => setActiveType(tab)}
                   className={`text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-colors ${
-                    activeType === tab ? 'bg-[#aa002a] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    activeType === tab ? 'bg-accent-600 text-white' : 'bg-ink-100 text-ink-500 hover:bg-ink-100'
                   }`}
                 >
                   {tab} ({count})
@@ -117,14 +117,14 @@ function SearchResults() {
               <Link
                 key={`${result.type}-${result.id}`}
                 href={result.url}
-                className="border border-gray-200 rounded-xl p-6 hover:border-[#aa002a]/40 hover:shadow-sm transition-all block"
+                className="border border-ink-100 rounded-none p-6 hover:border-accent-600/40 hover:shadow-sm transition-all block"
               >
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a] mb-2 block">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-2 block">
                   {result.type}
                 </span>
-                <h2 className="text-base font-medium text-gray-900 mb-1 leading-snug">{result.title}</h2>
+                <h2 className="text-base font-medium text-ink-900 mb-1 leading-snug">{result.title}</h2>
                 {result.description && (
-                  <p className="text-sm text-gray-500 line-clamp-2">{result.description}</p>
+                  <p className="text-sm text-ink-500 line-clamp-2">{result.description}</p>
                 )}
               </Link>
             ))}
@@ -138,8 +138,8 @@ function SearchResults() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-white flex items-center justify-center">
-        <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Loading...</p>
+      <main className="min-h-screen bg-paper flex items-center justify-center">
+        <p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p>
       </main>
     }>
       <SearchResults />

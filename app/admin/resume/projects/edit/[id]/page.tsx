@@ -55,38 +55,38 @@ export default function EditProject() {
       <h1 className="text-2xl font-light uppercase tracking-wide mb-6">Edit Resume Project</h1>
       <form onSubmit={handleUpdate} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Title</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Title</label>
           <input 
             type="text" value={formData.title} required
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm"
             onChange={e => setFormData({...formData, title: e.target.value})}
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Technologies</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Technologies</label>
           <input 
             type="text" value={formData.tech} required
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm"
             onChange={e => setFormData({...formData, tech: e.target.value})}
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Description</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Description</label>
           <textarea 
             value={formData.description} required rows={4}
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm"
             onChange={e => setFormData({...formData, description: e.target.value})}
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Order Index</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Order Index</label>
           <input 
             type="number" value={formData.order_index} required
-            className="w-full p-3 border border-gray-200 rounded text-sm"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm"
             onChange={e => setFormData({...formData, order_index: parseInt(e.target.value) || 0})}
           />
         </div>
-        <button type="submit" disabled={saving} className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded hover:bg-[#aa002a] transition-colors cursor-pointer">
+        <button type="submit" disabled={saving} className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none hover:bg-accent-600 transition-colors cursor-pointer">
           {saving ? 'Updating...' : 'Update Project'}
         </button>
       </form>

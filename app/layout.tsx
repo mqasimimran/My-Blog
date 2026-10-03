@@ -1,4 +1,5 @@
 import './globals.css'
+import { Space_Grotesk, Inter } from 'next/font/google'
 import Link from 'next/link'
 import Navbar from './Navbar'
 import Script from 'next/script'
@@ -9,6 +10,20 @@ import ConsoleEasterEgg from '@/app/components/ConsoleEasterEgg'
 import CommandPalette from '@/app/components/CommandPalette'
 import WhatsAppButton from '@/app/components/WhatsAppButton'
 import type { Metadata } from 'next'
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-space-grotesk',
+  display: 'swap',
+})
+
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 // TODO: replace with your real production domain once you know it for sure —
 // this powers absolute URLs for Open Graph/Twitter card previews.
@@ -34,19 +49,19 @@ export const metadata: Metadata = {
     title: 'Muhammad Qasim Imran — Software Engineer & Graphic Designer',
     description: SITE_DESCRIPTION,
     siteName: 'Muhammad Qasim Imran',
-    images: [{ url: '/profile.jpg', width: 1080, height: 1080, alt: 'Muhammad Qasim Imran' }],
+    images: [{ url: '/profile.png', width: 1080, height: 1080, alt: 'Muhammad Qasim Imran' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Muhammad Qasim Imran — Software Engineer & Graphic Designer',
     description: SITE_DESCRIPTION,
-    images: ['/profile.jpg'],
+    images: ['/profile.png'],
   },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         {/* Site-wide Person structured data — helps Google associate this
             site with you specifically (knowledge panel, rich results) */}
@@ -87,6 +102,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           ></script>
         )}
 
+        {/* Applies the saved theme before first paint, so there's no flash
+            of light mode before React hydrates and DarkModeToggle checks
+            localStorage. Deliberately a plain inline script, not a
+            component — this must run synchronously, before paint. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+          }}
+        />
+
         {/* Google AdSense Verification Script */}
         <script 
           async 
@@ -94,7 +119,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin="anonymous"
         ></script>
       </head>
-      <body className="bg-gray-50 text-gray-900 font-sans antialiased" suppressHydrationWarning>
+      <body
+        className="bg-white text-gray-900 font-sans antialiased"
+        suppressHydrationWarning
+      >
         
         {/* 2. Wrap everything inside the body with Providers */}
         <Providers>
@@ -107,48 +135,52 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
 
-          <footer className="bg-gray-900 text-white">
+          <footer className="bg-[#0a0a0a] text-white">
             <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 sm:grid-cols-3 gap-10">
 
               <div>
-                <div className="text-lg font-medium tracking-wide mb-3">Muhammad Qasim Imran</div>
+                <div className="font-display text-lg font-semibold tracking-wide mb-3">
+                  Muhammad Qasim Imran
+                </div>
                 <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
                   Software Engineer &amp; Graphic Designer, Lahore, Pakistan.
                 </p>
               </div>
 
               <div>
-                <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-4">Explore</div>
-                <div className="flex flex-col gap-2 text-sm text-gray-300">
-                  <Link href="/projects" className="hover:text-[#aa002a] transition-colors">Projects</Link>
-                  <Link href="/design" className="hover:text-[#aa002a] transition-colors">Design</Link>
-                  <Link href="/blog" className="hover:text-[#aa002a] transition-colors">Blog</Link>
-                  <Link href="/resume" className="hover:text-[#aa002a] transition-colors">Resume</Link>
-                  <Link href="/roadmap" className="hover:text-[#aa002a] transition-colors">Roadmap</Link>
+                <div className="text-gray-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-4">Explore</div>
+                <div className="flex flex-col gap-2 text-sm text-gray-200">
+                  <Link href="/projects" className="hover:text-accent-600 transition-colors">Projects</Link>
+                  <Link href="/design" className="hover:text-accent-600 transition-colors">Design</Link>
+                  <Link href="/blog" className="hover:text-accent-600 transition-colors">Blog</Link>
+                  <Link href="/resume" className="hover:text-accent-600 transition-colors">Resume</Link>
+                  <Link href="/roadmap" className="hover:text-accent-600 transition-colors">Roadmap</Link>
                 </div>
               </div>
 
               <div>
-                <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-500 mb-4">Connect</div>
-                <div className="flex flex-col gap-2 text-sm text-gray-300">
-                  <a href="mailto:m.qasimimran01@gmail.com" className="hover:text-[#aa002a] transition-colors">m.qasimimran01@gmail.com</a>
-                  <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">LinkedIn</a>
-                  <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">GitHub</a>
-                  <a href="https://youtube.com/@qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">YouTube</a>
-                  <a href="/api/stats" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors font-mono text-xs">/api/stats ↗</a>
+                <div className="text-gray-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-4">Connect</div>
+                <div className="flex flex-col gap-2 text-sm text-gray-200">
+                  <a href="mailto:m.qasimimran01@gmail.com" className="hover:text-accent-600 transition-colors">m.qasimimran01@gmail.com</a>
+                  <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">LinkedIn</a>
+                  <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">GitHub</a>
+                  <a href="https://youtube.com/@qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">YouTube</a>
+                  <a href="/api/stats" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors font-mono text-xs">/api/stats ↗</a>
                 </div>
               </div>
 
             </div>
 
-            <div className="border-t border-white/10  ">
-           
-              <p className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-500 ">
-                 <span className="text-gray-700  ">
+            <div className="border-t border-white/10">
+              <p className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-500">
                 © {new Date().getFullYear()} Muhammad Qasim Imran. All rights reserved.
-                </span>
               </p>
-              <Link href="/privacy"  className="hover:text-[#aa002a] transition-colors  flex flex-wrap items-center justify-center gap-x-3 gap-y-1  ">Privacy Policy</Link>
+              <Link
+                href="/privacy"
+                className="hover:text-accent-600 transition-colors flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-6 text-xs text-gray-500"
+              >
+                Privacy Policy
+              </Link>
             </div>
           </footer>
         </Providers>

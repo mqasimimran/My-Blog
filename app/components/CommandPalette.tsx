@@ -92,7 +92,7 @@ export default function CommandPalette() {
       onClick={() => setIsOpen(false)}
     >
       <div
-        className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden"
+        className="bg-paper rounded-none shadow-2xl w-full max-w-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <input
@@ -102,11 +102,11 @@ export default function CommandPalette() {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyNav}
           placeholder="Jump to a page, project, or post..."
-          className="w-full px-5 py-4 text-base outline-none border-b border-gray-100"
+          className="w-full px-5 py-4 text-base outline-none border-b border-ink-100"
         />
         <div className="max-h-80 overflow-y-auto py-2">
           {filtered.length === 0 ? (
-            <p className="text-sm text-gray-400 text-center py-8">No matches.</p>
+            <p className="text-sm text-ink-300 text-center py-8">No matches.</p>
           ) : (
             filtered.map((item, i) => (
               <button
@@ -114,16 +114,16 @@ export default function CommandPalette() {
                 onClick={() => go(item.url)}
                 onMouseEnter={() => setActiveIndex(i)}
                 className={`w-full text-left px-5 py-3 flex items-center justify-between transition-colors ${
-                  i === activeIndex ? 'bg-gray-50' : ''
+                  i === activeIndex ? 'bg-paper' : ''
                 }`}
               >
-                <span className="text-sm text-gray-900">{item.title}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a]">{item.type}</span>
+                <span className="text-sm text-ink-900">{item.title}</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600">{item.type}</span>
               </button>
             ))
           )}
         </div>
-        <div className="border-t border-gray-100 px-5 py-2.5 flex items-center justify-between text-[10px] text-gray-400 font-mono">
+        <div className="border-t border-ink-100 px-5 py-2.5 flex items-center justify-between text-[10px] text-ink-300 font-mono">
           <span>↑↓ navigate · ↵ select · esc close</span>
           <span>⌘K</span>
         </div>

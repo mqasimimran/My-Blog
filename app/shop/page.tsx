@@ -40,13 +40,13 @@ export default function ShopPage() {
     : products.filter((p) => p.type.toLowerCase() === activeFilter.toLowerCase())
 
   return (
-    <main className="min-h-screen bg-white font-sans">
-      <section className="bg-gradient-to-br from-slate-100 to-white py-24 px-6">
+    <main className="min-h-screen bg-paper font-sans">
+      <section className="bg-gradient-to-br from-ink-100 to-paper py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-gray-900 mb-6">
+          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-ink-900 mb-6">
             Store
           </h1>
-          <p className="text-gray-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+          <p className="text-ink-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
             Templates, design resources, and a few physical pieces — browse what's available below.
           </p>
         </div>
@@ -59,7 +59,7 @@ export default function ShopPage() {
               key={tab}
               onClick={() => setActiveFilter(tab)}
               className={`text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-colors ${
-                activeFilter === tab ? 'bg-[#aa002a] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                activeFilter === tab ? 'bg-accent-600 text-white' : 'bg-ink-100 text-ink-500 hover:bg-ink-100'
               }`}
             >
               {tab}
@@ -68,9 +68,9 @@ export default function ShopPage() {
         </div>
 
         {isLoading ? (
-          <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">Loading...</div>
+          <div className="text-center py-20 text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 text-sm">
+          <div className="text-center py-20 text-ink-300 text-sm">
             {products.length === 0 ? "Nothing in the store yet — check back soon." : "Nothing in this category yet."}
           </div>
         ) : (
@@ -79,9 +79,9 @@ export default function ShopPage() {
               <Link
                 key={product.id}
                 href={`/shop/${product.slug}`}
-                className="group border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-white"
+                className="group border border-ink-100 rounded-none overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-paper"
               >
-                <div className="h-56 bg-gray-100 flex items-center justify-center overflow-hidden">
+                <div className="h-56 bg-ink-100 flex items-center justify-center overflow-hidden">
                   {product.images?.[0] ? (
                     <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
@@ -89,14 +89,14 @@ export default function ShopPage() {
                   )}
                 </div>
                 <div className="p-6 flex flex-col flex-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a] mb-1">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-1">
                     {product.type}{product.category ? ` · ${product.category}` : ''}
                   </span>
-                  <h2 className="text-base font-medium text-gray-900 mb-2">{product.name}</h2>
+                  <h2 className="text-base font-medium text-ink-900 mb-2">{product.name}</h2>
                   <div className="mt-auto flex items-center gap-2">
-                    <span className="text-sm font-bold text-gray-900">${Number(product.price).toFixed(2)}</span>
+                    <span className="text-sm font-bold text-ink-900">${Number(product.price).toFixed(2)}</span>
                     {product.compare_at_price && (
-                      <span className="text-xs text-gray-400 line-through">${Number(product.compare_at_price).toFixed(2)}</span>
+                      <span className="text-xs text-ink-300 line-through">${Number(product.compare_at_price).toFixed(2)}</span>
                     )}
                   </div>
                 </div>

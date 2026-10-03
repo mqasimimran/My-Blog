@@ -20,14 +20,14 @@ export default function NowWidget() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 -mt-2 mb-2">
-      <div className="bg-white border border-gray-200 rounded-xl p-6 flex items-start gap-4">
+      <div className="bg-paper border border-ink-100 rounded-none p-6 flex items-start gap-4">
         <span className="relative flex h-2.5 w-2.5 mt-1.5 shrink-0">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#aa002a] opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#aa002a]"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-600 opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-600"></span>
         </span>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Right Now</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{nowText}</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-ink-300 mb-1">Right Now</p>
+          <p className="text-sm text-ink-700 leading-relaxed">{nowText}</p>
         </div>
       </div>
     </div>

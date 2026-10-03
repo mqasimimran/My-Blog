@@ -32,10 +32,11 @@ export default async function Image({ params }: { params: { slug: string } }) {
           justifyContent: 'space-between',
           backgroundColor: '#ffffff',
           padding: '80px',
-          fontFamily: 'Georgia, serif',
+          fontFamily: 'sans-serif',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ width: 56, height: 6, background: '#aa002a', marginBottom: 32, display: 'flex' }} />
           <div
             style={{
               fontSize: 22,
@@ -52,8 +53,9 @@ export default async function Image({ params }: { params: { slug: string } }) {
           <div
             style={{
               fontSize: 64,
+              fontWeight: 700,
               lineHeight: 1.15,
-              color: '#111827',
+              color: '#0a0a0a',
               display: 'flex',
             }}
           >
@@ -65,13 +67,12 @@ export default async function Image({ params }: { params: { slug: string } }) {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            fontFamily: 'sans-serif',
           }}
         >
-          <div style={{ fontSize: 24, color: '#111827', fontWeight: 600, display: 'flex' }}>
+          <div style={{ fontSize: 24, color: '#0a0a0a', fontWeight: 600, display: 'flex' }}>
             Muhammad Qasim Imran
           </div>
-          <div style={{ fontSize: 18, color: '#9ca3af', display: 'flex' }}>
+          <div style={{ fontSize: 18, color: '#a3a3a3', display: 'flex' }}>
             From the Blog
           </div>
         </div>

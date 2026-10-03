@@ -13,7 +13,7 @@ export default function EditCertification() {
   const [saving, setSaving] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [formData, setFormData] = useState({
-    title: '', issuer: '', date: '', image_url: '', order_index: 0
+    title: '', issuer: '', date: '', image_url: '', order_index: 0, verify_url: ''
   })
 
   useEffect(() => {
@@ -27,7 +27,8 @@ export default function EditCertification() {
           issuer: data.issuer || '',
           date: data.date || '',
           image_url: data.image_url || '',
-          order_index: data.order_index || 0
+          order_index: data.order_index || 0,
+          verify_url: data.verify_url || ''
         })
       }
       setLoading(false)
@@ -75,46 +76,55 @@ export default function EditCertification() {
       <h1 className="text-2xl font-light uppercase tracking-wide mb-6">Edit Certification</h1>
       <form onSubmit={handleUpdate} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Title</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Title</label>
           <input 
             type="text" value={formData.title} required
-            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm text-black"
             onChange={e => setFormData({...formData, title: e.target.value})}
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Issuer</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Issuer</label>
           <input 
             type="text" value={formData.issuer} required
-            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm text-black"
             onChange={e => setFormData({...formData, issuer: e.target.value})}
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Date</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Date</label>
           <input 
             type="text" value={formData.date} required
-            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm text-black"
             onChange={e => setFormData({...formData, date: e.target.value})}
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Order Index</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Order Index</label>
           <input 
             type="number" value={formData.order_index} required
-            className="w-full p-3 border border-gray-200 rounded text-sm text-black"
+            className="w-full p-3 border border-ink-100 rounded-none text-sm text-black"
             onChange={e => setFormData({...formData, order_index: parseInt(e.target.value) || 0})}
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Update Certificate Image (Optional)</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Verification Link (Optional)</label>
+          <input 
+            type="url" value={formData.verify_url}
+            placeholder="Coursera, Credly, Microsoft, etc."
+            className="w-full p-3 border border-ink-100 rounded-none text-sm text-black"
+            onChange={e => setFormData({...formData, verify_url: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-ink-500 mb-1">Update Certificate Image (Optional)</label>
           <input 
             type="file" accept="image/*"
             className="text-sm text-black"
             onChange={e => setFile(e.target.files?.[0] || null)}
           />
         </div>
-        <button type="submit" disabled={saving} className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded hover:bg-[#aa002a] transition-colors cursor-pointer">
+        <button type="submit" disabled={saving} className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none hover:bg-accent-600 transition-colors cursor-pointer">
           {saving ? 'Updating...' : 'Update Certification'}
         </button>
       </form>

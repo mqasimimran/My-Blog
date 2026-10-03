@@ -40,7 +40,7 @@ export default function RoleCycler() {
     <>
       {articleFor(role)}{' '}
       <span
-        className="text-[#aa002a] transition-opacity duration-250 ease-out"
+        className="text-accent-600 transition-opacity duration-250 ease-out"
         style={{ opacity: reducedMotion ? 1 : fadeIn ? 1 : 0 }}
       >
         {role}

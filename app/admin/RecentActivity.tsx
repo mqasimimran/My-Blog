@@ -1,0 +1,73 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+
+type ActivityRow = {
+  id: string
+  created_at: string
+  action: string
+  entity_type: string
+  entity_label: string | null
+  count: number
+}
+
+function describe(row: ActivityRow): string {
+  const subject = row.count > 1 ? `${row.count} ${row.entity_type}s` : row.entity_label || `a ${row.entity_type}`
+  const verbs: Record<string, string> = {
+    published: 'Published',
+    unpublished: 'Unpublished',
+    featured: 'Featured',
+    unfeatured: 'Unfeatured',
+    deleted: 'Deleted',
+    order_paid: 'Marked order paid:',
+  }
+  const verb = verbs[row.action] || row.action
+  return row.action === 'order_paid' ? `${verb} ${row.entity_label}` : `${verb} ${subject}`
+}
+
+function timeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diffMs / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
+export default function RecentActivity() {
+  const [rows, setRows] = useState<ActivityRow[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchActivity() {
+      const { data, error } = await supabase
+        .from('activity_log')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (error) console.error('Error fetching activity log:', error)
+      else setRows(data || [])
+      setIsLoading(false)
+    }
+    fetchActivity()
+  }, [])
+
+  if (isLoading || rows.length === 0) return null
+
+  return (
+    <div className="bg-paper rounded-none border border-ink-100 shadow-sm p-5 mb-8">
+      <h2 className="text-[10px] font-bold tracking-widest uppercase text-ink-300 mb-4">Recent Activity</h2>
+      <ul className="space-y-2.5">
+        {rows.map((row) => (
+          <li key={row.id} className="flex items-center justify-between text-xs">
+            <span className="text-ink-700">{describe(row)}</span>
+            <span className="text-ink-300 font-mono shrink-0 ml-4">{timeAgo(row.created_at)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}

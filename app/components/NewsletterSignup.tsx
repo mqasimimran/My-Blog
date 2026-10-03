@@ -28,19 +28,19 @@ export default function NewsletterSignup() {
   }
 
   return (
-    <section className="bg-gray-50 border-t border-b border-gray-100 py-16 px-6 font-sans">
+    <section className="bg-paper border-t border-b border-ink-100 py-16 px-6 font-sans">
       <div className="max-w-xl mx-auto text-center">
-        <h2 className="text-2xl font-light tracking-wide uppercase text-gray-900 mb-2">
+        <h2 className="text-2xl font-light tracking-wide uppercase text-ink-900 mb-2">
           Get New Posts By Email
         </h2>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-ink-500 mb-6">
           No spam — just an email when something new goes up.
         </p>
 
         {status === 'success' ? (
-          <p className="text-sm font-medium text-[#aa002a]">You're in — thanks for subscribing.</p>
+          <p className="text-sm font-medium text-accent-600">You're in — thanks for subscribing.</p>
         ) : status === 'duplicate' ? (
-          <p className="text-sm text-gray-500">That email is already subscribed.</p>
+          <p className="text-sm text-ink-500">That email is already subscribed.</p>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
             <input
@@ -50,12 +50,12 @@ export default function NewsletterSignup() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
               suppressHydrationWarning
-              className="flex-1 border border-gray-300 rounded px-4 py-3 text-sm outline-none focus:border-[#aa002a] transition-colors"
+              className="flex-1 border border-ink-100 rounded-none px-4 py-3 text-sm outline-none focus:border-accent-600 transition-colors"
             />
             <button
               type="submit"
               disabled={status === 'loading'}
-              className="bg-[#aa002a] text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded hover:bg-gray-900 transition-colors disabled:opacity-60"
+              className="bg-accent-600 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none hover:bg-gray-900 transition-colors disabled:opacity-60"
             >
               {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
             </button>

@@ -25,6 +25,25 @@ export async function POST(request: NextRequest) {
 
     if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
 
+    // Decrement stock now that the order is actually verified paid — not
+    // at raw submission, since an unverified or abandoned order shouldn't
+    // reduce inventory. Read-then-write rather than a true atomic
+    // decrement; at this store's scale (manually verified one order at a
+    // time) a race here is very unlikely, but worth knowing if that
+    // changes later.
+    const { data: product } = await supabase
+      .from('products')
+      .select('type, stock_quantity')
+      .eq('id', order.product_id)
+      .single()
+
+    if (product?.type === 'physical' && product.stock_quantity !== null) {
+      await supabase
+        .from('products')
+        .update({ stock_quantity: Math.max(0, product.stock_quantity - 1) })
+        .eq('id', order.product_id)
+    }
+
     const downloadUrl = `${SITE_URL}/shop/download/${downloadToken}`
 
     const apiKey = process.env.RESEND_API_KEY

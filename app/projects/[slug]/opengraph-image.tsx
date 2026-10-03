@@ -31,12 +31,13 @@ export default async function Image({ params }: { params: { slug: string } }) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          backgroundColor: '#0f0f10',
+          backgroundColor: '#0a0a0a',
           padding: '80px',
           fontFamily: 'sans-serif',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ width: 56, height: 6, background: '#aa002a', marginBottom: 32, display: 'flex' }} />
           <div
             style={{
               fontSize: 20,
@@ -62,12 +63,12 @@ export default async function Image({ params }: { params: { slug: string } }) {
             {title}
           </div>
           {stack && (
-            <div style={{ fontSize: 20, color: '#9ca3af', marginTop: 24, display: 'flex', fontFamily: 'monospace' }}>
+            <div style={{ fontSize: 20, color: '#a3a3a3', marginTop: 24, display: 'flex', fontFamily: 'monospace' }}>
               {stack}
             </div>
           )}
         </div>
-        <div style={{ fontSize: 22, color: '#6b7280', display: 'flex' }}>
+        <div style={{ fontSize: 22, color: '#6b6b6b', display: 'flex' }}>
           Muhammad Qasim Imran — Portfolio
         </div>
       </div>

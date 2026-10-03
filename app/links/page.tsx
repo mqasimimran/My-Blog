@@ -3,20 +3,21 @@ import Image from 'next/image'
 
 export default function Links() {
   return (
+    <div className="min-h-screen bg-paper">
     <div className="max-w-md mx-auto px-6 py-20 flex flex-col items-center">
       
       {/* Profile Section */}
       <div className="relative w-28 h-28 rounded-full mb-6 overflow-hidden shadow-lg border-4 border-white">
          <Image 
-            src="/profile.jpg" 
+            src="/profile.png" 
             alt="Profile" 
             fill
             sizes="112px"
             className="object-cover" 
          />
       </div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-2 tracking-tight">Muhammad Qasim Imran</h1>
-      <p className="text-gray-500 mb-10 text-center font-medium">
+      <h1 className="text-2xl font-bold text-ink-900 mb-2 tracking-tight">Muhammad Qasim Imran</h1>
+      <p className="text-ink-500 mb-10 text-center font-medium">
         Software Engineer & Graphic Designer
       </p>
 
@@ -26,7 +27,7 @@ export default function Links() {
           href="https://youtube.com/@qasimdevelops" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-xl text-center transition-all hover:scale-[1.02] shadow-sm"
+          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"
         >
           YouTube: qasimdevelops
         </a>
@@ -35,7 +36,7 @@ export default function Links() {
           href="https://muhammadqasimimran1.myportfolio.com/" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-xl text-center transition-all hover:scale-[1.02] shadow-sm"
+          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"
         >
           Visual Design Portfolio
         </a>
@@ -44,19 +45,20 @@ export default function Links() {
           href="https://instagram.com/muhammadqasimimrann" 
           target="_blank" 
           rel="noopener noreferrer" 
-          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-xl text-center transition-all hover:scale-[1.02] shadow-sm"
+          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"
         >
           Instagram
         </a>
         
         <Link 
           href="/blog" 
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-xl text-center transition-all hover:scale-[1.02] shadow-md mt-4"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-md mt-4"
         >
           Read My Articles
         </Link>
       </div>
       
+    </div>
     </div>
   )
 }

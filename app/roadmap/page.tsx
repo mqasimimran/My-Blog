@@ -36,13 +36,13 @@ export default function RoadmapPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-white font-sans">
-      <section className="bg-gradient-to-br from-slate-100 to-white py-24 px-6">
+    <main className="min-h-screen bg-paper font-sans">
+      <section className="bg-gradient-to-br from-ink-100 to-paper py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-gray-900 mb-6">
+          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-ink-900 mb-6">
             Roadmap
           </h1>
-          <p className="text-gray-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+          <p className="text-ink-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
             What's planned, what's underway, and what's already shipped — an honest look at what's next.
           </p>
         </div>
@@ -50,7 +50,7 @@ export default function RoadmapPage() {
 
       <section className="max-w-6xl mx-auto px-6 py-20">
         {isLoading ? (
-          <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">Loading...</div>
+          <div className="text-center py-20 text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</div>
         ) : items.length === 0 ? (
           <EmptyState icon="sparkle" title="Nothing on the roadmap yet" description="Check back soon." />
         ) : (
@@ -61,21 +61,21 @@ export default function RoadmapPage() {
                 <div key={col.key}>
                   <div className="flex items-center gap-2 mb-6">
                     <span className={`w-2 h-2 rounded-full ${
-                      col.key === 'shipped' ? 'bg-green-500' : col.key === 'in_progress' ? 'bg-[#aa002a]' : 'bg-gray-300'
+                      col.key === 'shipped' ? 'bg-green-500' : col.key === 'in_progress' ? 'bg-accent-600' : 'bg-ink-100'
                     }`} />
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-900">
+                    <h2 className="text-xs font-bold uppercase tracking-widest text-ink-900">
                       {col.label} ({colItems.length})
                     </h2>
                   </div>
                   <div className="space-y-4">
                     {colItems.length === 0 ? (
-                      <p className="text-xs text-gray-300 italic">Nothing here yet.</p>
+                      <p className="text-xs text-ink-100 italic">Nothing here yet.</p>
                     ) : (
                       colItems.map((item) => (
-                        <div key={item.id} className="border border-gray-200 rounded-xl p-5">
-                          <h3 className="text-sm font-medium text-gray-900 mb-1">{item.title}</h3>
+                        <div key={item.id} className="border border-ink-100 rounded-none p-5">
+                          <h3 className="text-sm font-medium text-ink-900 mb-1">{item.title}</h3>
                           {item.description && (
-                            <p className="text-xs text-gray-500 leading-relaxed">{item.description}</p>
+                            <p className="text-xs text-ink-500 leading-relaxed">{item.description}</p>
                           )}
                         </div>
                       ))

@@ -27,7 +27,7 @@ export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { before
   return (
     <div
       ref={containerRef}
-      className="relative w-full aspect-[4/3] rounded-lg overflow-hidden select-none cursor-ew-resize bg-gray-100"
+      className="relative w-full aspect-[4/3] rounded-none overflow-hidden select-none cursor-ew-resize bg-ink-100"
       onMouseDown={(e) => { isDragging.current = true; updatePosition(e.clientX) }}
       onMouseMove={(e) => { if (isDragging.current) updatePosition(e.clientX) }}
       onMouseUp={() => { isDragging.current = false }}
@@ -52,14 +52,14 @@ export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { before
       </div>
 
       {/* Handle */}
-      <div className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg pointer-events-none" style={{ left: `${position}%` }}>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-500 text-xs">
+      <div className="absolute top-0 bottom-0 w-0.5 bg-paper shadow-lg pointer-events-none" style={{ left: `${position}%` }}>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-paper shadow-lg flex items-center justify-center text-ink-500 text-xs">
           ↔
         </div>
       </div>
 
-      <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-widest bg-gray-900/70 text-white px-2 py-1 rounded pointer-events-none">Before</span>
-      <span className="absolute top-3 right-3 text-[9px] font-bold uppercase tracking-widest bg-gray-900/70 text-white px-2 py-1 rounded pointer-events-none">After</span>
+      <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-widest bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">Before</span>
+      <span className="absolute top-3 right-3 text-[9px] font-bold uppercase tracking-widest bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">After</span>
     </div>
   )
 }

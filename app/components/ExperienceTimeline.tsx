@@ -80,7 +80,7 @@ export default function Resume() {
         <a
           href="/resume.pdf"
           download="Muhammad_Qasim_Imran_Resume.pdf"
-          className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold uppercase tracking-[0.15em] px-5 py-3 rounded-md hover:bg-[#d9534f] transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold uppercase tracking-[0.15em] px-5 py-3 rounded-none hover:bg-[#d9534f] transition-colors shadow-sm"
         >
           <span>Download CV</span>
           <span>↓</span>
@@ -143,7 +143,7 @@ export default function Resume() {
             <div 
               key={index} 
               onClick={() => setSelectedImage(cert.image)}
-              className="bg-white border border-gray-200 p-4 rounded-md shadow-sm hover:border-gray-400 transition-all flex flex-col justify-between cursor-pointer group"
+              className="bg-white border border-gray-200 p-4 rounded-none shadow-sm hover:border-gray-400 transition-all flex flex-col justify-between cursor-pointer group"
             >
               <div>
                 <div className="flex justify-between items-start">
@@ -168,18 +168,18 @@ export default function Resume() {
           onClick={() => setSelectedImage(null)}
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm"
         >
-          <div className="relative max-w-4xl w-full bg-white p-2 rounded-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="relative max-w-4xl w-full bg-white p-2 rounded-none shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <button 
               onClick={() => setSelectedImage(null)}
               className="absolute -top-10 right-0 text-white text-xl font-bold hover:text-gray-300"
             >
               ✕ Close
             </button>
-            <div className="bg-gray-100 rounded overflow-hidden flex items-center justify-center min-h-[300px] relative">
+            <div className="bg-gray-100 rounded-none overflow-hidden flex items-center justify-center min-h-[300px] relative">
               <img 
                 src={selectedImage} 
                 alt="Certificate Credential" 
-                className="max-h-[80vh] w-auto object-contain mx-auto rounded"
+                className="max-h-[80vh] w-auto object-contain mx-auto rounded-none"
               />
             </div>
           </div>

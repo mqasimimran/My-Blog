@@ -86,19 +86,19 @@ export default function ResumeManagerHub() {
     <div className="max-w-5xl mx-auto py-10 px-6 font-sans">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900 mb-1">Resume Manager</h1>
-          <p className="text-xs text-gray-500">View, reorder positions with arrows, and manage your live resume data.</p>
+          <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-1">Resume Manager</h1>
+          <p className="text-xs text-ink-500">View, reorder positions with arrows, and manage your live resume data.</p>
         </div>
         <div className="flex gap-3">
           <Link 
             href="/admin/resume/download" 
-            className="bg-gray-900 text-white text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded hover:bg-[#aa002a] transition-colors flex items-center gap-1.5"
+            className="bg-gray-900 text-white text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded-none hover:bg-accent-600 transition-colors flex items-center gap-1.5"
           >
             <span>⚡ Custom PDF Builder</span>
           </Link>
           <Link 
             href={`/admin/resume/${routeName}`} 
-            className="bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded hover:bg-gray-900 transition-colors"
+            className="bg-accent-600 text-white text-xs font-bold tracking-widest uppercase px-4 py-2.5 rounded-none hover:bg-gray-900 transition-colors"
           >
             + Add New Entry
           </Link>
@@ -106,7 +106,7 @@ export default function ResumeManagerHub() {
       </div>
 
       {/* Section Tabs */}
-      <div className="flex border-b border-gray-200 mb-6 gap-6 text-xs font-bold uppercase tracking-widest">
+      <div className="flex border-b border-ink-100 mb-6 gap-6 text-xs font-bold uppercase tracking-widest">
         {[
           { key: 'experiences', label: 'Experience' },
           { key: 'projects_resume', label: 'Projects' },
@@ -118,8 +118,8 @@ export default function ResumeManagerHub() {
             onClick={() => setActiveTab(tab.key as TabKey)}
             className={`pb-3 border-b-2 transition-colors cursor-pointer ${
               activeTab === tab.key 
-                ? 'border-[#aa002a] text-[#aa002a]' 
-                : 'border-transparent text-gray-400 hover:text-gray-700'
+                ? 'border-accent-600 text-accent-600' 
+                : 'border-transparent text-ink-300 hover:text-ink-700'
             }`}
           >
             {tab.label}
@@ -129,22 +129,22 @@ export default function ResumeManagerHub() {
 
       {/* Data List View */}
       {loading ? (
-        <div className="py-20 text-center font-mono text-xs text-gray-400">Loading section data...</div>
+        <div className="py-20 text-center font-mono text-xs text-ink-300">Loading section data...</div>
       ) : items.length === 0 ? (
-        <div className="py-20 text-center text-sm text-gray-500 bg-white border rounded-lg">
+        <div className="py-20 text-center text-sm text-ink-500 bg-paper border rounded-none">
           No entries found in this section. Click "+ Add New Entry" above.
         </div>
       ) : (
         <div className="space-y-4">
           {items.map((item, index) => (
-            <div key={item.id} className="bg-white border border-gray-200 p-5 rounded-lg shadow-sm flex items-center justify-between gap-4">
+            <div key={item.id} className="bg-paper border border-ink-100 p-5 rounded-none shadow-sm flex items-center justify-between gap-4">
               
               {/* Position Arrow Controls */}
               <div className="flex flex-col gap-1">
                 <button 
                   onClick={() => moveItem(index, 'up')}
                   disabled={index === 0}
-                  className="w-7 h-7 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                  className="w-7 h-7 bg-ink-100 hover:bg-ink-100 disabled:opacity-30 rounded-none flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
                   title="Move Up"
                 >
                   ▲
@@ -152,7 +152,7 @@ export default function ResumeManagerHub() {
                 <button 
                   onClick={() => moveItem(index, 'down')}
                   disabled={index === items.length - 1}
-                  className="w-7 h-7 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
+                  className="w-7 h-7 bg-ink-100 hover:bg-ink-100 disabled:opacity-30 rounded-none flex items-center justify-center text-xs font-bold transition-colors cursor-pointer"
                   title="Move Down"
                 >
                   ▼
@@ -162,23 +162,23 @@ export default function ResumeManagerHub() {
               {/* Content Overview */}
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[10px] font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-500">#{index + 1}</span>
-                  <span className="text-xs font-mono text-gray-400 uppercase">{item.period || item.date}</span>
+                  <span className="text-[10px] font-mono bg-ink-100 px-2 py-0.5 rounded-none text-ink-500">#{index + 1}</span>
+                  <span className="text-xs font-mono text-ink-300 uppercase">{item.period || item.date}</span>
                 </div>
-                <h3 className="text-base font-medium text-gray-900">
+                <h3 className="text-base font-medium text-ink-900">
                   {item.role || item.title || item.degree}
                 </h3>
-                <p className="text-xs font-semibold text-[#aa002a]">
+                <p className="text-xs font-semibold text-accent-600">
                   {item.company || item.issuer || item.institution}
                 </p>
-                <p className="text-xs text-gray-600 mt-1 line-clamp-1">{item.description || item.tech}</p>
+                <p className="text-xs text-ink-700 mt-1 line-clamp-1">{item.description || item.tech}</p>
               </div>
 
               {/* Actions: Edit & Delete */}
               <div className="flex items-center gap-4">
                 <Link 
                   href={`/admin/resume/${routeName}/edit/${item.id}`}
-                  className="text-xs font-bold tracking-widest text-gray-500 hover:text-[#aa002a] uppercase"
+                  className="text-xs font-bold tracking-widest text-ink-500 hover:text-accent-600 uppercase"
                 >
                   Edit
                 </Link>

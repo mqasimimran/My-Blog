@@ -32,30 +32,30 @@ export default function AddExperience() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input 
           type="text" placeholder="Period (e.g., August 2026 - Present)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, period: e.target.value})}
         />
         <input 
           type="text" placeholder="Role (e.g., Graphic Design Intern)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, role: e.target.value})}
         />
         <input 
           type="text" placeholder="Company (e.g., Logitrix Solutions)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, company: e.target.value})}
         />
         <textarea 
           placeholder="Description" required rows={4}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, description: e.target.value})}
         />
         <input 
           type="number" placeholder="Order Index (0 is first)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, order_index: parseInt(e.target.value)})}
         />
-        <button type="submit" disabled={loading} className="bg-gray-900 text-white px-4 py-2 rounded">
+        <button type="submit" disabled={loading} className="bg-gray-900 text-white px-4 py-2 rounded-none">
           {loading ? 'Saving...' : 'Save Experience'}
         </button>
       </form>

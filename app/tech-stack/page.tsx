@@ -69,10 +69,11 @@ export default function TechStackPage() {
   ]
 
   return (
+    <div className="min-h-screen bg-paper">
     <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
       <div className="mb-12">
-        <h1 className="text-4xl font-light tracking-widest text-gray-900 uppercase mb-2">Tech Stack & Hardware</h1>
-        <p className="text-gray-500 text-sm sm:text-base">
+        <h1 className="text-4xl font-light tracking-widest text-ink-900 uppercase mb-2">Tech Stack & Hardware</h1>
+        <p className="text-ink-500 text-sm sm:text-base">
           Hover over any hardware component or software tool to see how it powers my development and creative workflows.
         </p>
       </div>
@@ -80,7 +81,7 @@ export default function TechStackPage() {
       <div className="space-y-16">
         {techCategories.map((group, groupIdx) => (
           <div key={groupIdx}>
-            <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-gray-900 mb-6 border-b border-gray-100 pb-3">
+            <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-ink-900 mb-6 border-b border-ink-100 pb-3">
               {group.category}
             </h2>
 
@@ -94,23 +95,23 @@ export default function TechStackPage() {
                     key={itemIdx}
                     onMouseEnter={() => setActiveTooltip(uniqueKey)}
                     onMouseLeave={() => setActiveTooltip(null)}
-                    className="relative bg-white border border-gray-200 p-6 rounded-md shadow-sm hover:border-[#aa002a] transition-all cursor-pointer group flex flex-col justify-between"
+                    className="relative bg-paper border border-ink-100 p-6 rounded-none shadow-sm hover:border-accent-600 transition-all cursor-pointer group flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-base font-medium text-gray-900 group-hover:text-[#aa002a] transition-colors">
+                        <h3 className="text-base font-medium text-ink-900 group-hover:text-accent-600 transition-colors">
                           {tool.name}
                         </h3>
-                        <span className="text-[10px] font-mono tracking-wider uppercase bg-gray-100 group-hover:bg-[#aa002a] group-hover:text-white px-2 py-1 rounded transition-colors">
+                        <span className="text-[10px] font-mono tracking-wider uppercase bg-ink-100 group-hover:bg-accent-600 group-hover:text-white px-2 py-1 rounded-none transition-colors">
                           {tool.role}
                         </span>
                       </div>
                     </div>
 
                     {/* Interactive Tooltip Reveal Area */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <p className="text-xs text-gray-600 leading-relaxed">
-                        <span className="font-semibold text-gray-900">Workflow Usage: </span>
+                    <div className="mt-4 pt-4 border-t border-ink-100">
+                      <p className="text-xs text-ink-700 leading-relaxed">
+                        <span className="font-semibold text-ink-900">Workflow Usage: </span>
                         {tool.usage}
                       </p>
                     </div>
@@ -123,6 +124,7 @@ export default function TechStackPage() {
           </div>
         ))}
       </div>
+    </div>
     </div>
   )
 }

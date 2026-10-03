@@ -37,20 +37,20 @@ export default function FeaturedDesigns() {
   if (!isLoading && designs.length === 0) return null
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-white border-t border-gray-100">
+    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-paper border-t border-ink-100">
 
       <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-8">
         <div className="max-w-lg">
-          <h2 className="text-3xl font-light tracking-wide uppercase text-gray-900 mb-3">
+          <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-3">
             Featured Design
           </h2>
-          <p className="text-sm text-gray-500 leading-relaxed">
+          <p className="text-sm text-ink-500 leading-relaxed">
             A few pieces from the visual design side — brand identities, UI/UX, and promotional work.
           </p>
         </div>
         <Link
           href="/design"
-          className="text-[10px] font-bold tracking-widest uppercase text-gray-900 hover:text-[#aa002a] transition-colors flex items-center gap-1 shrink-0"
+          className="text-[10px] font-bold tracking-widest uppercase text-ink-900 hover:text-accent-600 transition-colors flex items-center gap-1 shrink-0"
         >
           View Full Gallery ↗
         </Link>
@@ -64,7 +64,7 @@ export default function FeaturedDesigns() {
             <Link
               href={`/design?item=${item.id}`}
               key={item.id}
-              className="group break-inside-avoid relative block rounded-lg overflow-hidden bg-gray-100 shadow-sm hover:shadow-xl transition-shadow"
+              className="group break-inside-avoid relative block rounded-none overflow-hidden bg-ink-100 shadow-sm hover:shadow-xl transition-shadow"
             >
               {item.images?.[0] && (
                 <img
@@ -75,7 +75,7 @@ export default function FeaturedDesigns() {
                 />
               )}
               <div className="absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/70 transition-colors duration-300 flex flex-col justify-end p-5 opacity-0 group-hover:opacity-100">
-                <span className="text-[10px] font-mono tracking-widest uppercase text-[#aa002a] mb-1">
+                <span className="text-[10px] font-mono tracking-widest uppercase text-accent-600 mb-1">
                   {item.category}
                 </span>
                 <h3 className="text-white text-sm font-medium tracking-wide">

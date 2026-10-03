@@ -117,118 +117,118 @@ export default function AdminSettingsPage() {
   }
 
   if (status === 'loading' || isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-sm text-gray-500">Loading admin portal...</div>
+    return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">Loading admin portal...</div>
   }
 
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-paper flex flex-col md:flex-row font-sans">
       <AdminNav />
 
       <main className="flex-1 p-10 overflow-y-auto">
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-          <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900 mb-8">Site Settings</h1>
+        <div className="max-w-2xl mx-auto bg-paper p-8 rounded-none shadow-sm border border-ink-100">
+          <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-8">Site Settings</h1>
 
           <div className="space-y-8">
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-3">Availability Badge</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-3">Availability Badge</p>
               <div className="flex items-center gap-3 mb-4">
                 <input type="checkbox" id="available" checked={availableForWork} onChange={(e) => setAvailableForWork(e.target.checked)} className="w-4 h-4 accent-gray-900" />
-                <label htmlFor="available" className="text-sm text-gray-700">Show "Available for work" badge on the homepage and Services</label>
+                <label htmlFor="available" className="text-sm text-ink-700">Show "Available for work" badge on the homepage and Services</label>
               </div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Badge Text</label>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Badge Text</label>
               <input
                 type="text"
                 value={availabilityMessage}
                 onChange={(e) => setAvailabilityMessage(e.target.value)}
                 placeholder="Available for new projects"
-                className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm"
+                className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm"
               />
             </div>
 
-            <div className="pt-6 border-t border-gray-100">
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-3">"Right Now" Widget</p>
-              <p className="text-[11px] text-gray-400 mb-3">Shown on the homepage. Leave blank to hide it.</p>
+            <div className="pt-6 border-t border-ink-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-3">"Right Now" Widget</p>
+              <p className="text-[11px] text-ink-300 mb-3">Shown on the homepage. Leave blank to hide it.</p>
               <textarea
                 value={nowText}
                 onChange={(e) => setNowText(e.target.value)}
                 rows={3}
                 placeholder="e.g. Currently building a bilingual AI Urdu teaching assistant for my final year project."
-                className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm"
+                className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm"
               />
             </div>
 
-            <div className="pt-6 border-t border-gray-100">
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-1">Payment Accounts</p>
-              <p className="text-[11px] text-gray-400 mb-5">Shown to buyers on the checkout page so they know where to send payment. Leave any section blank to hide that option.</p>
+            <div className="pt-6 border-t border-ink-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-1">Payment Accounts</p>
+              <p className="text-[11px] text-ink-300 mb-5">Shown to buyers on the checkout page so they know where to send payment. Leave any section blank to hide that option.</p>
 
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a] mb-3">Local — Pakistan</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-3">Local — Pakistan</p>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">JazzCash Number</label>
-                  <input type="text" value={jazzcashNumber} onChange={(e) => setJazzcashNumber(e.target.value)} placeholder="03XX-XXXXXXX" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">JazzCash Number</label>
+                  <input type="text" value={jazzcashNumber} onChange={(e) => setJazzcashNumber(e.target.value)} placeholder="03XX-XXXXXXX" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Account Name</label>
-                  <input type="text" value={jazzcashAccountName} onChange={(e) => setJazzcashAccountName(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Account Name</label>
+                  <input type="text" value={jazzcashAccountName} onChange={(e) => setJazzcashAccountName(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">EasyPaisa Number</label>
-                  <input type="text" value={easypaisaNumber} onChange={(e) => setEasypaisaNumber(e.target.value)} placeholder="03XX-XXXXXXX" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">EasyPaisa Number</label>
+                  <input type="text" value={easypaisaNumber} onChange={(e) => setEasypaisaNumber(e.target.value)} placeholder="03XX-XXXXXXX" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Account Name</label>
-                  <input type="text" value={easypaisaAccountName} onChange={(e) => setEasypaisaAccountName(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Account Name</label>
+                  <input type="text" value={easypaisaAccountName} onChange={(e) => setEasypaisaAccountName(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-2">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Bank Name</label>
-                  <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. HBL, Meezan Bank" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Bank Name</label>
+                  <input type="text" value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. HBL, Meezan Bank" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Account Title</label>
-                  <input type="text" value={bankAccountTitle} onChange={(e) => setBankAccountTitle(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Account Title</label>
+                  <input type="text" value={bankAccountTitle} onChange={(e) => setBankAccountTitle(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Account Number</label>
-                  <input type="text" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Account Number</label>
+                  <input type="text" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">IBAN (optional)</label>
-                  <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value)} placeholder="Helps international senders" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                  <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">IBAN (optional)</label>
+                  <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value)} placeholder="Helps international senders" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
 
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a] mb-3">International</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-3">International</p>
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Payoneer Email</label>
-                <input type="email" value={payoneerEmail} onChange={(e) => setPayoneerEmail(e.target.value)} placeholder="The email tied to your Payoneer account" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
-                <p className="text-[10px] text-gray-400 mt-1">Buyers will send a Payoneer-to-Payoneer payment to this email.</p>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Payoneer Email</label>
+                <input type="email" value={payoneerEmail} onChange={(e) => setPayoneerEmail(e.target.value)} placeholder="The email tied to your Payoneer account" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
+                <p className="text-[10px] text-ink-300 mt-1">Buyers will send a Payoneer-to-Payoneer payment to this email.</p>
               </div>
             </div>
 
-            <button onClick={handleSave} disabled={isSaving} className="w-full bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase py-4 rounded hover:bg-gray-900 transition-colors">
+            <button onClick={handleSave} disabled={isSaving} className="w-full bg-accent-600 text-white text-xs font-bold tracking-widest uppercase py-4 rounded-none hover:bg-gray-900 transition-colors">
               {isSaving ? 'Saving...' : saved ? 'Saved!' : 'Save Settings'}
             </button>
 
-            <div className="pt-6 border-t border-gray-100">
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-2">Data Export</p>
-              <p className="text-[11px] text-gray-400 mb-4">
+            <div className="pt-6 border-t border-ink-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-2">Data Export</p>
+              <p className="text-[11px] text-ink-300 mb-4">
                 Download everything — projects, articles, designs, services, testimonials, and your journey entries — as a single JSON file. Good insurance before any big change.
               </p>
               <button
                 onClick={handleExport}
                 disabled={isExporting}
-                className="w-full bg-gray-100 text-gray-900 text-xs font-bold tracking-widest uppercase py-3 rounded hover:bg-gray-200 transition-colors"
+                className="w-full bg-ink-100 text-ink-900 text-xs font-bold tracking-widest uppercase py-3 rounded-none hover:bg-ink-100 transition-colors"
               >
                 {isExporting ? 'Exporting...' : 'Export Everything As JSON'}
               </button>

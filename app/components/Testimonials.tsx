@@ -37,34 +37,34 @@ export default function Testimonials() {
   if (isLoading) return null
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-white">
+    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-paper">
       <div className="max-w-lg mb-12">
-        <h2 className="text-3xl font-light tracking-wide uppercase text-gray-900 mb-3">
+        <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-3">
           What People Say
         </h2>
-        <p className="text-sm text-gray-500 leading-relaxed">
+        <p className="text-sm text-ink-500 leading-relaxed">
           A few words from people I've worked with.
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {testimonials.map((t) => (
-          <div key={t.id} className="border border-gray-200 rounded-xl p-8 flex flex-col">
-            <p className="text-[#aa002a] text-3xl font-serif leading-none mb-4">"</p>
-            <p className="text-gray-700 text-sm leading-relaxed mb-6 flex-1">{t.quote}</p>
-            <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+          <div key={t.id} className="border border-ink-100 rounded-none p-8 flex flex-col">
+            <p className="text-accent-600 text-3xl font-serif leading-none mb-4">"</p>
+            <p className="text-ink-700 text-sm leading-relaxed mb-6 flex-1">{t.quote}</p>
+            <div className="flex items-center gap-3 pt-4 border-t border-ink-100">
               {t.avatar_url ? (
                 <div className="relative w-10 h-10 shrink-0">
                   <Image src={t.avatar_url} alt={t.name} fill sizes="40px" className="rounded-full object-cover" />
                 </div>
               ) : (
-                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs font-bold uppercase">
+                <div className="w-10 h-10 rounded-full bg-ink-100 flex items-center justify-center text-ink-300 text-xs font-bold uppercase">
                   {t.name.charAt(0)}
                 </div>
               )}
               <div>
-                <p className="text-sm font-medium text-gray-900">{t.name}</p>
-                {t.role && <p className="text-xs text-gray-400">{t.role}</p>}
+                <p className="text-sm font-medium text-ink-900">{t.name}</p>
+                {t.role && <p className="text-xs text-ink-300">{t.role}</p>}
               </div>
             </div>
           </div>

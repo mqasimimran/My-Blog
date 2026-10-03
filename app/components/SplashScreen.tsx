@@ -30,11 +30,11 @@ export default function SplashScreen() {
 
   return (
     <div
-      className={`fixed inset-0 z-[300] bg-white flex items-center justify-center transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[300] bg-paper flex items-center justify-center transition-opacity duration-300 ${
         fadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <div className="w-14 h-14 rounded-lg bg-[#aa002a] text-white flex items-center justify-center text-xl font-bold animate-pulse">
+      <div className="w-14 h-14 rounded-none bg-accent-600 text-white flex items-center justify-center text-xl font-bold animate-pulse">
         MQ
       </div>
     </div>

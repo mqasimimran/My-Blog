@@ -16,8 +16,8 @@ type JourneyEntry = {
 
 function ImagePlaceholder() {
   return (
-    <div className="w-full aspect-[4/3] border-2 border-dashed border-gray-300 bg-gray-50/70 rounded flex items-center justify-center p-6 text-center">
-      <p className="text-[11px] uppercase tracking-[0.15em] text-gray-400 leading-relaxed">
+    <div className="w-full aspect-[4/3] border-2 border-dashed border-ink-100 bg-paper/70 rounded-none flex items-center justify-center p-6 text-center">
+      <p className="text-[11px] uppercase tracking-[0.15em] text-ink-300 leading-relaxed">
         No photo added yet
       </p>
     </div>
@@ -44,15 +44,15 @@ export default function AboutJourneyPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-[#fbfaf8] font-sans">
+    <main className="min-h-screen bg-paper font-sans">
 
       {/* Header */}
       <section className="max-w-3xl mx-auto px-6 pt-24 pb-16 text-center">
-        <p className="text-[11px] font-bold tracking-[0.25em] uppercase text-gray-400 mb-4">A Journal</p>
-        <h1 className="text-5xl md:text-6xl font-serif text-gray-900 tracking-tight mb-6">
+        <p className="text-[11px] font-bold tracking-[0.25em] uppercase text-ink-300 mb-4">A Journal</p>
+        <h1 className="text-5xl md:text-6xl font-serif text-ink-900 tracking-tight mb-6">
           My Journey
         </h1>
-        <p className="text-gray-500 font-serif italic text-lg leading-relaxed">
+        <p className="text-ink-500 font-serif italic text-lg leading-relaxed">
           Not a resume — a running log of how a Computer Science student
           ended up also being a designer, a game developer, and whatever comes next.
         </p>
@@ -61,11 +61,11 @@ export default function AboutJourneyPage() {
       {/* Timeline */}
       <section className="max-w-5xl mx-auto px-6 pb-24">
         {isLoading ? (
-          <div className="text-center py-20 text-gray-400 text-xs font-mono uppercase tracking-widest">
+          <div className="text-center py-20 text-ink-300 text-xs font-mono uppercase tracking-widest">
             Loading...
           </div>
         ) : entries.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 text-sm">
+          <div className="text-center py-20 text-ink-300 text-sm">
             The journey hasn't been written yet — check back soon.
           </div>
         ) : (
@@ -88,7 +88,7 @@ export default function AboutJourneyPage() {
                       <img
                         src={entry.image_url}
                         alt={entry.title}
-                        className="w-full h-auto rounded shadow-sm object-cover"
+                        className="w-full h-auto rounded-none shadow-sm object-cover"
                       />
                     ) : (
                       <ImagePlaceholder />
@@ -96,13 +96,13 @@ export default function AboutJourneyPage() {
                   </div>
 
                   <div>
-                    <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">
+                    <p className="text-[11px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">
                       {entry.date_label}
                     </p>
-                    <h2 className="text-2xl md:text-3xl font-serif text-gray-900 mb-4">
+                    <h2 className="text-2xl md:text-3xl font-serif text-ink-900 mb-4">
                       {entry.title}
                     </h2>
-                    <div className="space-y-4 text-gray-600 leading-relaxed text-sm md:text-base">
+                    <div className="space-y-4 text-ink-700 leading-relaxed text-sm md:text-base">
                       {paragraphs.map((paragraph, i) => (
                         <p key={i}>{paragraph}</p>
                       ))}
@@ -116,16 +116,16 @@ export default function AboutJourneyPage() {
       </section>
 
       {/* Closing note */}
-      <section className="border-t border-gray-200 bg-white">
+      <section className="border-t border-ink-100 bg-paper">
         <div className="max-w-2xl mx-auto px-6 py-20 text-center space-y-6">
-          <p className="text-gray-500 font-serif italic text-lg leading-relaxed">
+          <p className="text-ink-500 font-serif italic text-lg leading-relaxed">
             Still figuring a lot of this out as I go. If any part of it overlaps
             with something you're building, I'd like to hear about it.
           </p>
           <MagneticButton>
             <Link
               href="/contact"
-              className="inline-flex items-center gap-2 bg-[#aa002a] text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-gray-900 transition-colors"
+              className="inline-flex items-center gap-2 bg-accent-600 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded-none hover:bg-gray-900 transition-colors"
             >
               Get In Touch <span>↗</span>
             </Link>

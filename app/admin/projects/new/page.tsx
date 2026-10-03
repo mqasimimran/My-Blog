@@ -25,6 +25,7 @@ export default function NewProjectPage() {
   const [liveUrl, setLiveUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [featured, setFeatured] = useState(false)
+  const [published, setPublished] = useState(true)
   const [featureImage, setFeatureImage] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -99,6 +100,7 @@ export default function NewProjectPage() {
       live_url: liveUrl,
       github_url: githubUrl,
       featured,
+      published,
       feature_image: imageUrl
     }])
 
@@ -111,51 +113,51 @@ export default function NewProjectPage() {
   }
 
   if (status === 'loading') {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-xs uppercase tracking-widest text-gray-400">Loading...</div>
+    return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-xs uppercase tracking-widest text-ink-300">Loading...</div>
   }
 
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-paper flex font-sans">
       <aside className="w-64 bg-[#0B1120] text-white p-6 flex flex-col justify-between hidden md:flex">
         <div>
           <h2 className="text-xl font-light tracking-wide uppercase mb-10 text-white">Admin</h2>
           <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-            <Link href="/admin/projects" className="text-gray-400 hover:text-white transition-colors">
+            <Link href="/admin/projects" className="text-ink-300 hover:text-white transition-colors">
               ← Back to Projects
             </Link>
           </nav>
         </div>
         <div>
-          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-red-400 transition-colors pt-6 border-t border-gray-800">
+          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-ink-300 hover:text-red-400 transition-colors pt-6 border-t border-gray-800">
             ← Log Out
           </button>
         </div>
       </aside>
 
       <main className="flex-1 p-10 overflow-y-auto">
-        <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-          <Link href="/admin/projects" className="text-[10px] font-bold tracking-widest uppercase text-gray-400 hover:text-gray-900 block mb-6 md:hidden">
+        <div className="max-w-3xl mx-auto bg-paper p-8 rounded-none shadow-sm border border-ink-100">
+          <Link href="/admin/projects" className="text-[10px] font-bold tracking-widest uppercase text-ink-300 hover:text-ink-900 block mb-6 md:hidden">
             ← Back to Projects
           </Link>
-          <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900 mb-8">New Project Entry</h1>
+          <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-8">New Project Entry</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Project Title</label>
-              <input type="text" value={title} onChange={(e) => handleTitleChange(e.target.value)} required className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-gray-900 text-sm" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Project Title</label>
+              <input type="text" value={title} onChange={(e) => handleTitleChange(e.target.value)} required className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-ink-900 text-sm" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Slug</label>
-              <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} required className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-gray-500 font-mono text-sm" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Slug</label>
+              <input type="text" value={slug} onChange={(e) => setSlug(e.target.value)} required className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-ink-500 font-mono text-sm" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Category</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 bg-white text-gray-900 text-sm">
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Category</label>
+                <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 bg-paper text-ink-900 text-sm">
                   <option value="Game Dev">Game Dev</option>
                   <option value="AI & ML">AI & ML</option>
                   <option value="Software Eng">Software Eng</option>
@@ -164,94 +166,101 @@ export default function NewProjectPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Status Label</label>
-                <input type="text" value={statusVal} onChange={(e) => setStatusVal(e.target.value)} placeholder="e.g. IN DEVELOPMENT" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Status Label</label>
+                <input type="text" value={statusVal} onChange={(e) => setStatusVal(e.target.value)} placeholder="e.g. IN DEVELOPMENT" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Tech Stack</label>
-              <input type="text" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g. Next.js • Tailwind • Supabase" className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm font-mono" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Tech Stack</label>
+              <input type="text" value={techStack} onChange={(e) => setTechStack(e.target.value)} placeholder="e.g. Next.js • Tailwind • Supabase" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm font-mono" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Short Description (Card Subtitle)</label>
-              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Short Description (Card Subtitle)</label>
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
             </div>
 
             {/* Structured Case Study — for your top projects */}
-            <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs font-bold uppercase tracking-widest text-gray-900 mb-1 mt-4">Case Study (optional)</p>
-              <p className="text-[11px] text-gray-400 mb-4">Fill these in for the projects you want recruiters to actually read — problem, approach, and outcome, with a couple of screenshots.</p>
+            <div className="pt-2 border-t border-ink-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-1 mt-4">Case Study (optional)</p>
+              <p className="text-[11px] text-ink-300 mb-4">Fill these in for the projects you want recruiters to actually read — problem, approach, and outcome, with a couple of screenshots.</p>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Problem</label>
-              <textarea value={problem} onChange={(e) => setProblem(e.target.value)} rows={3} placeholder="What need or gap prompted this project?" className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">The Problem</label>
+              <textarea value={problem} onChange={(e) => setProblem(e.target.value)} rows={3} placeholder="What need or gap prompted this project?" className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Approach</label>
-              <textarea value={approach} onChange={(e) => setApproach(e.target.value)} rows={3} placeholder="How did you tackle it? Key decisions, trade-offs, architecture." className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">The Approach</label>
+              <textarea value={approach} onChange={(e) => setApproach(e.target.value)} rows={3} placeholder="How did you tackle it? Key decisions, trade-offs, architecture." className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">The Outcome</label>
-              <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={3} placeholder="What shipped, what you learned, results if measurable." className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">The Outcome</label>
+              <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={3} placeholder="What shipped, what you learned, results if measurable." className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Stat Callouts (optional, one "value|label" per line)</label>
-              <textarea value={stats} onChange={(e) => setStats(e.target.value)} rows={3} placeholder={'94%|Classification accuracy\n3|Custom systems shipped'} className="w-full border border-gray-200 p-3 outline-none focus:border-gray-900 text-gray-700 text-sm font-mono" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Stat Callouts (optional, one "value|label" per line)</label>
+              <textarea value={stats} onChange={(e) => setStats(e.target.value)} rows={3} placeholder={'94%|Classification accuracy\n3|Custom systems shipped'} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm font-mono" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Screenshots (optional, multiple)</label>
-              <input type="file" accept="image/*" multiple onChange={(e) => setScreenshotFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Screenshots (optional, multiple)</label>
+              <input type="file" accept="image/*" multiple onChange={(e) => setScreenshotFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
                 Hover-Preview Video (optional — plays when someone hovers the project card on the homepage)
               </label>
-              <input type="file" accept="video/*" onChange={(e) => setPreviewVideoFile(e.target.files?.[0] || null)} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
-              <p className="text-[10px] text-gray-400 mt-1">Keep this short and small (a few seconds, muted) — it autoplays on hover.</p>
+              <input type="file" accept="video/*" onChange={(e) => setPreviewVideoFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
+              <p className="text-[10px] text-ink-300 mt-1">Keep this short and small (a few seconds, muted) — it autoplays on hover.</p>
             </div>
 
             {/* Legacy freeform content — still supported, shown below the structured sections if filled in */}
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Additional Content (HTML, optional)</label>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Additional Content (HTML, optional)</label>
               <textarea 
                 value={content} 
                 onChange={(e) => setContent(e.target.value)} 
                 rows={6} 
                 placeholder="Optional — anything extra beyond Problem/Approach/Outcome, as HTML."
-                className="w-full border border-gray-200 p-4 font-mono text-xs outline-none focus:border-gray-900 text-gray-700 rounded" 
+                className="w-full border border-ink-100 p-4 font-mono text-xs outline-none focus:border-ink-900 text-ink-700 rounded-none" 
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Live Demo URL</label>
-                <input type="url" value={liveUrl} onChange={(e) => setLiveUrl(e.target.value)} className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Live Demo URL</label>
+                <input type="url" value={liveUrl} onChange={(e) => setLiveUrl(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">GitHub / Repo URL</label>
-                <input type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-sm" />
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">GitHub / Repo URL</label>
+                <input type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Project Cover Image</label>
-              <input type="file" accept="image/*" onChange={(e) => e.target.files && setFeatureImage(e.target.files[0])} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Project Cover Image</label>
+              <input type="file" accept="image/*" onChange={(e) => e.target.files && setFeatureImage(e.target.files[0])} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
 
             <div className="flex items-center gap-3 pt-2">
               <input type="checkbox" id="featured" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="w-4 h-4 accent-gray-900" />
-              <label htmlFor="featured" className="text-xs font-bold uppercase tracking-wider text-gray-700">Feature this project on homepage</label>
+              <label htmlFor="featured" className="text-xs font-bold uppercase tracking-wider text-ink-700">Feature this project on homepage</label>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="w-full bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase py-4 rounded hover:bg-gray-900 transition-colors mt-6">
+            <div className="flex items-center gap-3">
+              <input type="checkbox" id="published" checked={published} onChange={(e) => setPublished(e.target.checked)} className="w-4 h-4 accent-gray-900" />
+              <label htmlFor="published" className="text-xs font-bold uppercase tracking-wider text-ink-700">
+                Published <span className="text-ink-300 font-normal normal-case">(uncheck to save as a draft — you can still share it via a preview link after saving)</span>
+              </label>
+            </div>
+
+            <button type="submit" disabled={isSubmitting} className="w-full bg-accent-600 text-white text-xs font-bold tracking-widest uppercase py-4 rounded-none hover:bg-gray-900 transition-colors mt-6">
               {isSubmitting ? 'Publishing...' : 'Publish Project'}
             </button>
           </form>

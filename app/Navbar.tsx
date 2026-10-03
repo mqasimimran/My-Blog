@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useMemo, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import DarkModeToggle from '@/app/components/DarkModeToggle'
 
 type SearchItem = { title: string; type: string; url: string }
 
@@ -68,14 +69,14 @@ export default function Navbar() {
   }
 
   return (
-    <header className="px-6 md:px-8 py-6 bg-white border-b border-gray-100 sticky top-0 z-50">
+    <header className="px-6 md:px-8 py-6 bg-paper border-b border-ink-100 sticky top-0 z-50">
       <nav className="max-w-[1400px] mx-auto flex items-center justify-between">
         
         {/* Mobile Hamburger Button */}
         <div className="flex items-center lg:hidden">
           <button 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-gray-700 hover:text-[#aa002a] focus:outline-none p-1"
+            className="text-gray-700 hover:text-accent-600 focus:outline-none p-1"
             aria-label="Toggle Menu"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -92,17 +93,17 @@ export default function Navbar() {
 
         {/* Desktop Navigation Links */}
         <div className="hidden lg:flex items-center gap-10 text-[11px] font-bold tracking-[0.15em] uppercase">
-          <Link href="/" className={`${isActive('/') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Home</Link>
-          <Link href="/about" className={`${isActive('/about') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>My Journey</Link>
-          <Link href="/shop" className={`${isActive('/shop') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Shop</Link>
-          <Link href="/design" className={`${isActive('/design') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Design</Link>
-          <Link href="/blog" className={`${isActive('/blog') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Blog</Link>
-          <Link href="/projects" className={`${isActive('/projects') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Projects</Link>
+          <Link href="/" className={`${isActive('/') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Home</Link>
+          <Link href="/about" className={`${isActive('/about') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>My Journey</Link>
+          <Link href="/shop" className={`${isActive('/shop') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Shop</Link>
+          <Link href="/design" className={`${isActive('/design') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Design</Link>
+          <Link href="/blog" className={`${isActive('/blog') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Blog</Link>
+          <Link href="/projects" className={`${isActive('/projects') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Projects</Link>
 
-          <Link href="/tech-stack" className={`${isActive('/tech-stack') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Tech Stack</Link>
-          <Link href="/resume" className={`${isActive('/resume') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Resume</Link>
-          <Link href="/services" className={`${isActive('/services') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Services</Link>
-                    <Link href="/contact" className={`${isActive('/contact') ? 'text-[#aa002a]' : 'text-gray-500 hover:text-[#aa002a]'} transition-colors`}>Contact</Link>
+          <Link href="/tech-stack" className={`${isActive('/tech-stack') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Tech Stack</Link>
+          <Link href="/resume" className={`${isActive('/resume') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Resume</Link>
+          <Link href="/services" className={`${isActive('/services') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Services</Link>
+                    <Link href="/contact" className={`${isActive('/contact') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Contact</Link>
         </div>
 
         {/* Right side search bar with autocomplete dropdown */}
@@ -118,49 +119,50 @@ export default function Navbar() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="bg-transparent text-xs outline-none w-36 sm:w-48 md:w-64 placeholder-gray-400"
                 />
-                <button type="button" onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} className="ml-2 text-gray-400 hover:text-[#aa002a]">✕</button>
+                <button type="button" onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} className="ml-2 text-gray-400 hover:text-accent-600">✕</button>
               </form>
 
               {filteredSuggestions.length > 0 && (
-                <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
+                <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-paper border border-ink-100 rounded-none shadow-lg py-2 z-50">
                   {filteredSuggestions.map((item, index) => (
                     <button
                       key={index}
                       onClick={() => handleSelectSuggestion(item.url)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex flex-col"
+                      className="w-full text-left px-4 py-2 hover:bg-ink-100/40 transition-colors flex flex-col"
                     >
-                      <span className="text-xs font-medium text-gray-900 truncate">{item.title}</span>
-                      <span className="text-[10px] tracking-wider uppercase text-gray-400">{item.type}</span>
+                      <span className="text-xs font-medium text-ink-900 truncate">{item.title}</span>
+                      <span className="text-[10px] tracking-wider uppercase text-ink-500">{item.type}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
           ) : (
-            <button onClick={() => setIsSearchOpen(true)} className="hover:text-[#aa002a] transition-colors p-1" aria-label="Open Search">
+            <button onClick={() => setIsSearchOpen(true)} className="hover:text-accent-600 transition-colors p-1" aria-label="Open Search">
               <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
           )}
+          <DarkModeToggle />
         </div>
 
       </nav>
 
       {/* Mobile Dropdown Menu Drawer */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-white border-b border-gray-200 shadow-lg py-6 px-8 flex flex-col gap-4 text-xs font-bold tracking-[0.15em] uppercase z-40">
-          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Home</Link>
-          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/about') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>My Journey</Link>
-          <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/shop') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Shop</Link>
-          <Link href="/design" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/design') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Design</Link>
-          <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/blog') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Blog</Link>
-          <Link href="/projects" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/projects') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Projects</Link>
+        <div className="lg:hidden absolute top-full left-0 w-full bg-paper border-b border-ink-100 shadow-lg py-6 px-8 flex flex-col gap-4 text-xs font-bold tracking-[0.15em] uppercase z-40">
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Home</Link>
+          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/about') ? 'text-accent-600' : 'text-gray-600'} py-1`}>My Journey</Link>
+          <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/shop') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Shop</Link>
+          <Link href="/design" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/design') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Design</Link>
+          <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/blog') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Blog</Link>
+          <Link href="/projects" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/projects') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Projects</Link>
          
-          <Link href="/tech-stack" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/tech-stack') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Tech Stack</Link>
-          <Link href="/resume" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/resume') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Resume</Link>
-          <Link href="/services" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/services') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Services</Link>
-           <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/contact') ? 'text-[#aa002a]' : 'text-gray-600'} py-1`}>Contact</Link>
+          <Link href="/tech-stack" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/tech-stack') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Tech Stack</Link>
+          <Link href="/resume" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/resume') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Resume</Link>
+          <Link href="/services" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/services') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Services</Link>
+           <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/contact') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Contact</Link>
         </div>
       )}
     </header>

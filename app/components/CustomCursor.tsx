@@ -47,7 +47,7 @@ export default function CustomCursor() {
     <div
       ref={dotRef}
       aria-hidden="true"
-      className="hidden md:block fixed top-0 left-0 pointer-events-none z-[200] rounded-full bg-[#aa002a] mix-blend-difference transition-[width,height,opacity] duration-200 ease-out"
+      className="hidden md:block fixed top-0 left-0 pointer-events-none z-[200] rounded-full bg-accent-600 mix-blend-difference transition-[width,height,opacity] duration-200 ease-out"
       style={{
         width: isHovering ? 32 : 10,
         height: isHovering ? 32 : 10,

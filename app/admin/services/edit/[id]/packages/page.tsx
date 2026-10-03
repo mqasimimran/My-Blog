@@ -114,27 +114,27 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
   }
 
   if (status === 'loading' || isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-xs uppercase tracking-widest text-gray-400">Loading packages...</div>
+    return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-xs uppercase tracking-widest text-ink-300">Loading packages...</div>
   }
 
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-paper flex font-sans">
       <aside className="w-64 bg-[#0B1120] text-white p-6 flex flex-col justify-between hidden md:flex">
         <div>
           <h2 className="text-xl font-light tracking-wide uppercase mb-10 text-white">Admin</h2>
           <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-            <Link href="/admin/services" className="text-gray-400 hover:text-white transition-colors">
+            <Link href="/admin/services" className="text-ink-300 hover:text-white transition-colors">
               ← Back to Services
             </Link>
-            <Link href={`/admin/services/edit/${serviceId}`} className="text-gray-400 hover:text-white transition-colors">
+            <Link href={`/admin/services/edit/${serviceId}`} className="text-ink-300 hover:text-white transition-colors">
               Edit Service Details
             </Link>
           </nav>
         </div>
         <div>
-          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-red-400 transition-colors pt-6 border-t border-gray-800">
+          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-ink-300 hover:text-red-400 transition-colors pt-6 border-t border-gray-800">
             ← Log Out
           </button>
         </div>
@@ -142,80 +142,80 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
 
       <main className="flex-1 p-10 overflow-y-auto">
         <div className="max-w-4xl mx-auto">
-          <Link href="/admin/services" className="text-[10px] font-bold tracking-widest uppercase text-gray-400 hover:text-gray-900 block mb-4 md:hidden">
+          <Link href="/admin/services" className="text-[10px] font-bold tracking-widest uppercase text-ink-300 hover:text-ink-900 block mb-4 md:hidden">
             ← Back to Services
           </Link>
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900">Packages</h1>
-              <p className="text-xs text-gray-500 mt-1">for {serviceName || 'this service'} — Basic / Standard / Premium tiers, like a Fiverr gig</p>
+              <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Packages</h1>
+              <p className="text-xs text-ink-500 mt-1">for {serviceName || 'this service'} — Basic / Standard / Premium tiers, like a Fiverr gig</p>
             </div>
             <button
               onClick={addBlankPackage}
-              className="bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded hover:bg-gray-900 transition-colors"
+              className="bg-accent-600 text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded-none hover:bg-gray-900 transition-colors"
             >
               + Add Package
             </button>
           </div>
 
           {packages.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-10 text-center text-sm text-gray-500">
+            <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
               No packages yet. Click "+ Add Package" to create your first tier (e.g. Basic).
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {packages.map((pkg) => (
-                <div key={pkg.id} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm space-y-4">
+                <div key={pkg.id} className="bg-paper p-6 rounded-none border border-ink-100 shadow-sm space-y-4">
                   <div>
-                    <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-1">Tier Name</label>
+                    <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Tier Name</label>
                     <input
                       type="text"
                       value={pkg.tier}
                       onChange={(e) => updateField(pkg.id, 'tier', e.target.value)}
                       placeholder="Basic"
-                      className="w-full border-b border-gray-300 py-1.5 outline-none focus:border-gray-900 text-sm font-medium"
+                      className="w-full border-b border-ink-100 py-1.5 outline-none focus:border-ink-900 text-sm font-medium"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-1">Price</label>
+                    <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Price</label>
                     <input
                       type="text"
                       value={pkg.price}
                       onChange={(e) => updateField(pkg.id, 'price', e.target.value)}
                       placeholder="$25"
-                      className="w-full border-b border-gray-300 py-1.5 outline-none focus:border-gray-900 text-sm"
+                      className="w-full border-b border-ink-100 py-1.5 outline-none focus:border-ink-900 text-sm"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-1">Delivery (days)</label>
+                      <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Delivery (days)</label>
                       <input
                         type="number"
                         value={pkg.delivery_days ?? ''}
                         onChange={(e) => updateField(pkg.id, 'delivery_days', e.target.value ? parseInt(e.target.value) : null)}
                         placeholder="3"
-                        className="w-full border-b border-gray-300 py-1.5 outline-none focus:border-gray-900 text-sm"
+                        className="w-full border-b border-ink-100 py-1.5 outline-none focus:border-ink-900 text-sm"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-1">Revisions</label>
+                      <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Revisions</label>
                       <input
                         type="text"
                         value={pkg.revisions ?? ''}
                         onChange={(e) => updateField(pkg.id, 'revisions', e.target.value)}
                         placeholder="2 revisions"
-                        className="w-full border-b border-gray-300 py-1.5 outline-none focus:border-gray-900 text-sm"
+                        className="w-full border-b border-ink-100 py-1.5 outline-none focus:border-ink-900 text-sm"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-1">Features (one per line)</label>
+                    <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Features (one per line)</label>
                     <textarea
                       value={pkg.features ?? ''}
                       onChange={(e) => updateField(pkg.id, 'features', e.target.value)}
                       rows={5}
                       placeholder={'1 logo concept\nPNG + JPG files\nSource file'}
-                      className="w-full border border-gray-200 p-2 outline-none focus:border-gray-900 text-xs font-mono"
+                      className="w-full border border-ink-100 p-2 outline-none focus:border-ink-900 text-xs font-mono"
                     />
                   </div>
                   <div className="flex items-center justify-between pt-2">
@@ -228,7 +228,7 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
                     <button
                       onClick={() => savePackage(pkg)}
                       disabled={savingId === pkg.id}
-                      className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded hover:bg-[#aa002a] transition-colors disabled:opacity-60"
+                      className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-none hover:bg-accent-600 transition-colors disabled:opacity-60"
                     >
                       {savingId === pkg.id ? 'Saving...' : pkg.isNew ? 'Create' : 'Save'}
                     </button>

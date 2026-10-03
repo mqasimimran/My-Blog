@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
+import PreviewLinkField from '@/app/components/admin/PreviewLinkField'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -18,6 +19,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
   const [beforeImage, setBeforeImage] = useState<string | null>(null)
   const [beforeImageFile, setBeforeImageFile] = useState<File | null>(null)
   const [featured, setFeatured] = useState(false)
+  const [published, setPublished] = useState(true)
+  const [previewToken, setPreviewToken] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -32,6 +35,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
         setCategory(data.category)
         setImages(data.images || [])
         setFeatured(data.featured || false)
+        setPublished(data.published ?? true)
+        setPreviewToken(data.preview_token || '')
         setBeforeImage(data.before_image || null)
       }
       setIsLoading(false)
@@ -103,7 +108,7 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
       finalBeforeImage = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('designs').update({ title, category, images: finalImages, before_image: finalBeforeImage, featured }).eq('id', id)
+    const { error } = await supabase.from('designs').update({ title, category, images: finalImages, before_image: finalBeforeImage, featured, published }).eq('id', id)
     if (error) {
       alert('Error updating design: ' + error.message)
       setIsSubmitting(false)
@@ -113,45 +118,45 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
   }
 
   if (status === 'loading' || isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-xs uppercase tracking-widest text-gray-400">Loading editor...</div>
+    return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-xs uppercase tracking-widest text-ink-300">Loading editor...</div>
   }
 
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-paper flex font-sans">
       <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col justify-between hidden md:flex">
         <div>
           <h2 className="text-xl font-light tracking-wide uppercase mb-10 text-white">Admin</h2>
           <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-            <Link href="/admin/designs" className="text-gray-400 hover:text-white transition-colors">
+            <Link href="/admin/designs" className="text-ink-300 hover:text-white transition-colors">
               ← Back to Designs
             </Link>
           </nav>
         </div>
         <div>
-          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-gray-400 hover:text-red-400 transition-colors pt-6 border-t border-gray-800">
+          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-ink-300 hover:text-red-400 transition-colors pt-6 border-t border-gray-800">
             ← Log Out
           </button>
         </div>
       </aside>
 
       <main className="flex-1 p-10 overflow-y-auto">
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-100">
-          <Link href="/admin/designs" className="text-[10px] font-bold tracking-widest uppercase text-gray-400 hover:text-gray-900 block mb-6 md:hidden">
+        <div className="max-w-2xl mx-auto bg-paper p-8 rounded-none shadow-sm border border-ink-100">
+          <Link href="/admin/designs" className="text-[10px] font-bold tracking-widest uppercase text-ink-300 hover:text-ink-900 block mb-6 md:hidden">
             ← Back to Designs
           </Link>
-          <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900 mb-8">Edit Design Entry</h1>
+          <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-8">Edit Design Entry</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Design Title</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 text-gray-900 text-sm" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Design Title</label>
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-ink-900 text-sm" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border-b border-gray-300 py-2 outline-none focus:border-gray-900 bg-white text-gray-900 text-sm">
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Category</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 bg-paper text-ink-900 text-sm">
                 <option value="Branding &amp; Identity">Branding &amp; Identity</option>
                 <option value="Logo Design">Logo Design</option>
                 <option value="Social Media Posts">Social Media Posts</option>
@@ -166,21 +171,21 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Current Images (<span className="text-[#aa002a]">First image is cover</span>)</label>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Current Images (<span className="text-accent-600">First image is cover</span>)</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
                 {images.map((img, idx) => (
-                  <div key={idx} className="relative bg-gray-50 border border-gray-200 rounded-lg p-2 flex flex-col items-center">
-                    <div className="relative w-full h-32 mb-2 rounded overflow-hidden bg-white border border-gray-100">
+                  <div key={idx} className="relative bg-paper border border-ink-100 rounded-none p-2 flex flex-col items-center">
+                    <div className="relative w-full h-32 mb-2 rounded-none overflow-hidden bg-paper border border-ink-100">
                       <img src={img} alt="Design asset" className="w-full h-full object-contain" />
                       {idx === 0 && (
-                        <span className="absolute bottom-1 left-1 bg-[#aa002a] text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">Cover</span>
+                        <span className="absolute bottom-1 left-1 bg-accent-600 text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-none">Cover</span>
                       )}
                       <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-600 text-white w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shadow hover:bg-red-700">✕</button>
                     </div>
                     <div className="flex items-center justify-between w-full text-xs">
-                      <button type="button" disabled={idx === 0} onClick={() => moveImage(idx, 'left')} className="px-2 py-1 bg-gray-200 rounded disabled:opacity-35 hover:bg-gray-300 font-bold">←</button>
-                      <span className="text-[10px] font-mono text-gray-500">#{idx + 1}</span>
-                      <button type="button" disabled={idx === images.length - 1} onClick={() => moveImage(idx, 'right')} className="px-2 py-1 bg-gray-200 rounded disabled:opacity-35 hover:bg-gray-300 font-bold">→</button>
+                      <button type="button" disabled={idx === 0} onClick={() => moveImage(idx, 'left')} className="px-2 py-1 bg-ink-100 rounded-none disabled:opacity-35 hover:bg-ink-100 font-bold">←</button>
+                      <span className="text-[10px] font-mono text-ink-500">#{idx + 1}</span>
+                      <button type="button" disabled={idx === images.length - 1} onClick={() => moveImage(idx, 'right')} className="px-2 py-1 bg-ink-100 rounded-none disabled:opacity-35 hover:bg-ink-100 font-bold">→</button>
                     </div>
                   </div>
                 ))}
@@ -188,28 +193,39 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Add More Images</label>
-              <input type="file" accept="image/*" multiple onChange={(e) => e.target.files && setNewImageFiles(Array.from(e.target.files))} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Add More Images</label>
+              <input type="file" accept="image/*" multiple onChange={(e) => e.target.files && setNewImageFiles(Array.from(e.target.files))} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
                 "Before" Image (optional — enables a drag-to-compare slider)
               </label>
               {beforeImage && !beforeImageFile && (
-                <img src={beforeImage} alt="Current before-image" className="w-32 h-24 object-cover rounded mb-2 border border-gray-200" />
+                <img src={beforeImage} alt="Current before-image" className="w-32 h-24 object-cover rounded-none mb-2 border border-ink-100" />
               )}
-              <input type="file" accept="image/*" onChange={(e) => setBeforeImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-gray-100 file:text-gray-900 hover:file:bg-gray-200 cursor-pointer" />
+              <input type="file" accept="image/*" onChange={(e) => setBeforeImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
 
             <div>
               <label className="flex items-center gap-3 cursor-pointer">
-                <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="w-4 h-4 text-[#aa002a] focus:ring-[#aa002a] rounded border-gray-300" />
-                <span className="text-xs font-bold tracking-widest uppercase text-gray-700">Feature on Homepage</span>
+                <input type="checkbox" checked={featured} onChange={(e) => setFeatured(e.target.checked)} className="w-4 h-4 text-accent-600 focus:ring-accent-600 rounded-none border-ink-100" />
+                <span className="text-xs font-bold tracking-widest uppercase text-ink-700">Feature on Homepage</span>
               </label>
             </div>
 
-            <button type="submit" disabled={isSubmitting} className="w-full bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase py-4 rounded hover:bg-gray-900 transition-colors mt-6">
+            <div>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" checked={published} onChange={(e) => setPublished(e.target.checked)} className="w-4 h-4 text-accent-600 focus:ring-accent-600 rounded-none border-ink-100" />
+                <span className="text-xs font-bold tracking-widest uppercase text-ink-700">
+                  Published <span className="text-ink-300 font-normal normal-case">(uncheck to unpublish — still shareable via the preview link below)</span>
+                </span>
+              </label>
+            </div>
+
+            <PreviewLinkField path="/design/preview/" token={previewToken} />
+
+            <button type="submit" disabled={isSubmitting} className="w-full bg-accent-600 text-white text-xs font-bold tracking-widest uppercase py-4 rounded-none hover:bg-gray-900 transition-colors mt-6">
               {isSubmitting ? 'Saving Changes...' : 'Save Changes'}
             </button>
           </form>

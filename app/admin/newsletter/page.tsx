@@ -44,40 +44,40 @@ export default function AdminNewsletterPage() {
   }
 
   if (status === 'loading' || isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-sm text-gray-500">Loading admin portal...</div>
+    return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">Loading admin portal...</div>
   }
 
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-paper flex flex-col md:flex-row font-sans">
       <AdminNav />
 
       <main className="flex-1 p-10 overflow-y-auto">
         <div className="max-w-3xl mx-auto">
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <div>
-              <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900">Newsletter</h1>
-              <p className="text-xs text-gray-500 mt-1">{subscribers.length} subscriber{subscribers.length !== 1 ? 's' : ''}</p>
+              <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Newsletter</h1>
+              <p className="text-xs text-ink-500 mt-1">{subscribers.length} subscriber{subscribers.length !== 1 ? 's' : ''}</p>
             </div>
             {subscribers.length > 0 && (
-              <button onClick={copyAllEmails} className="bg-gray-900 text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded hover:bg-[#aa002a] transition-colors">
+              <button onClick={copyAllEmails} className="bg-gray-900 text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded-none hover:bg-accent-600 transition-colors">
                 {copied ? 'Copied!' : 'Copy All Emails'}
               </button>
             )}
           </div>
 
           {subscribers.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-10 text-center text-sm text-gray-500">
+            <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
               No subscribers yet.
             </div>
           ) : (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 divide-y divide-gray-100">
+            <div className="bg-paper rounded-none shadow-sm border border-ink-100 divide-y divide-gray-100">
               {subscribers.map((s) => (
-                <div key={s.id} className="p-4 flex items-center justify-between">
+                <div key={s.id} className="p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{s.email}</p>
-                    <p className="text-[10px] text-gray-400">{new Date(s.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                    <p className="text-sm font-medium text-ink-900">{s.email}</p>
+                    <p className="text-[10px] text-ink-300">{new Date(s.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
                   </div>
                   <button onClick={() => deleteSubscriber(s.id)} className="text-xs font-bold tracking-widest text-red-500 hover:text-red-700 uppercase">Remove</button>
                 </div>

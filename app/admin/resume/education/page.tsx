@@ -32,30 +32,30 @@ export default function AddEducation() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input 
           type="text" placeholder="Degree (e.g., Bachelor of Science in Computer Science)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, degree: e.target.value})}
         />
         <input 
           type="text" placeholder="Institution (e.g., UMT, Lahore)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, institution: e.target.value})}
         />
         <input 
           type="text" placeholder="Period (e.g., 2023 – 2027)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, period: e.target.value})}
         />
         <textarea 
           placeholder="Description" required rows={4}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, description: e.target.value})}
         />
         <input 
           type="number" placeholder="Order Index (0 is first)" required
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, order_index: parseInt(e.target.value)})}
         />
-        <button type="submit" disabled={loading} className="bg-gray-900 text-white px-4 py-2 rounded hover:bg-[#aa002a] transition-colors">
+        <button type="submit" disabled={loading} className="bg-gray-900 text-white px-4 py-2 rounded-none hover:bg-accent-600 transition-colors">
           {loading ? 'Saving...' : 'Save Education'}
         </button>
       </form>

@@ -18,7 +18,7 @@ export default function NotFound() {
   return (
     <main className="min-h-screen bg-white flex items-center justify-center px-6 font-sans">
       <div className="max-w-md w-full text-center">
-        <p className="text-[#aa002a] text-8xl font-light tracking-tight mb-4">404</p>
+        <p className="text-accent-600 text-8xl font-light tracking-tight mb-4">404</p>
         <h1 className="text-2xl font-light tracking-wide uppercase text-gray-900 mb-3">
           Page Not Found
         </h1>
@@ -32,24 +32,24 @@ export default function NotFound() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search the blog..."
-            className="flex-1 border border-gray-300 rounded px-4 py-3 text-sm outline-none focus:border-[#aa002a] transition-colors"
+            className="flex-1 border border-gray-300 rounded-none px-4 py-3 text-sm outline-none focus:border-accent-600 transition-colors"
           />
           <button
             type="submit"
-            className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-5 py-3 rounded hover:bg-[#aa002a] transition-colors"
+            className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-5 py-3 rounded-none hover:bg-accent-600 transition-colors"
           >
             Search
           </button>
         </form>
 
         <div className="flex flex-wrap justify-center gap-4 text-xs font-bold uppercase tracking-widest">
-          <Link href="/" className="text-gray-500 hover:text-[#aa002a] transition-colors">Home</Link>
+          <Link href="/" className="text-gray-500 hover:text-accent-600 transition-colors">Home</Link>
           <span className="text-gray-300">/</span>
-          <Link href="/projects" className="text-gray-500 hover:text-[#aa002a] transition-colors">Projects</Link>
+          <Link href="/projects" className="text-gray-500 hover:text-accent-600 transition-colors">Projects</Link>
           <span className="text-gray-300">/</span>
-          <Link href="/blog" className="text-gray-500 hover:text-[#aa002a] transition-colors">Blog</Link>
+          <Link href="/blog" className="text-gray-500 hover:text-accent-600 transition-colors">Blog</Link>
           <span className="text-gray-300">/</span>
-          <Link href="/contact" className="text-gray-500 hover:text-[#aa002a] transition-colors">Contact</Link>
+          <Link href="/contact" className="text-gray-500 hover:text-accent-600 transition-colors">Contact</Link>
         </div>
       </div>
     </main>

@@ -1,5 +1,5 @@
 export function SkeletonBlock({ className = '' }: { className?: string }) {
-  return <div className={`animate-pulse bg-gray-100 rounded ${className}`} />
+  return <div className={`animate-pulse bg-ink-100 rounded-none ${className}`} />
 }
 
 /** A grid of card-shaped skeletons — thumbnail + a couple of text lines. */
@@ -12,7 +12,7 @@ export function SkeletonCardGrid({ count = 6, columns = 3 }: { count?: number; c
   return (
     <div className={`grid grid-cols-1 ${colClass} gap-6`}>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="border border-gray-100 rounded-xl overflow-hidden">
+        <div key={i} className="border border-ink-100 rounded-none overflow-hidden">
           <SkeletonBlock className="w-full h-44" />
           <div className="p-6 space-y-3">
             <SkeletonBlock className="h-3 w-1/3" />
@@ -36,7 +36,7 @@ export function SkeletonTextCardGrid({ count = 6, columns = 3 }: { count?: numbe
   return (
     <div className={`grid grid-cols-1 ${colClass} gap-6`}>
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="border border-gray-200 rounded-xl p-8 space-y-4">
+        <div key={i} className="border border-ink-100 rounded-none p-8 space-y-4">
           <SkeletonBlock className="h-3 w-1/4" />
           <SkeletonBlock className="h-5 w-3/4" />
           <SkeletonBlock className="h-3 w-full" />

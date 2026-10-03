@@ -54,7 +54,7 @@ export default function AdminProjectsPage() {
 
   if (status === 'loading' || isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-sm text-gray-500">
+      <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">
         Loading admin portal...
       </div>
     )
@@ -63,48 +63,48 @@ export default function AdminProjectsPage() {
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-paper flex flex-col md:flex-row font-sans">
       <AdminNav />
 
       <main className="flex-1 p-10 overflow-y-auto">
         <div className="max-w-5xl mx-auto">
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <div>
-              <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900">Manage Projects</h1>
-              <p className="text-xs text-gray-500 mt-1">Logged in AS {session.user?.name || 'Qasim'}</p>
+              <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Manage Projects</h1>
+              <p className="text-xs text-ink-500 mt-1">Logged in AS {session.user?.name || 'Qasim'}</p>
             </div>
             <Link 
               href="/admin/projects/new" 
-              className="bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded hover:bg-gray-900 transition-colors"
+              className="bg-accent-600 text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded-none hover:bg-gray-900 transition-colors"
             >
               + New Project
             </Link>
           </div>
 
           {projects.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-10 text-center text-sm text-gray-500">
+            <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
               No projects found. Click "+ New Project" to create your first entry!
             </div>
           ) : (
             <div className="space-y-4">
               {projects.map((project) => (
-                <div key={project.id} className="bg-white p-4 border border-gray-200 rounded-lg flex items-center justify-between shadow-sm hover:border-gray-300 transition-colors">
+                <div key={project.id} className="bg-paper p-4 border border-ink-100 rounded-none flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shadow-sm hover:border-ink-100 transition-colors">
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="text-[10px] font-bold tracking-widest uppercase text-[#aa002a]">{project.category}</span>
+                      <span className="text-[10px] font-bold tracking-widest uppercase text-accent-600">{project.category}</span>
                       <button
                         onClick={() => toggleFeatured(project)}
-                        className={`text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded transition-colors cursor-pointer ${
-                          project.featured ? 'bg-[#aa002a] text-white hover:bg-gray-900' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                        className={`text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded-none transition-colors cursor-pointer ${
+                          project.featured ? 'bg-accent-600 text-white hover:bg-gray-900' : 'bg-ink-100 text-ink-300 hover:bg-ink-100'
                         }`}
                       >
                         {project.featured ? '★ Featured' : '☆ Feature'}
                       </button>
                     </div>
-                    <h2 className="text-base font-medium text-gray-900">{project.title}</h2>
+                    <h2 className="text-base font-medium text-ink-900">{project.title}</h2>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <Link href={`/admin/projects/edit/${project.id}`} className="text-xs font-bold tracking-widest text-gray-500 hover:text-[#aa002a] uppercase">
+                  <div className="flex items-center flex-wrap gap-4">
+                    <Link href={`/admin/projects/edit/${project.id}`} className="text-xs font-bold tracking-widest text-ink-500 hover:text-accent-600 uppercase">
                       Edit
                     </Link>
                     

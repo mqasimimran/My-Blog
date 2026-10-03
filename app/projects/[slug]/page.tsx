@@ -44,6 +44,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
         .from('projects')
         .select('*')
         .eq('slug', slug)
+        .eq('published', true)
         .single()
 
       if (error) {
@@ -68,7 +69,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-mono text-xs uppercase tracking-widest text-gray-400 bg-white">
+      <div className="min-h-screen flex items-center justify-center font-mono text-xs uppercase tracking-widest text-ink-300 bg-paper">
         Loading architecture...
       </div>
     )
@@ -76,9 +77,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
 
   if (!project) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white text-center px-6">
-        <h1 className="text-3xl font-serif font-bold text-gray-900 mb-4">Project Not Found</h1>
-        <Link href="/projects" className="text-[10px] font-bold tracking-widest uppercase text-gray-500 hover:text-gray-900 border-b border-gray-900 pb-1 transition-colors">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-paper text-center px-6">
+        <h1 className="text-3xl font-serif font-bold text-ink-900 mb-4">Project Not Found</h1>
+        <Link href="/projects" className="text-[10px] font-bold tracking-widest uppercase text-ink-500 hover:text-ink-900 border-b border-ink-900 pb-1 transition-colors">
           Return to Portfolio
         </Link>
       </div>
@@ -102,7 +103,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
   }
 
   return (
-    <article className="min-h-screen bg-white pt-24 pb-32 font-sans overflow-x-hidden">
+    <article className="min-h-screen bg-paper pt-24 pb-32 font-sans overflow-x-hidden">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -111,39 +112,39 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       {/* Editorial Header */}
       <div className="max-w-4xl mx-auto px-6 text-center mb-16">
         <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a]">
+          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600">
             {project.category}
           </span>
           {project.status && (
-            <span className="text-[9px] font-bold tracking-widest uppercase text-amber-600 bg-amber-50 px-2 py-1 rounded">
+            <span className="text-[9px] font-bold tracking-widest uppercase text-amber-600 bg-amber-50 px-2 py-1 rounded-none">
               {project.status}
             </span>
           )}
         </div>
         
-        <h1 className="text-4xl md:text-6xl font-serif font-bold text-gray-900 tracking-tight leading-none mb-6">
+        <h1 className="text-4xl md:text-6xl font-serif font-bold text-ink-900 tracking-tight leading-none mb-6">
           {project.title}
         </h1>
         
         {project.tech_stack && (
-          <p className="text-[11px] font-mono text-gray-400 tracking-widest uppercase mb-8">
+          <p className="text-[11px] font-mono text-ink-300 tracking-widest uppercase mb-8">
             {project.tech_stack}
           </p>
         )}
         
-        <p className="text-lg md:text-xl text-gray-500 font-light leading-relaxed max-w-2xl mx-auto">
+        <p className="text-lg md:text-xl text-ink-500 font-light leading-relaxed max-w-2xl mx-auto">
           {project.description}
         </p>
 
         {/* Action Links */}
         <div className="flex items-center justify-center gap-8 mt-10">
           {project.live_url && (
-            <a href={project.live_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold tracking-widest uppercase text-gray-900 border-b border-gray-900 pb-1 hover:text-gray-500 transition-colors">
+            <a href={project.live_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold tracking-widest uppercase text-ink-900 border-b border-ink-900 pb-1 hover:text-ink-500 transition-colors">
               Live Demo ↗
             </a>
           )}
           {project.github_url && (
-            <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold tracking-widest uppercase text-gray-900 border-b border-gray-900 pb-1 hover:text-gray-500 transition-colors">
+            <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold tracking-widest uppercase text-ink-900 border-b border-ink-900 pb-1 hover:text-ink-500 transition-colors">
               GitHub Repo ↗
             </a>
           )}
@@ -164,14 +165,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       {/* Stat Callouts */}
       {project.stats && (
         <div className="max-w-3xl mx-auto px-6 mb-16">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 py-8 border-y border-gray-100">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 py-8 border-y border-ink-100">
             {project.stats.split('\n').map((line) => {
               const [value, label] = line.split('|').map((s) => s.trim())
               if (!value) return null
               return (
                 <div key={line} className="text-center">
-                  <p className="text-3xl md:text-4xl font-light text-[#aa002a] mb-1">{value}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500">{label}</p>
+                  <p className="text-3xl md:text-4xl font-light text-accent-600 mb-1">{value}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-ink-500">{label}</p>
                 </div>
               )
             })}
@@ -184,22 +185,22 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
         <div className="max-w-3xl mx-auto px-6 space-y-16">
           {project.problem && (
             <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Problem</p>
-              <p className="text-gray-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.problem}</p>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Problem</p>
+              <p className="text-ink-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.problem}</p>
             </div>
           )}
           {project.approach && (
             <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Approach</p>
-              <p className="text-gray-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.approach}</p>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Approach</p>
+              <p className="text-ink-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.approach}</p>
             </div>
           )}
           {project.tech_stack && (
             <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Stack</p>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Stack</p>
               <div className="flex flex-wrap gap-2">
                 {project.tech_stack.split(',').map((tech) => (
-                  <span key={tech} className="text-xs font-mono uppercase tracking-wide text-gray-700 bg-gray-100 px-3 py-1.5 rounded">
+                  <span key={tech} className="text-xs font-mono uppercase tracking-wide text-ink-700 bg-ink-100 px-3 py-1.5 rounded-none">
                     {tech.trim()}
                   </span>
                 ))}
@@ -211,30 +212,30 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
           {project.screenshots && project.screenshots.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {project.screenshots.map((src, i) => (
-                <img key={i} src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="w-full h-auto rounded-lg border border-gray-100 shadow-sm" />
+                <img key={i} src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="w-full h-auto rounded-none border border-ink-100 shadow-sm" />
               ))}
             </div>
           )}
 
           {project.outcome && (
             <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#aa002a] mb-3">The Outcome</p>
-              <p className="text-gray-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.outcome}</p>
+              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Outcome</p>
+              <p className="text-ink-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.outcome}</p>
             </div>
           )}
 
           {project.content && (
-            <div className="prose prose-lg prose-headings:font-serif prose-headings:text-gray-900 prose-a:text-[#aa002a] prose-a:no-underline hover:prose-a:underline text-gray-600 pt-4 border-t border-gray-100">
+            <div className="prose prose-lg prose-headings:font-serif prose-headings:text-ink-900 prose-a:text-accent-600 prose-a:no-underline hover:prose-a:underline text-ink-700 pt-4 border-t border-ink-100">
               <div dangerouslySetInnerHTML={{ __html: project.content }} />
             </div>
           )}
         </div>
       ) : (
-        <div className="max-w-2xl mx-auto px-6 text-gray-600 prose prose-lg prose-headings:font-serif prose-headings:text-gray-900 prose-a:text-[#aa002a] prose-a:no-underline hover:prose-a:underline">
+        <div className="max-w-2xl mx-auto px-6 text-ink-700 prose prose-lg prose-headings:font-serif prose-headings:text-ink-900 prose-a:text-accent-600 prose-a:no-underline hover:prose-a:underline">
           {project.content ? (
             <div dangerouslySetInnerHTML={{ __html: project.content }} />
           ) : (
-            <div className="text-center italic text-gray-400 py-10">
+            <div className="text-center italic text-ink-300 py-10">
               A detailed case study for this project is currently in development.
             </div>
           )}
@@ -242,21 +243,21 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       )}
 
       {/* Share */}
-      <div className="max-w-3xl mx-auto px-6 flex justify-center mt-16 pt-10 border-t border-gray-100">
+      <div className="max-w-3xl mx-auto px-6 flex justify-center mt-16 pt-10 border-t border-ink-100">
         <ShareButtons url={`${SITE_URL}/projects/${slug}`} title={project.title} />
       </div>
 
       {/* Related Projects */}
       {relatedProjects.length > 0 && (
-        <div className="max-w-5xl mx-auto px-6 mt-24 pt-16 border-t border-gray-100">
-          <h2 className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400 mb-8 text-center">
+        <div className="max-w-5xl mx-auto px-6 mt-24 pt-16 border-t border-ink-100">
+          <h2 className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink-300 mb-8 text-center">
             More {project.category} Projects
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {relatedProjects.map((related) => (
               <Link key={related.slug} href={`/projects/${related.slug}`} className="group block">
                 {related.feature_image && (
-                  <div className="relative aspect-video mb-3 overflow-hidden rounded bg-gray-50">
+                  <div className="relative aspect-video mb-3 overflow-hidden rounded-none bg-paper">
                     <Image
                       src={related.feature_image}
                       alt={related.title}
@@ -266,8 +267,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                     />
                   </div>
                 )}
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a] mb-1">{related.category}</p>
-                <h3 className="text-sm font-medium text-gray-900 group-hover:text-[#aa002a] transition-colors leading-snug">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-1">{related.category}</p>
+                <h3 className="text-sm font-medium text-ink-900 group-hover:text-accent-600 transition-colors leading-snug">
                   {related.title}
                 </h3>
               </Link>

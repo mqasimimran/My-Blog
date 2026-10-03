@@ -72,67 +72,67 @@ export default function AdminShopPage() {
   }
 
   if (status === 'loading' || isLoading) {
-    return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-mono text-sm text-gray-500">Loading admin portal...</div>
+    return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">Loading admin portal...</div>
   }
   if (!session) return null
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
+    <div className="min-h-screen bg-paper flex flex-col md:flex-row font-sans">
       <AdminNav />
 
       <main className="flex-1 p-10 overflow-y-auto">
         <div className="max-w-5xl mx-auto">
-          <div className="flex justify-between items-center mb-10">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <div>
-              <h1 className="text-3xl font-light tracking-wide uppercase text-gray-900">Shop</h1>
-              <p className="text-xs text-gray-500 mt-1">Browsing is live on /shop — checkout isn't wired up yet</p>
+              <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Shop</h1>
+              <p className="text-xs text-ink-500 mt-1">Browsing and checkout are both live on /shop</p>
             </div>
-            <Link href="/admin/shop/new" className="bg-[#aa002a] text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded hover:bg-gray-900 transition-colors">
+            <Link href="/admin/shop/new" className="bg-accent-600 text-white text-xs font-bold tracking-widest uppercase px-6 py-3 rounded-none hover:bg-gray-900 transition-colors">
               + New Product
             </Link>
           </div>
 
           {products.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-10 text-center text-sm text-gray-500">
+            <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
               No products yet. Click "+ New Product" to add your first one.
             </div>
           ) : (
             <div className="space-y-4">
               {products.map((product, index) => (
-                <div key={product.id} className="bg-white p-4 border border-gray-200 rounded-lg flex items-center justify-between shadow-sm hover:border-gray-300 transition-colors">
+                <div key={product.id} className="bg-paper p-4 border border-ink-100 rounded-none flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shadow-sm hover:border-ink-100 transition-colors">
                   <div className="flex items-center gap-4">
                     <div className="flex flex-col gap-1">
-                      <button onClick={() => moveItem(index, 'up')} disabled={index === 0} className="w-6 h-6 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded flex items-center justify-center text-[10px] font-bold">▲</button>
-                      <button onClick={() => moveItem(index, 'down')} disabled={index === products.length - 1} className="w-6 h-6 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 rounded flex items-center justify-center text-[10px] font-bold">▼</button>
+                      <button onClick={() => moveItem(index, 'up')} disabled={index === 0} className="w-6 h-6 bg-ink-100 hover:bg-ink-100 disabled:opacity-30 rounded-none flex items-center justify-center text-[10px] font-bold">▲</button>
+                      <button onClick={() => moveItem(index, 'down')} disabled={index === products.length - 1} className="w-6 h-6 bg-ink-100 hover:bg-ink-100 disabled:opacity-30 rounded-none flex items-center justify-center text-[10px] font-bold">▼</button>
                     </div>
                     {product.images?.[0] ? (
-                      <img src={product.images[0]} alt={product.name} className="w-14 h-14 object-cover rounded border border-gray-200" />
+                      <img src={product.images[0]} alt={product.name} className="w-14 h-14 object-cover rounded-none border border-ink-100" />
                     ) : (
-                      <div className="w-14 h-14 rounded border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-[8px] text-gray-400 uppercase text-center">No photo</div>
+                      <div className="w-14 h-14 rounded-none border border-dashed border-ink-100 bg-paper flex items-center justify-center text-[8px] text-ink-300 uppercase text-center">No photo</div>
                     )}
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-bold tracking-widest uppercase text-[#aa002a]">{product.type}</span>
-                        {product.category && <span className="text-[10px] text-gray-400">· {product.category}</span>}
-                        {!product.active && <span className="text-[9px] font-bold tracking-widest uppercase bg-amber-50 text-amber-700 px-2 py-0.5 rounded">Hidden</span>}
+                        <span className="text-[10px] font-bold tracking-widest uppercase text-accent-600">{product.type}</span>
+                        {product.category && <span className="text-[10px] text-ink-300">· {product.category}</span>}
+                        {!product.active && <span className="text-[9px] font-bold tracking-widest uppercase bg-amber-50 text-amber-700 px-2 py-0.5 rounded-none">Hidden</span>}
                       </div>
-                      <h2 className="text-base font-medium text-gray-900">{product.name}</h2>
-                      <p className="text-xs text-gray-500">${Number(product.price).toFixed(2)}</p>
+                      <h2 className="text-base font-medium text-ink-900">{product.name}</h2>
+                      <p className="text-xs text-ink-500">${Number(product.price).toFixed(2)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-5">
+                  <div className="flex items-center flex-wrap gap-4">
                     <button
                       onClick={() => toggleFeatured(product)}
-                      className={`text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded transition-colors ${
-                        product.featured ? 'bg-[#aa002a] text-white hover:bg-gray-900' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'
+                      className={`text-[9px] font-bold tracking-widest uppercase px-2 py-1 rounded-none transition-colors ${
+                        product.featured ? 'bg-accent-600 text-white hover:bg-gray-900' : 'bg-ink-100 text-ink-300 hover:bg-ink-100'
                       }`}
                     >
                       {product.featured ? '★ Featured' : '☆ Feature'}
                     </button>
-                    <button onClick={() => toggleActive(product)} className="text-xs font-bold tracking-widest text-gray-500 hover:text-gray-900 uppercase cursor-pointer">
+                    <button onClick={() => toggleActive(product)} className="text-xs font-bold tracking-widest text-ink-500 hover:text-ink-900 uppercase cursor-pointer">
                       {product.active ? 'Hide' : 'Show'}
                     </button>
-                    <Link href={`/admin/shop/edit/${product.id}`} className="text-xs font-bold tracking-widest text-gray-500 hover:text-[#aa002a] uppercase">Edit</Link>
+                    <Link href={`/admin/shop/edit/${product.id}`} className="text-xs font-bold tracking-widest text-ink-500 hover:text-accent-600 uppercase">Edit</Link>
                     <button onClick={() => deleteProduct(product)} className="text-xs font-bold tracking-widest text-red-500 hover:text-red-700 uppercase">Delete</button>
                   </div>
                 </div>

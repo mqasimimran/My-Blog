@@ -58,12 +58,21 @@ export async function POST(request: NextRequest) {
 
     const { data: product, error: productError } = await supabase
       .from('products')
-      .select('name, price')
+      .select('name, price, type, stock_quantity')
       .eq('id', productId)
       .single()
 
     if (productError || !product) {
       return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    }
+
+    // Enforce stock server-side. The product page only hides the "Buy Now"
+    // button for out-of-stock items — that's a UI hint, not a gate. Anyone
+    // who already had the checkout URL (or hits this API directly) could
+    // still submit an order for a physical product with zero stock without
+    // this check.
+    if (product.type === 'physical' && product.stock_quantity !== null && product.stock_quantity <= 0) {
+      return NextResponse.json({ error: 'This item is out of stock.' }, { status: 409 })
     }
 
     const orderNumber = generateOrderNumber()

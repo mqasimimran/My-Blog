@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import CalendlyEmbed from '@/app/components/CalendlyEmbed'
 
 function ContactForm() {
   const searchParams = useSearchParams()
@@ -49,8 +50,8 @@ function ContactForm() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center py-20 px-6 font-sans">
-      <div className="w-full max-w-5xl bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col md:flex-row">
+    <main className="min-h-screen bg-paper flex flex-col items-center py-20 px-6 font-sans gap-16">
+      <div className="w-full max-w-5xl bg-paper rounded-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col md:flex-row">
         
         {/* Left Side: Contact Information */}
         <div className="w-full md:w-5/12 bg-gray-900 text-white p-10 lg:p-12 flex flex-col justify-between">
@@ -65,7 +66,7 @@ function ContactForm() {
             <div className="space-y-6">
               <div>
                 <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-1">Email</span>
-                <a href="mailto:m.qasimimran01@gmail.com" className="text-sm hover:text-[#aa002a] transition-colors">
+                <a href="mailto:m.qasimimran01@gmail.com" className="text-sm hover:text-accent-600 transition-colors">
                   m.qasimimran01@gmail.com
                 </a>
               </div>
@@ -79,10 +80,10 @@ function ContactForm() {
           <div className="mt-12">
             <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3">Connect</span>
             <div className="flex gap-6 text-xs font-bold tracking-widest uppercase">
-              <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">
+              <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">
                 LinkedIn
               </a>
-              <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-[#aa002a] transition-colors">
+              <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">
                 GitHub
               </a>
             </div>
@@ -111,11 +112,11 @@ function ContactForm() {
                   placeholder=" " 
                   required
                   suppressHydrationWarning
-                  className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors"
+                  className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors"
                 />
                 <label 
                   htmlFor="name" 
-                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
                 >
                   Full Name
                 </label>
@@ -130,11 +131,11 @@ function ContactForm() {
                   placeholder=" " 
                   required
                   suppressHydrationWarning
-                  className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors"
+                  className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors"
                 />
                 <label 
                   htmlFor="email" 
-                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
                 >
                   Email Address
                 </label>
@@ -151,11 +152,11 @@ function ContactForm() {
                 required
                 defaultValue={prefillSubject}
                 suppressHydrationWarning
-                className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors"
+                className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors"
               />
               <label 
                 htmlFor="subject" 
-                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
               >
                 Subject / Inquiry Type
               </label>
@@ -171,11 +172,11 @@ function ContactForm() {
                 required
                 defaultValue={prefillMessage}
                 suppressHydrationWarning
-                className="peer w-full border-b border-gray-200 bg-transparent py-2 text-sm text-gray-900 focus:border-[#aa002a] focus:outline-none transition-colors resize-none"
+                className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors resize-none"
               ></textarea>
               <label 
                 htmlFor="message" 
-                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-gray-400 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-[#aa002a]"
+                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
               >
                 Your Message
               </label>
@@ -186,7 +187,7 @@ function ContactForm() {
               <button 
                 type="submit" 
                 disabled={isSubmitting}
-                className="bg-gray-900 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-[#aa002a] transition-colors flex items-center gap-2 disabled:opacity-70"
+                className="bg-gray-900 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded-none hover:bg-accent-600 transition-colors flex items-center gap-2 disabled:opacity-70"
               >
                 {isSubmitting ? 'Sending...' : 'Send Message'} <span>↗</span>
               </button>
@@ -194,7 +195,7 @@ function ContactForm() {
               {/* Success / Error Feedback */}
               {submitStatus.type && (
                 <p className={`text-xs font-medium tracking-wide ${
-                  submitStatus.type === 'success' ? 'text-green-600' : 'text-[#aa002a]'
+                  submitStatus.type === 'success' ? 'text-green-600' : 'text-accent-600'
                 }`}>
                   {submitStatus.message}
                 </p>
@@ -205,6 +206,17 @@ function ContactForm() {
         </div>
         
       </div>
+
+      {/* Prefer to talk it through? */}
+      <div className="w-full max-w-5xl bg-paper rounded-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 lg:p-12">
+        <h2 className="text-2xl font-light tracking-wide uppercase text-ink-900 mb-2">
+          Prefer To Talk It Through?
+        </h2>
+        <p className="text-sm text-ink-500 mb-8 max-w-xl">
+          Book a short call directly — no back-and-forth over email required.
+        </p>
+        <CalendlyEmbed />
+      </div>
     </main>
   )
 }
@@ -212,8 +224,8 @@ function ContactForm() {
 export default function ContactPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <p className="text-gray-400 text-xs font-mono uppercase tracking-widest">Loading...</p>
+      <main className="min-h-screen bg-paper flex items-center justify-center">
+        <p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p>
       </main>
     }>
       <ContactForm />

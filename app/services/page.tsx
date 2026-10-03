@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import AvailabilityBadge from '@/app/components/AvailabilityBadge'
 import MagneticButton from '@/app/components/MagneticButton'
 import { SkeletonCardGrid } from '@/app/components/Skeleton'
+import QuoteCalculator from '@/app/components/QuoteCalculator'
 
 type ServicePackage = {
   id: string
@@ -75,18 +76,18 @@ export default function ServicesPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-white font-sans">
+    <main className="min-h-screen bg-paper font-sans">
 
       {/* Header */}
-      <section className="bg-gradient-to-br from-slate-100 to-white py-24 px-6">
+      <section className="bg-gradient-to-br from-ink-100 to-paper py-24 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <div className="flex justify-center mb-6">
             <AvailabilityBadge />
           </div>
-          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-gray-900 mb-6">
+          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-ink-900 mb-6">
             Services
           </h1>
-          <p className="text-gray-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
+          <p className="text-ink-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
             I take on a limited number of freelance projects across development and design.
             Pick the service that matches what you need, or reach out if you're not sure.
           </p>
@@ -98,7 +99,7 @@ export default function ServicesPage() {
         {isLoading ? (
           <SkeletonCardGrid count={6} columns={3} />
         ) : services.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 text-sm">
+          <div className="text-center py-20 text-ink-300 text-sm">
             No services listed yet.
           </div>
         ) : (
@@ -118,7 +119,7 @@ export default function ServicesPage() {
 
               const cardInner = (
                 <>
-                  <div className="relative h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
+                  <div className="relative h-40 bg-ink-100 flex items-center justify-center overflow-hidden">
                     {service.cover_image ? (
                       <Image src={service.cover_image} alt={service.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
@@ -128,33 +129,33 @@ export default function ServicesPage() {
                   <div className="p-6 flex flex-col flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       {!service.cover_image && service.icon && <span className="text-xl">{service.icon}</span>}
-                      <h2 className="text-xl font-medium text-gray-900">{service.name}</h2>
+                      <h2 className="text-xl font-medium text-ink-900">{service.name}</h2>
                     </div>
                     {service.tagline && (
-                      <p className="text-[#aa002a] text-xs font-bold tracking-[0.1em] uppercase mb-3">
+                      <p className="text-accent-600 text-xs font-bold tracking-[0.1em] uppercase mb-3">
                         {service.tagline}
                       </p>
                     )}
                     {service.description && (
-                      <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                      <p className="text-sm text-ink-700 leading-relaxed mb-4 line-clamp-3">
                         {service.description}
                       </p>
                     )}
                     {!hasPackages && includesList.length > 0 && (
                       <ul className="space-y-1.5 mb-4">
                         {includesList.slice(0, 4).map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-xs text-gray-500">
-                            <span className="text-[#aa002a] mt-0.5">→</span>
+                          <li key={item} className="flex items-start gap-2 text-xs text-ink-500">
+                            <span className="text-accent-600 mt-0.5">→</span>
                             {item}
                           </li>
                         ))}
                       </ul>
                     )}
-                    <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div className="mt-auto pt-4 border-t border-ink-100 flex items-center justify-between">
                       {startingAt && (
-                        <span className="text-xs font-bold uppercase tracking-widest text-gray-900">{startingAt}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-ink-900">{startingAt}</span>
                       )}
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#aa002a]">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600">
                         {hasPackages ? 'View Packages →' : 'Get In Touch →'}
                       </span>
                     </div>
@@ -166,7 +167,7 @@ export default function ServicesPage() {
                 <Link
                   key={service.id}
                   href={`/services/${service.slug}`}
-                  className="group border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-white"
+                  className="group border border-ink-100 rounded-none overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-paper"
                 >
                   {cardInner}
                 </Link>
@@ -174,7 +175,7 @@ export default function ServicesPage() {
                 <Link
                   key={service.id}
                   href="/contact"
-                  className="group border border-gray-200 rounded-xl overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-white"
+                  className="group border border-ink-100 rounded-none overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-paper"
                 >
                   {cardInner}
                 </Link>
@@ -185,22 +186,25 @@ export default function ServicesPage() {
       </section>
 
       {/* Process */}
-      <section className="bg-gray-50 border-t border-gray-200 py-20 px-6">
+      <section className="bg-paper border-t border-ink-100 py-20 px-6">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-light tracking-wide uppercase text-gray-900 mb-12 text-center">
+          <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-12 text-center">
             How It Works
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {PROCESS.map((item) => (
               <div key={item.step}>
-                <div className="text-4xl font-light text-gray-200 mb-3">{item.step}</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{item.description}</p>
+                <div className="text-4xl font-light text-ink-100 mb-3">{item.step}</div>
+                <h3 className="text-lg font-medium text-ink-900 mb-2">{item.title}</h3>
+                <p className="text-sm text-ink-500 leading-relaxed">{item.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Instant Quote Calculator */}
+      <QuoteCalculator />
 
       {/* CTA */}
       <section className="bg-gray-900 text-white py-24 px-6">
@@ -215,7 +219,7 @@ export default function ServicesPage() {
             <MagneticButton>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 bg-[#aa002a] text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded hover:bg-white hover:text-gray-900 transition-colors"
+                className="inline-flex items-center gap-2 bg-accent-600 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded-none hover:bg-white hover:text-gray-900 transition-colors"
               >
                 Request A Quote <span>↗</span>
               </Link>
