@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import AdminNav from '@/app/admin/AdminNav'
 import { logActivity } from '@/lib/logActivity'
+import { adminApi } from '@/lib/adminApi'
 
 const METHOD_LABELS: Record<string, string> = {
   jazzcash: 'JazzCash',
@@ -38,9 +38,12 @@ export default function AdminOrdersPage() {
 
   useEffect(() => {
     async function fetchOrders() {
-      const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false })
-      if (error) console.error('Error fetching orders:', error)
-      else setOrders(data || [])
+      try {
+        const data = await adminApi.list('orders', { orderBy: 'created_at', ascending: false })
+        setOrders(data || [])
+      } catch (err: any) {
+        console.error('Error fetching orders:', err.message)
+      }
       setIsLoading(false)
     }
     if (status === 'authenticated') fetchOrders()
@@ -87,9 +90,12 @@ export default function AdminOrdersPage() {
   async function rejectOrder(order: Order) {
     const methodLabel = METHOD_LABELS[order.payment_method] || order.payment_method
     if (!confirm(`Mark this order as rejected? Use this if you can't find this transaction via ${methodLabel}.`)) return
-    const { error } = await supabase.from('orders').update({ status: 'rejected' }).eq('id', order.id)
-    if (error) alert('Error: ' + error.message)
-    else setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'rejected' } : o))
+    try {
+      await adminApi.update('orders', order.id, { status: 'rejected' })
+      setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'rejected' } : o))
+    } catch (err: any) {
+      alert('Error: ' + err.message)
+    }
   }
 
   const filteredOrders = filter === 'all' ? orders : orders.filter(o => o.status === filter)

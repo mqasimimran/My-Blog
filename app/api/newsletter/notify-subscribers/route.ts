@@ -1,21 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
+import { requireAdminSession } from '@/lib/requireAdminSession'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 const SITE_URL = 'https://www.muhammadqasimimran.me'
 
 export async function POST(request: NextRequest) {
+  // Emails your entire subscriber list — only /admin/new and /admin/edit
+  // should ever call this, when you actually publish a post. Previously
+  // unauthenticated: anyone could POST arbitrary fake content here and
+  // spam your whole list, or just repeatedly trigger real sends.
+  const unauthorized = await requireAdminSession()
+  if (unauthorized) return unauthorized
+
   try {
     const { articleTitle, articleSlug, articleExcerpt } = await request.json()
     if (!articleTitle || !articleSlug) {
       return NextResponse.json({ error: 'Missing article title or slug' }, { status: 400 })
     }
 
-    const { data: subscribers, error } = await supabase.from('newsletter_subscribers').select('email')
+    const { data: subscribers, error } = await supabase.from('newsletter_subscribers').select('email, unsubscribe_token')
     if (error) {
       console.error('Error fetching subscribers:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
     // mailing list provider would be worth revisiting.
     let sent = 0
     for (const subscriber of subscribers) {
-      const unsubscribeUrl = `${SITE_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(subscriber.email)}`
+      const unsubscribeUrl = `${SITE_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(subscriber.email)}&token=${subscriber.unsubscribe_token}`
 
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',

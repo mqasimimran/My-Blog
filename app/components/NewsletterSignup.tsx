@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 
 export default function NewsletterSignup() {
   const [email, setEmail] = useState('')
@@ -12,18 +11,24 @@ export default function NewsletterSignup() {
     if (!email.trim()) return
     setStatus('loading')
 
-    const { error } = await supabase.from('newsletter_subscribers').insert([{ email: email.trim().toLowerCase() }])
-
-    if (error) {
-      if (error.code === '23505') {
-        setStatus('duplicate')
+    try {
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+      if (res.ok) {
+        // The server treats "already subscribed" as success too, on
+        // purpose, so this form can't be used to check whether a given
+        // email is on the list.
+        setStatus('success')
+        setEmail('')
       } else {
-        console.error('Newsletter signup error:', error)
         setStatus('error')
       }
-    } else {
-      setStatus('success')
-      setEmail('')
+    } catch (err) {
+      console.error('Newsletter signup error:', err)
+      setStatus('error')
     }
   }
 

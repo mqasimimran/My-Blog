@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter, useParams } from 'next/navigation'
 
 export default function EditCertification() {
@@ -18,7 +19,9 @@ export default function EditCertification() {
 
   useEffect(() => {
     async function fetchItem() {
-      const { data, error } = await supabase.from('certifications').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('certifications', id) } catch (e: any) { error = e }
       if (error) {
         alert('Error loading certification: ' + error.message)
       } else if (data) {
@@ -46,17 +49,18 @@ export default function EditCertification() {
       if (file) {
         const fileExt = file.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
-        const { error: uploadError } = await supabase.storage.from('resume-images').upload(fileName, file)
+        const { error: uploadError } = await adminStorage.from('resume-images').upload(fileName, file)
         if (uploadError) throw uploadError
 
-        const { data: urlData } = supabase.storage.from('resume-images').getPublicUrl(fileName)
+        const { data: urlData } = adminStorage.from('resume-images').getPublicUrl(fileName)
         imageUrl = urlData.publicUrl
       }
 
-      const { error } = await supabase.from('certifications').update({
+      let error: any = null
+      try { await adminApi.update('certifications', id, {
         ...formData,
         image_url: imageUrl
-      }).eq('id', id)
+      }) } catch (e: any) { error = e }
 
       if (error) throw error
 

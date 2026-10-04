@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type JourneyEntry = {
@@ -21,10 +21,9 @@ export default function AdminJourneyPage() {
 
   useEffect(() => {
     async function fetchEntries() {
-      const { data, error } = await supabase
-        .from('journey_entries')
-        .select('id, date_label, title, image_url, order_index')
-        .order('order_index', { ascending: true })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('journey_entries', { select: 'id, date_label, title, image_url, order_index', orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
 
       if (error) console.error('Error fetching journey entries:', error)
       else setEntries(data || [])
@@ -41,8 +40,10 @@ export default function AdminJourneyPage() {
     const current = entries[index]
     const target = entries[targetIndex]
 
-    const { error: err1 } = await supabase.from('journey_entries').update({ order_index: target.order_index }).eq('id', current.id)
-    const { error: err2 } = await supabase.from('journey_entries').update({ order_index: current.order_index }).eq('id', target.id)
+    let err1: any = null
+    try { await adminApi.update('journey_entries', current.id, { order_index: target.order_index }) } catch (e: any) { err1 = e }
+    let err2: any = null
+    try { await adminApi.update('journey_entries', target.id, { order_index: current.order_index }) } catch (e: any) { err2 = e }
 
     if (err1 || err2) {
       alert('Error updating order')
@@ -56,7 +57,8 @@ export default function AdminJourneyPage() {
 
   async function deleteEntry(entry: JourneyEntry) {
     if (!confirm(`Delete "${entry.title}"?`)) return
-    const { error } = await supabase.from('journey_entries').delete().eq('id', entry.id)
+    let error: any = null
+    try { await adminApi.remove('journey_entries', entry.id) } catch (e: any) { error = e }
     if (error) alert('Error deleting: ' + error.message)
     else setEntries(prev => prev.filter(e => e.id !== entry.id))
   }

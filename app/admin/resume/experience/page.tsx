@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter } from 'next/navigation'
 
 export default function AddExperience() {
@@ -15,7 +15,8 @@ export default function AddExperience() {
     e.preventDefault()
     setLoading(true)
 
-    const { error } = await supabase.from('experiences').insert([formData])
+    let error: any = null
+    try { await adminApi.insert('experiences', formData) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error adding experience: ' + error.message)

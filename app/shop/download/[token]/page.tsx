@@ -2,7 +2,6 @@
 
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 
 type Order = {
   product_name: string
@@ -20,26 +19,18 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
 
   useEffect(() => {
     async function fetchOrder() {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('product_name, customer_name, status, product_id')
-        .eq('download_token', token)
-        .eq('status', 'paid')
-        .single()
-
-      if (error || !data) {
+      try {
+        const res = await fetch(`/api/orders/download?token=${encodeURIComponent(token)}`)
+        if (!res.ok) {
+          setNotFound(true)
+        } else {
+          const data = await res.json()
+          setOrder(data.order)
+          if (data.fileUrl) setFileUrl(data.fileUrl)
+        }
+      } catch {
         setNotFound(true)
-        setIsLoading(false)
-        return
       }
-
-      setOrder(data)
-
-      if (data.product_id) {
-        const { data: product } = await supabase.from('products').select('digital_file_url').eq('id', data.product_id).single()
-        if (product?.digital_file_url) setFileUrl(product.digital_file_url)
-      }
-
       setIsLoading(false)
     }
     fetchOrder()

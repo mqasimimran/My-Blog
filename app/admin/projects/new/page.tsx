@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 export default function NewProjectPage() {
   const { data: session, status } = useSession()
@@ -43,7 +44,7 @@ export default function NewProjectPage() {
     if (featureImage) {
       const fileExt = featureImage.name.split('.').pop()
       const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, featureImage)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, featureImage)
 
       if (uploadError) {
         alert('Error uploading image')
@@ -51,7 +52,7 @@ export default function NewProjectPage() {
         return
       }
 
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       imageUrl = publicUrlData.publicUrl
     }
 
@@ -59,13 +60,13 @@ export default function NewProjectPage() {
     for (const file of screenshotFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `screenshot_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, file)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, file)
       if (uploadError) {
         alert('Error uploading a screenshot: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       screenshotUrls.push(publicUrlData.publicUrl)
     }
 
@@ -73,17 +74,18 @@ export default function NewProjectPage() {
     if (previewVideoFile) {
       const fileExt = previewVideoFile.name.split('.').pop()
       const fileName = `preview_video_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, previewVideoFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, previewVideoFile)
       if (uploadError) {
         alert('Error uploading preview video: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       previewVideoUrl = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('projects').insert([{
+    try {
+      await adminApi.insert('projects', {
       title,
       slug,
       category,
@@ -102,13 +104,11 @@ export default function NewProjectPage() {
       featured,
       published,
       feature_image: imageUrl
-    }])
-
-    if (error) {
-      alert('Error saving project: ' + error.message)
-      setIsSubmitting(false)
-    } else {
+    })
       router.push('/admin/projects')
+    } catch (err: any) {
+      alert('Error saving project: ' + err.message)
+      setIsSubmitting(false)
     }
   }
 

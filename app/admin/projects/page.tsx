@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type Project = {
@@ -25,15 +25,15 @@ export default function AdminProjectsPage() {
 
   useEffect(() => {
     async function fetchProjects() {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('id, title, slug, category, created_at, featured')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Error fetching projects:', error)
-      } else {
+      try {
+        const data = await adminApi.list('projects', {
+          select: 'id, title, slug, category, created_at, featured',
+          orderBy: 'created_at',
+          ascending: false,
+        })
         setProjects(data || [])
+      } catch (err: any) {
+        console.error('Error fetching projects:', err.message)
       }
       setIsLoading(false)
     }
@@ -44,11 +44,11 @@ export default function AdminProjectsPage() {
   }, [status])
 
   async function toggleFeatured(project: Project) {
-    const { error } = await supabase.from('projects').update({ featured: !project.featured }).eq('id', project.id)
-    if (error) {
-      alert('Error updating: ' + error.message)
-    } else {
+    try {
+      await adminApi.update('projects', project.id, { featured: !project.featured })
       setProjects(prev => prev.map(p => p.id === project.id ? { ...p, featured: !p.featured } : p))
+    } catch (err: any) {
+      alert('Error updating: ' + err.message)
     }
   }
 
@@ -110,35 +110,12 @@ export default function AdminProjectsPage() {
                     
                     <form onSubmit={async (e) => {
                       e.preventDefault()
+                      if (!window.confirm(`Are you sure you want to delete "${project.title}"?`)) return
                       try {
-                        console.log("1. Form submitted for ID:", project.id)
-                        
-                        const isConfirmed = window.confirm(`Are you sure you want to delete "${project.title}"?`)
-                        console.log("2. Confirm dialog result:", isConfirmed)
-                        
-                        if (!isConfirmed) return
-
-                        console.log("3. Attempting state filter...")
-                        setProjects(prev => {
-                          const updated = prev.filter(p => p.id !== project.id)
-                          console.log("4. State updated, new length:", updated.length)
-                          return updated
-                        })
-
-                        console.log("5. Sending request to Supabase...")
-                        const { error } = await supabase
-                          .from('projects')
-                          .delete()
-                          .eq('id', project.id)
-
-                        if (error) {
-                          console.error("6. Supabase delete error:", error.message)
-                          alert(`Database error: ${error.message}`)
-                        } else {
-                          console.log("6. Supabase delete completed successfully!")
-                        }
-                      } catch (err) {
-                        console.error("CATCH ERROR IN DELETE:", err)
+                        await adminApi.remove('projects', project.id)
+                        setProjects(prev => prev.filter(p => p.id !== project.id))
+                      } catch (err: any) {
+                        alert(`Error deleting project: ${err.message}`)
                       }
                     }}>
                       <button 

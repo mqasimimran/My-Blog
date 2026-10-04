@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter, useParams } from 'next/navigation'
 
 export default function EditExperience() {
@@ -17,7 +17,9 @@ export default function EditExperience() {
 
   useEffect(() => {
     async function fetchItem() {
-      const { data, error } = await supabase.from('experiences').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('experiences', id) } catch (e: any) { error = e }
       if (error) {
         alert('Error loading experience: ' + error.message)
       } else if (data) {
@@ -38,7 +40,8 @@ export default function EditExperience() {
     e.preventDefault()
     setSaving(true)
 
-    const { error } = await supabase.from('experiences').update(formData).eq('id', id)
+    let error: any = null
+    try { await adminApi.update('experiences', id, formData) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error updating experience: ' + error.message)

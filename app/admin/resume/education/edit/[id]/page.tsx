@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter, useParams } from 'next/navigation'
 
 export default function EditEducation() {
@@ -17,7 +17,9 @@ export default function EditEducation() {
 
   useEffect(() => {
     async function fetchItem() {
-      const { data, error } = await supabase.from('education').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('education', id) } catch (e: any) { error = e }
       if (error) {
         alert('Error loading education: ' + error.message)
       } else if (data) {
@@ -38,7 +40,8 @@ export default function EditEducation() {
     e.preventDefault()
     setSaving(true)
 
-    const { error } = await supabase.from('education').update(formData).eq('id', id)
+    let error: any = null
+    try { await adminApi.update('education', id, formData) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error updating education: ' + error.message)

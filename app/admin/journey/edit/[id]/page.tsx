@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 export default function EditJourneyEntryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -22,7 +23,9 @@ export default function EditJourneyEntryPage({ params }: { params: Promise<{ id:
 
   useEffect(() => {
     async function fetchEntry() {
-      const { data, error } = await supabase.from('journey_entries').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('journey_entries', id) } catch (e: any) { error = e }
       if (error) {
         console.error('Error fetching entry:', error)
       } else if (data) {
@@ -45,22 +48,23 @@ export default function EditJourneyEntryPage({ params }: { params: Promise<{ id:
     if (imageFile) {
       const fileExt = imageFile.name.split('.').pop()
       const fileName = `journey_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, imageFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, imageFile)
       if (uploadError) {
         alert('Error uploading image: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       finalImageUrl = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('journey_entries').update({
+    let error: any = null
+    try { await adminApi.update('journey_entries', id, {
       date_label: dateLabel,
       title,
       body,
       image_url: finalImageUrl,
-    }).eq('id', id)
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error updating entry: ' + error.message)

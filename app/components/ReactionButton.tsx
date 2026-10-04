@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
 
 export default function ReactionButton({ slug, initialCount }: { slug: string; initialCount: number }) {
   const [count, setCount] = useState(initialCount)
@@ -18,9 +17,18 @@ export default function ReactionButton({ slug, initialCount }: { slug: string; i
     setCount((c) => c + 1)
     localStorage.setItem(`reacted_${slug}`, 'true')
 
-    const { error } = await supabase.from('articles').update({ reaction_count: count + 1 }).eq('slug', slug)
-    if (error) {
-      console.error('Error saving reaction:', error)
+    try {
+      const res = await fetch('/api/reactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (typeof data.count === 'number') setCount(data.count)
+      }
+    } catch (err) {
+      console.error('Error saving reaction:', err)
     }
   }
 

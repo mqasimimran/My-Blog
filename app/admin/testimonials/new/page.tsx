@@ -5,6 +5,8 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 export default function NewTestimonialPage() {
   const { data: session, status } = useSession()
@@ -25,21 +27,22 @@ export default function NewTestimonialPage() {
     if (avatarFile) {
       const fileExt = avatarFile.name.split('.').pop()
       const fileName = `testimonial_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, avatarFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, avatarFile)
       if (uploadError) {
         alert('Error uploading photo: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       avatarUrl = publicUrlData.publicUrl
     }
 
     const { count } = await supabase.from('testimonials').select('*', { count: 'exact', head: true })
 
-    const { error } = await supabase.from('testimonials').insert([{
+    let error: any = null
+    try { await adminApi.insert('testimonials', {
       name, role, quote, avatar_url: avatarUrl, active, order_index: count || 0,
-    }])
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error saving testimonial: ' + error.message)

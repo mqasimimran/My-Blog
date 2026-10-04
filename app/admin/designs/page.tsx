@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type Design = {
@@ -27,10 +27,9 @@ export default function AdminDesignsPage() {
 
   useEffect(() => {
     async function fetchDesigns() {
-      const { data, error } = await supabase
-        .from('designs')
-        .select('*')
-        .order('created_at', { ascending: false })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('designs', { orderBy: 'created_at', ascending: false }) } catch (e: any) { error = e }
 
       if (error) {
         console.error('Error fetching designs:', error)
@@ -47,7 +46,8 @@ export default function AdminDesignsPage() {
 
   async function deleteDesign(id: string, title: string) {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) return
-    const { error } = await supabase.from('designs').delete().eq('id', id)
+    let error: any = null
+    try { await adminApi.remove('designs', id) } catch (e: any) { error = e }
     if (error) {
       alert('Error deleting design')
     } else {
@@ -56,7 +56,8 @@ export default function AdminDesignsPage() {
   }
 
   async function toggleFeatured(design: Design) {
-    const { error } = await supabase.from('designs').update({ featured: !design.featured }).eq('id', design.id)
+    let error: any = null
+    try { await adminApi.update('designs', design.id, { featured: !design.featured }) } catch (e: any) { error = e }
     if (error) {
       alert('Error updating: ' + error.message)
     } else {

@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 export default function EditTestimonialPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -23,7 +24,9 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
 
   useEffect(() => {
     async function fetchTestimonial() {
-      const { data, error } = await supabase.from('testimonials').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('testimonials', id) } catch (e: any) { error = e }
       if (error) {
         console.error('Error fetching testimonial:', error)
       } else if (data) {
@@ -47,19 +50,20 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
     if (avatarFile) {
       const fileExt = avatarFile.name.split('.').pop()
       const fileName = `testimonial_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, avatarFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, avatarFile)
       if (uploadError) {
         alert('Error uploading photo: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       finalAvatarUrl = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('testimonials').update({
+    let error: any = null
+    try { await adminApi.update('testimonials', id, {
       name, role, quote, avatar_url: finalAvatarUrl, active,
-    }).eq('id', id)
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error updating testimonial: ' + error.message)

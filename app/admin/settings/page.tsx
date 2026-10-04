@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 export default function AdminSettingsPage() {
@@ -27,7 +27,9 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     async function fetchSettings() {
-      const { data, error } = await supabase.from('site_settings').select('*').eq('id', 1).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('site_settings', 1) } catch (e: any) { error = e }
       if (error) console.error('Error fetching settings:', error)
       else if (data) {
         setAvailableForWork(data.available_for_work)
@@ -51,7 +53,8 @@ export default function AdminSettingsPage() {
 
   async function handleSave() {
     setIsSaving(true)
-    const { error } = await supabase.from('site_settings').update({
+    let error: any = null
+    try { await adminApi.update('site_settings', 1, {
       available_for_work: availableForWork,
       availability_message: availabilityMessage,
       now_text: nowText,
@@ -64,7 +67,7 @@ export default function AdminSettingsPage() {
       bank_account_number: bankAccountNumber,
       bank_iban: bankIban,
       payoneer_email: payoneerEmail,
-    }).eq('id', 1)
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error saving: ' + error.message)
@@ -79,24 +82,24 @@ export default function AdminSettingsPage() {
     setIsExporting(true)
     try {
       const [projects, articles, designs, services, servicePackages, testimonials, journeyEntries] = await Promise.all([
-        supabase.from('projects').select('*'),
-        supabase.from('articles').select('*'),
-        supabase.from('designs').select('*'),
-        supabase.from('services').select('*'),
-        supabase.from('service_packages').select('*'),
-        supabase.from('testimonials').select('*'),
-        supabase.from('journey_entries').select('*'),
+        adminApi.list('projects'),
+        adminApi.list('articles'),
+        adminApi.list('designs'),
+        adminApi.list('services'),
+        adminApi.list('service_packages'),
+        adminApi.list('testimonials'),
+        adminApi.list('journey_entries'),
       ])
 
       const exportData = {
         exported_at: new Date().toISOString(),
-        projects: projects.data || [],
-        articles: articles.data || [],
-        designs: designs.data || [],
-        services: services.data || [],
-        service_packages: servicePackages.data || [],
-        testimonials: testimonials.data || [],
-        journey_entries: journeyEntries.data || [],
+        projects: projects || [],
+        articles: articles || [],
+        designs: designs || [],
+        services: services || [],
+        service_packages: servicePackages || [],
+        testimonials: testimonials || [],
+        journey_entries: journeyEntries || [],
       }
 
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })

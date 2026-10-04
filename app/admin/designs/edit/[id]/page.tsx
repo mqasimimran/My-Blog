@@ -5,7 +5,8 @@ import PreviewLinkField from '@/app/components/admin/PreviewLinkField'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 export default function EditDesignPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -27,7 +28,9 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     async function fetchDesign() {
-      const { data, error } = await supabase.from('designs').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('designs', id) } catch (e: any) { error = e }
       if (error) {
         console.error('Error fetching design:', error)
       } else if (data) {
@@ -76,14 +79,14 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
         const fileExt = file.name.split('.').pop()
         const fileName = `design_${Math.random().toString(36).substring(2)}.${fileExt}`
         
-        const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, file)
+        const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, file)
         if (uploadError) {
           alert(`Error uploading image ${file.name}: ` + uploadError.message)
           setIsSubmitting(false)
           return
         }
 
-        const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+        const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
         finalImages.push(publicUrlData.publicUrl)
       }
     }
@@ -98,17 +101,18 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
     if (beforeImageFile) {
       const fileExt = beforeImageFile.name.split('.').pop()
       const fileName = `design_before_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, beforeImageFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, beforeImageFile)
       if (uploadError) {
         alert('Error uploading before-image: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       finalBeforeImage = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('designs').update({ title, category, images: finalImages, before_image: finalBeforeImage, featured, published }).eq('id', id)
+    let error: any = null
+    try { await adminApi.update('designs', id, { title, category, images: finalImages, before_image: finalBeforeImage, featured, published }) } catch (e: any) { error = e }
     if (error) {
       alert('Error updating design: ' + error.message)
       setIsSubmitting(false)
@@ -125,17 +129,17 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="min-h-screen bg-paper flex font-sans">
-      <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col justify-between hidden md:flex">
+      <aside className="w-64 bg-paper text-ink-900 border-r border-ink-100 p-6 flex flex-col justify-between hidden md:flex">
         <div>
-          <h2 className="text-xl font-light tracking-wide uppercase mb-10 text-white">Admin</h2>
+          <h2 className="text-xl font-light tracking-wide uppercase mb-10">Admin</h2>
           <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-            <Link href="/admin/designs" className="text-ink-300 hover:text-white transition-colors">
+            <Link href="/admin/designs" className="text-ink-300 hover:text-ink-900 transition-colors">
               ← Back to Designs
             </Link>
           </nav>
         </div>
         <div>
-          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-ink-300 hover:text-red-400 transition-colors pt-6 border-t border-gray-800">
+          <button onClick={() => signOut({ callbackUrl: '/admin/login' })} className="w-full text-left text-xs font-bold tracking-widest uppercase text-ink-300 hover:text-red-400 transition-colors pt-6 border-t border-ink-100">
             ← Log Out
           </button>
         </div>

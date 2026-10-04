@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 import RichTextEditor from '@/components/RichTextEditor'
 
@@ -31,10 +32,10 @@ export default function NewArticle() {
       const fileExt = file.name.split('.').pop()
       const fileName = `feature-${Math.random()}.${fileExt}`
 
-      const { error } = await supabase.storage.from('blog-images').upload(fileName, file)
+      const { error } = await adminStorage.from('blog-images').upload(fileName, file)
       if (error) throw error
 
-      const { data } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data } = adminStorage.from('blog-images').getPublicUrl(fileName)
       setFeatureImage(data.publicUrl)
     } catch (error) {
       console.error('Error uploading feature image:', error)
@@ -51,7 +52,8 @@ export default function NewArticle() {
     setIsSubmitting(true)
     const slug = generateSlug(title)
 
-    const { error } = await supabase.from('articles').insert([{
+    let error: any = null
+    try { await adminApi.insert('articles', {
       title,
       slug,
       category,
@@ -60,7 +62,7 @@ export default function NewArticle() {
       read_time: readTime,
       feature_image: featureImage,
       published: publishStatus
-    }])
+    }) } catch (e: any) { error = e }
 
     if (error) {
       console.error('Error saving article:', error.message)
@@ -81,7 +83,7 @@ export default function NewArticle() {
 
   return (
     <div className="min-h-screen bg-paper flex">
-      <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col hidden md:flex">
+      <aside className="w-64 bg-paper text-ink-900 border-r border-ink-100 p-6 flex flex-col hidden md:flex">
         <h2 className="text-xl font-light tracking-wide uppercase mb-10">Admin</h2>
         <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
           <Link href="/admin" className="text-left text-accent-600 transition-colors">← Back to Blogs</Link>

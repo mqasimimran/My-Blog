@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter } from 'next/navigation'
 
 export default function AddCertification() {
@@ -27,22 +28,23 @@ export default function AddCertification() {
         const fileExt = file.name.split('.').pop()
         const fileName = `${Math.random()}.${fileExt}`
 
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await adminStorage
           .from('resume-images')
           .upload(fileName, file)
 
         if (uploadError) throw uploadError
 
         // 2. Get Public URL
-        const { data: urlData } = supabase.storage.from('resume-images').getPublicUrl(fileName)
+        const { data: urlData } = adminStorage.from('resume-images').getPublicUrl(fileName)
         imageUrl = urlData.publicUrl
       }
 
       // 3. Save to Database
-      const { error: dbError } = await supabase.from('certifications').insert([{
+      let dbError: any = null
+      try { await adminApi.insert('certifications', {
         ...formData,
         image_url: imageUrl
-      }])
+      }) } catch (e: any) { dbError = e }
 
       if (dbError) throw dbError
 

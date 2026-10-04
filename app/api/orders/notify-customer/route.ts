@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
+import { requireAdminSession } from '@/lib/requireAdminSession'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 const SITE_URL = 'https://www.muhammadqasimimran.me'
 
 export async function POST(request: NextRequest) {
+  // This marks an order paid and emails the customer their paid download
+  // link — it must only ever be triggered by you, from /admin/orders,
+  // after you've manually verified the payment. Previously had no check
+  // at all: anyone who found this URL could mark any order paid and get
+  // the download for free.
+  const unauthorized = await requireAdminSession()
+  if (unauthorized) return unauthorized
+
   try {
     const { orderId } = await request.json()
     if (!orderId) return NextResponse.json({ error: 'Missing orderId' }, { status: 400 })

@@ -5,7 +5,8 @@ import PreviewLinkField from '@/app/components/admin/PreviewLinkField'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 export default function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -40,7 +41,9 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     async function fetchProject() {
-      const { data, error } = await supabase.from('projects').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('projects', id) } catch (e) { error = e }
       if (error) {
         console.error('Error fetching project:', error)
       } else if (data) {
@@ -81,13 +84,13 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       for (const file of screenshotFiles) {
         const fileExt = file.name.split('.').pop()
         const fileName = `screenshot_${Math.random().toString(36).substring(2)}.${fileExt}`
-        const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, file)
+        const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, file)
         if (uploadError) {
           alert('Error uploading a screenshot: ' + uploadError.message)
           setIsSubmitting(false)
           return
         }
-        const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+        const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
         newUrls.push(publicUrlData.publicUrl)
       }
       screenshotUrls = [...existingScreenshots, ...newUrls]
@@ -97,17 +100,18 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
     if (previewVideoFile) {
       const fileExt = previewVideoFile.name.split('.').pop()
       const fileName = `preview_video_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, previewVideoFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, previewVideoFile)
       if (uploadError) {
         alert('Error uploading preview video: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       finalPreviewVideoUrl = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('projects').update({
+    let error: any = null
+    try { await adminApi.update('projects', id, {
       title,
       slug,
       category,
@@ -125,7 +129,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       github_url: githubUrl,
       featured,
       published
-    }).eq('id', id)
+    }) } catch (e) { error = e }
 
     if (error) {
       alert('Error updating project: ' + error.message)

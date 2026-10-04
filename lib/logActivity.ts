@@ -1,9 +1,10 @@
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 
 /**
- * Records an admin action to the activity_log table. Fire-and-forget by
- * design — a logging failure should never block or surface an error for
- * the actual action (publishing, deleting, etc.) it's describing.
+ * Records an admin action to the activity_log table via the secured admin
+ * API (which requires your login session — this is only ever called from
+ * admin pages). Fire-and-forget by design: a logging failure should never
+ * block or surface an error for the action it's describing.
  */
 export function logActivity(params: {
   action: string
@@ -11,15 +12,12 @@ export function logActivity(params: {
   entityLabel?: string | null
   count?: number
 }) {
-  supabase
-    .from('activity_log')
-    .insert([{
+  adminApi
+    .insert('activity_log', {
       action: params.action,
       entity_type: params.entityType,
       entity_label: params.entityLabel ?? null,
       count: params.count ?? 1,
-    }])
-    .then(({ error }) => {
-      if (error) console.error('Error logging activity:', error)
     })
+    .catch((err) => console.error('Error logging activity:', err))
 }

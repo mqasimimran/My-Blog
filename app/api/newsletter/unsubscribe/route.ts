@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 
 export async function GET(request: NextRequest) {
   const email = request.nextUrl.searchParams.get('email')
+  const token = request.nextUrl.searchParams.get('token')
 
-  if (!email) {
-    return new NextResponse('Missing email.', { status: 400 })
+  if (!email || !token) {
+    return new NextResponse('Missing or invalid unsubscribe link.', { status: 400 })
   }
 
-  await supabase.from('newsletter_subscribers').delete().eq('email', email)
+  // Requiring the token (not just the email) means someone can't
+  // unsubscribe another person just by knowing or guessing their email —
+  // the token only ever appears in the email actually sent to them.
+  const { data, error } = await supabase
+    .from('newsletter_subscribers')
+    .delete()
+    .eq('email', email)
+    .eq('unsubscribe_token', token)
+    .select()
+
+  if (error || !data || data.length === 0) {
+    return new NextResponse('Invalid or expired unsubscribe link.', { status: 400 })
+  }
 
   // A plain, self-contained confirmation page — no need to round-trip
   // through the rest of the site's layout for this.

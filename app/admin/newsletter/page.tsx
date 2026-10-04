@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type Subscriber = { id: string; email: string; created_at: string }
@@ -16,10 +16,9 @@ export default function AdminNewsletterPage() {
 
   useEffect(() => {
     async function fetchSubscribers() {
-      const { data, error } = await supabase
-        .from('newsletter_subscribers')
-        .select('*')
-        .order('created_at', { ascending: false })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('newsletter_subscribers', { orderBy: 'created_at', ascending: false }) } catch (e: any) { error = e }
 
       if (error) console.error('Error fetching subscribers:', error)
       else setSubscribers(data || [])
@@ -31,7 +30,8 @@ export default function AdminNewsletterPage() {
 
   async function deleteSubscriber(id: string) {
     if (!confirm('Remove this subscriber?')) return
-    const { error } = await supabase.from('newsletter_subscribers').delete().eq('id', id)
+    let error: any = null
+    try { await adminApi.remove('newsletter_subscribers', id) } catch (e: any) { error = e }
     if (error) alert('Error: ' + error.message)
     else setSubscribers(prev => prev.filter(s => s.id !== id))
   }

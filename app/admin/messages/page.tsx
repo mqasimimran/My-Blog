@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import AdminNav from '@/app/admin/AdminNav'
+import { adminApi } from '@/lib/adminApi'
 
 type Message = {
   id: string
@@ -26,13 +26,12 @@ export default function AdminMessagesPage() {
 
   useEffect(() => {
     async function fetchMessages() {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) console.error('Error fetching messages:', error)
-      else setMessages(data || [])
+      try {
+        const data = await adminApi.list('messages', { orderBy: 'created_at', ascending: false })
+        setMessages(data || [])
+      } catch (err: any) {
+        console.error('Error fetching messages:', err.message)
+      }
       setIsLoading(false)
     }
 
@@ -42,39 +41,20 @@ export default function AdminMessagesPage() {
   }, [status])
 
   const toggleReadStatus = async (id: string, currentStatus: boolean) => {
-    const { data, error } = await supabase
-      .from('messages')
-      .update({ is_read: !currentStatus })
-      .eq('id', id)
-      .select() // Forces Supabase to return the updated row
-
-    if (error) {
-      alert(`Error: ${error.message}`)
-    } else if (data && data.length === 0) {
-      alert('Action blocked by Supabase permissions (RLS). Check your SQL policies.')
-    } else {
+    try {
+      await adminApi.update('messages', id, { is_read: !currentStatus })
       setMessages(prev => prev.map(msg => msg.id === id ? { ...msg, is_read: !currentStatus } : msg))
+    } catch (err: any) {
+      alert(`Error: ${err.message}`)
     }
   }
 
   const deleteMessage = async (id: string) => {
-    console.log("1. Delete initiated for ID:", id)
-    
-    const { data, error } = await supabase
-      .from('messages')
-      .delete()
-      .eq('id', id)
-      .select() 
-
-    console.log("2. Supabase Response:", { data, error })
-
-    if (error) {
-      alert(`Error deleting message: ${error.message}`)
-    } else if (data && data.length === 0) {
-      alert('Delete blocked by Supabase permissions. Check your browser console.')
-    } else {
-      console.log("3. Delete successful! Removing from UI.")
+    try {
+      await adminApi.remove('messages', id)
       setMessages(prev => prev.filter(msg => msg.id !== id))
+    } catch (err: any) {
+      alert(`Error deleting message: ${err.message}`)
     }
   }
 

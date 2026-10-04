@@ -2,7 +2,8 @@
 
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 import RichTextEditor from '@/components/RichTextEditor'
 
@@ -29,24 +30,21 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     async function fetchArticle() {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .eq('id', articleId)
-        .single()
-
-      if (data) {
-        setTitle(data.title)
-        setCategory(data.category)
-        setExcerpt(data.excerpt || '')
-        setContent(data.content)
-        setReadTime(data.read_time || '')
-        setFeatureImage(data.feature_image || '')
-        setIsPublished(data.published)
-        setWasPublished(data.published)
-        setArticleSlug(data.slug || '')
-      } else if (error) {
-        console.error('Error fetching article:', error)
+      try {
+        const data = await adminApi.get('articles', articleId)
+        if (data) {
+          setTitle(data.title)
+          setCategory(data.category)
+          setExcerpt(data.excerpt || '')
+          setContent(data.content)
+          setReadTime(data.read_time || '')
+          setFeatureImage(data.feature_image || '')
+          setIsPublished(data.published)
+          setWasPublished(data.published)
+          setArticleSlug(data.slug || '')
+        }
+      } catch (err: any) {
+        console.error('Error fetching article:', err.message)
       }
       setIsLoading(false)
     }
@@ -63,10 +61,10 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
       const fileExt = file.name.split('.').pop()
       const fileName = `feature-${Math.random()}.${fileExt}`
 
-      const { error } = await supabase.storage.from('blog-images').upload(fileName, file)
+      const { error } = await adminStorage.from('blog-images').upload(fileName, file)
       if (error) throw error
 
-      const { data } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data } = adminStorage.from('blog-images').getPublicUrl(fileName)
       setFeatureImage(data.publicUrl)
     } catch (error) {
       console.error('Error uploading feature image:', error)
@@ -80,9 +78,8 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
     e.preventDefault()
     setIsSubmitting(true)
 
-    const { error } = await supabase
-      .from('articles')
-      .update({
+    try {
+      await adminApi.update('articles', articleId, {
         title,
         category,
         excerpt,
@@ -91,13 +88,6 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
         feature_image: featureImage,
         published: isPublished
       })
-      .eq('id', articleId)
-
-    if (error) {
-      console.error('Error updating article:', error)
-      alert('Failed to update article.')
-      setIsSubmitting(false)
-    } else {
       // Only notify on the draft → published transition — never on a
       // re-save of a post that was already live, which would otherwise
       // re-email every subscriber on every minor edit.
@@ -109,6 +99,10 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
         }).catch((err) => console.error('Newsletter notification failed (article was still saved):', err))
       }
       router.push('/admin')
+    } catch (err: any) {
+      console.error('Error updating article:', err.message)
+      alert('Failed to update article.')
+      setIsSubmitting(false)
     }
   }
 
@@ -116,7 +110,7 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
 
   return (
     <div className="min-h-screen bg-paper flex">
-      <aside className="w-64 bg-gray-900 text-white p-6 flex flex-col hidden md:flex">
+      <aside className="w-64 bg-paper text-ink-900 border-r border-ink-100 p-6 flex flex-col hidden md:flex">
         <h2 className="text-xl font-light tracking-wide uppercase mb-10">Qasmic Admin</h2>
         <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
           <Link href="/admin" className="text-left text-accent-600 transition-colors">← Back to Blogs</Link>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type Product = {
@@ -25,10 +25,9 @@ export default function AdminShopPage() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, type, category, price, images, active, featured, order_index')
-        .order('order_index', { ascending: true })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('products', { select: 'id, name, type, category, price, images, active, featured, order_index', orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
 
       if (error) console.error('Error fetching products:', error)
       else setProducts(data || [])
@@ -43,8 +42,8 @@ export default function AdminShopPage() {
     const current = products[index]
     const target = products[targetIndex]
 
-    await supabase.from('products').update({ order_index: target.order_index }).eq('id', current.id)
-    await supabase.from('products').update({ order_index: current.order_index }).eq('id', target.id)
+    try { await adminApi.update('products', current.id, { order_index: target.order_index }) } catch (e: any) { console.error(e) }
+    try { await adminApi.update('products', target.id, { order_index: current.order_index }) } catch (e: any) { console.error(e) }
 
     const reordered = [...products]
     reordered[index] = target
@@ -53,20 +52,23 @@ export default function AdminShopPage() {
   }
 
   async function toggleFeatured(product: Product) {
-    const { error } = await supabase.from('products').update({ featured: !product.featured }).eq('id', product.id)
+    let error: any = null
+    try { await adminApi.update('products', product.id, { featured: !product.featured }) } catch (e: any) { error = e }
     if (error) alert('Error: ' + error.message)
     else setProducts(prev => prev.map(p => p.id === product.id ? { ...p, featured: !p.featured } : p))
   }
 
   async function toggleActive(product: Product) {
-    const { error } = await supabase.from('products').update({ active: !product.active }).eq('id', product.id)
+    let error: any = null
+    try { await adminApi.update('products', product.id, { active: !product.active }) } catch (e: any) { error = e }
     if (error) alert('Error: ' + error.message)
     else setProducts(prev => prev.map(p => p.id === product.id ? { ...p, active: !p.active } : p))
   }
 
   async function deleteProduct(product: Product) {
     if (!confirm(`Delete "${product.name}"?`)) return
-    const { error } = await supabase.from('products').delete().eq('id', product.id)
+    let error: any = null
+    try { await adminApi.remove('products', product.id) } catch (e: any) { error = e }
     if (error) alert('Error: ' + error.message)
     else setProducts(prev => prev.filter(p => p.id !== product.id))
   }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type ClientLogo = {
@@ -22,10 +22,9 @@ export default function AdminLogosPage() {
 
   useEffect(() => {
     async function fetchLogos() {
-      const { data, error } = await supabase
-        .from('client_logos')
-        .select('*')
-        .order('order_index', { ascending: true })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('client_logos', { orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
 
       if (error) console.error('Error fetching client logos:', error)
       else setLogos(data || [])
@@ -37,7 +36,8 @@ export default function AdminLogosPage() {
 
   async function deleteLogo(id: string, name: string) {
     if (!confirm(`Remove "${name}" from the homepage logos strip?`)) return
-    const { error } = await supabase.from('client_logos').delete().eq('id', id)
+    let error: any = null
+    try { await adminApi.remove('client_logos', id) } catch (e: any) { error = e }
     if (error) {
       alert('Error deleting logo: ' + error.message)
     } else {

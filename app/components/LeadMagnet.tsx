@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
 
 // TODO: swap in the real file (same path, or update this) and give it a
 // real title/description once you have an actual asset to give away.
@@ -18,13 +17,21 @@ export default function LeadMagnet() {
     if (!email.trim()) return
     setStatus('loading')
 
-    // Reuses the same newsletter_subscribers table as the newsletter signup
-    // — a duplicate-email error is fine here, it just means they're already
-    // on the list, so we unlock the download either way.
-    const { error } = await supabase.from('newsletter_subscribers').insert([{ email: email.trim().toLowerCase() }])
-
-    if (error && error.code !== '23505') {
-      console.error('Lead magnet signup error:', error)
+    // Same public subscribe endpoint as the newsletter form — an
+    // already-subscribed email counts as success, so the download unlocks
+    // either way.
+    try {
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim() }),
+      })
+      if (!res.ok) {
+        setStatus('error')
+        return
+      }
+    } catch (err) {
+      console.error('Lead magnet signup error:', err)
       setStatus('error')
       return
     }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter } from 'next/navigation'
 
 export default function AddEducation() {
@@ -15,7 +15,8 @@ export default function AddEducation() {
     e.preventDefault()
     setLoading(true)
 
-    const { error } = await supabase.from('education').insert([formData])
+    let error: any = null
+    try { await adminApi.insert('education', formData) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error adding education: ' + error.message)

@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 
 type ServicePackage = {
   id: string
@@ -27,7 +28,8 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => {
     async function fetchData() {
-      const { data: service } = await supabase.from('services').select('name').eq('id', serviceId).single()
+      let service: any = null
+      try { service = await adminApi.get('services', serviceId, 'name') } catch (e: any) { console.error(e) }
       if (service) setServiceName(service.name)
 
       const { data, error } = await supabase
@@ -71,7 +73,9 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
     setSavingId(pkg.id)
 
     if (pkg.isNew) {
-      const { data, error } = await supabase.from('service_packages').insert([{
+      let data: any = null
+      let error: any = null
+      try { const rows = await adminApi.insert('service_packages', {
         service_id: serviceId,
         tier: pkg.tier,
         price: pkg.price,
@@ -79,7 +83,7 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
         revisions: pkg.revisions,
         features: pkg.features,
         order_index: pkg.order_index,
-      }]).select().single()
+      }); data = rows[0] } catch (e: any) { error = e }
 
       if (error) {
         alert('Error saving package: ' + error.message)
@@ -87,13 +91,14 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
         setPackages(prev => prev.map(p => p.id === pkg.id ? { ...data, isNew: false } : p))
       }
     } else {
-      const { error } = await supabase.from('service_packages').update({
+      let error: any = null
+      try { await adminApi.update('service_packages', pkg.id, {
         tier: pkg.tier,
         price: pkg.price,
         delivery_days: pkg.delivery_days,
         revisions: pkg.revisions,
         features: pkg.features,
-      }).eq('id', pkg.id)
+      }) } catch (e: any) { error = e }
 
       if (error) alert('Error updating package: ' + error.message)
     }
@@ -104,7 +109,8 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
     if (!confirm(`Delete the "${pkg.tier}" package?`)) return
 
     if (!pkg.isNew) {
-      const { error } = await supabase.from('service_packages').delete().eq('id', pkg.id)
+      let error: any = null
+      try { await adminApi.remove('service_packages', pkg.id) } catch (e: any) { error = e }
       if (error) {
         alert('Error deleting: ' + error.message)
         return

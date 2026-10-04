@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 
 // 1. Define allowed tab keys
@@ -36,15 +36,11 @@ export default function ResumeManagerHub() {
 
   async function fetchData(table: TabKey) {
     setLoading(true)
-    const { data, error } = await supabase
-      .from(table)
-      .select('*')
-      .order('order_index', { ascending: true })
-
-    if (error) {
-      console.error('Error fetching data:', error.message)
-    } else {
+    try {
+      const data = await adminApi.list(table, { orderBy: 'order_index', ascending: true })
       setItems((data as ResumeItem[]) || [])
+    } catch (err: any) {
+      console.error('Error fetching data:', err.message)
     }
     setLoading(false)
   }
@@ -56,28 +52,23 @@ export default function ResumeManagerHub() {
     const currentItem = items[index]
     const targetItem = items[targetIndex]
 
-    const { error: err1 } = await supabase
-      .from(activeTab)
-      .update({ order_index: targetItem.order_index })
-      .eq('id', currentItem.id)
-
-    const { error: err2 } = await supabase
-      .from(activeTab)
-      .update({ order_index: currentItem.order_index })
-      .eq('id', targetItem.id)
-
-    if (err1 || err2) {
-      alert('Error updating position')
-    } else {
+    try {
+      await adminApi.update(activeTab, currentItem.id, { order_index: targetItem.order_index })
+      await adminApi.update(activeTab, targetItem.id, { order_index: currentItem.order_index })
       fetchData(activeTab)
+    } catch {
+      alert('Error updating position')
     }
   }
 
   async function deleteItem(id: string) {
     if (!confirm('Are you sure you want to delete this item?')) return
-    const { error } = await supabase.from(activeTab).delete().eq('id', id)
-    if (error) alert('Error deleting: ' + error.message)
-    else fetchData(activeTab)
+    try {
+      await adminApi.remove(activeTab, id)
+      fetchData(activeTab)
+    } catch (err: any) {
+      alert('Error deleting: ' + err.message)
+    }
   }
 
   const routeName = activeTab === 'projects_resume' ? 'projects' : activeTab === 'experiences' ? 'experience' : activeTab

@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 function slugify(text: string) {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -31,7 +32,9 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     async function fetchService() {
-      const { data, error } = await supabase.from('services').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('services', id) } catch (e: any) { error = e }
       if (error) {
         console.error('Error fetching service:', error)
       } else if (data) {
@@ -61,17 +64,18 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
     if (coverImageFile) {
       const fileExt = coverImageFile.name.split('.').pop()
       const fileName = `service_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, coverImageFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, coverImageFile)
       if (uploadError) {
         alert('Error uploading cover image: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       coverImageUrl = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('services').update({
+    let error: any = null
+    try { await adminApi.update('services', id, {
       name,
       slug: slug || slugify(name),
       tagline,
@@ -81,7 +85,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       cover_image: coverImageUrl,
       starting_price: startingPrice,
       active,
-    }).eq('id', id)
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error updating service: ' + error.message)

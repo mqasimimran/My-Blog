@@ -5,6 +5,8 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 function slugify(text: string) {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -43,13 +45,13 @@ export default function NewProductPage() {
     for (const file of imageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `product_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, file)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, file)
       if (uploadError) {
         alert('Error uploading an image: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       uploadedImageUrls.push(publicUrlData.publicUrl)
     }
 
@@ -62,19 +64,20 @@ export default function NewProductPage() {
     } else if (type === 'digital' && digitalFile) {
       const fileExt = digitalFile.name.split('.').pop()
       const fileName = `digital_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, digitalFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, digitalFile)
       if (uploadError) {
         alert('Error uploading the digital file: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       digitalFileUrl = publicUrlData.publicUrl
     }
 
     const { count } = await supabase.from('products').select('*', { count: 'exact', head: true })
 
-    const { error } = await supabase.from('products').insert([{
+    let error: any = null
+    try { await adminApi.insert('products', {
       name,
       slug: slug || slugify(name),
       type,
@@ -88,7 +91,7 @@ export default function NewProductPage() {
       weight_grams: type === 'physical' && weightGrams ? parseInt(weightGrams) : null,
       active,
       order_index: count || 0,
-    }])
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error saving product: ' + error.message)

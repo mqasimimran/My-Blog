@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter } from 'next/navigation'
 
 export default function AddProject() {
@@ -15,7 +15,8 @@ export default function AddProject() {
     e.preventDefault()
     setLoading(true)
 
-    const { error } = await supabase.from('projects_resume').insert([formData])
+    let error: any = null
+    try { await adminApi.insert('projects_resume', formData) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error adding project: ' + error.message)

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 import AdminNav from '@/app/admin/AdminNav'
 import RecentActivity from '@/app/admin/RecentActivity'
@@ -37,33 +37,22 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function fetchArticles() {
-      const { data, error } = await supabase
-        .from('articles')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) {
-        console.error('Supabase fetch error on articles:', error.message)
-      } else {
+      try {
+        const data = await adminApi.list('articles', { orderBy: 'created_at', ascending: false })
         setArticles((data as Article[]) || [])
+      } catch (err: any) {
+        console.error('Error fetching articles:', err.message)
       }
       setIsLoading(false)
     }
 
     async function fetchStats() {
-      const [messagesRes, subscribersRes, testimonialsRes, topPostRes] = await Promise.all([
-        supabase.from('messages').select('*', { count: 'exact', head: true }).eq('is_read', false),
-        supabase.from('newsletter_subscribers').select('*', { count: 'exact', head: true }),
-        supabase.from('testimonials').select('*', { count: 'exact', head: true }).eq('active', true),
-        supabase.from('articles').select('title, slug, reaction_count').order('reaction_count', { ascending: false }).limit(1).single(),
-      ])
-
-      setStats({
-        unreadMessages: messagesRes.count || 0,
-        subscribers: subscribersRes.count || 0,
-        activeTestimonials: testimonialsRes.count || 0,
-        mostLovedPost: topPostRes.data && topPostRes.data.reaction_count > 0 ? topPostRes.data : null,
-      })
+      try {
+        const res = await fetch('/api/admin/stats')
+        if (res.ok) setStats(await res.json())
+      } catch (err: any) {
+        console.error('Error fetching stats:', err.message)
+      }
     }
 
     if (status === 'authenticated') {
@@ -73,12 +62,12 @@ export default function AdminDashboard() {
   }, [status])
 
   async function toggleFeatured(article: Article) {
-    const { error } = await supabase.from('articles').update({ featured: !article.featured }).eq('id', article.id)
-    if (error) {
-      alert('Error updating: ' + error.message)
-    } else {
+    try {
+      await adminApi.update('articles', article.id, { featured: !article.featured })
       setArticles(prev => prev.map(a => a.id === article.id ? { ...a, featured: !a.featured } : a))
       logActivity({ action: article.featured ? 'unfeatured' : 'featured', entityType: 'article', entityLabel: article.title })
+    } catch (err: any) {
+      alert('Error updating: ' + err.message)
     }
   }
 
@@ -93,13 +82,13 @@ export default function AdminDashboard() {
   async function bulkSetPublished(published: boolean) {
     if (selectedIds.length === 0) return
     setIsBulkWorking(true)
-    const { error } = await supabase.from('articles').update({ published }).in('id', selectedIds)
-    if (error) {
-      alert('Error updating articles: ' + error.message)
-    } else {
+    try {
+      await adminApi.updateMany('articles', selectedIds, { published })
       setArticles(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, published } : a))
       logActivity({ action: published ? 'published' : 'unpublished', entityType: 'article', count: selectedIds.length })
       setSelectedIds([])
+    } catch (err: any) {
+      alert('Error updating articles: ' + err.message)
     }
     setIsBulkWorking(false)
   }
@@ -107,13 +96,13 @@ export default function AdminDashboard() {
   async function bulkSetFeatured(featured: boolean) {
     if (selectedIds.length === 0) return
     setIsBulkWorking(true)
-    const { error } = await supabase.from('articles').update({ featured }).in('id', selectedIds)
-    if (error) {
-      alert('Error updating articles: ' + error.message)
-    } else {
+    try {
+      await adminApi.updateMany('articles', selectedIds, { featured })
       setArticles(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, featured } : a))
       logActivity({ action: featured ? 'featured' : 'unfeatured', entityType: 'article', count: selectedIds.length })
       setSelectedIds([])
+    } catch (err: any) {
+      alert('Error updating articles: ' + err.message)
     }
     setIsBulkWorking(false)
   }
@@ -122,15 +111,13 @@ export default function AdminDashboard() {
     if (selectedIds.length === 0) return
     if (!confirm(`Delete ${selectedIds.length} article(s)? This can't be undone.`)) return
     setIsBulkWorking(true)
-    const { data, error } = await supabase.from('articles').delete().in('id', selectedIds).select()
-    if (error) {
-      alert('Error deleting articles: ' + error.message)
-    } else if (!data || data.length === 0) {
-      alert('Delete blocked by Supabase RLS policies.')
-    } else {
+    try {
+      await adminApi.removeMany('articles', selectedIds)
       setArticles(prev => prev.filter(a => !selectedIds.includes(a.id)))
       logActivity({ action: 'deleted', entityType: 'article', count: selectedIds.length })
       setSelectedIds([])
+    } catch (err: any) {
+      alert('Error deleting articles: ' + err.message)
     }
     setIsBulkWorking(false)
   }
@@ -265,20 +252,12 @@ export default function AdminDashboard() {
                             e.preventDefault()
                             if (!confirm(`Are you sure you want to delete "${article.title}"?`)) return
 
-                            const { data, error } = await supabase
-                              .from('articles')
-                              .delete()
-                              .eq('id', article.id)
-                              .select()
-
-                            if (error) {
-                              alert('Error deleting article: ' + error.message)
-                            } else if (!data || data.length === 0) {
-                              alert('Delete blocked by Supabase RLS policies.')
-                            } else {
-                              // TypeScript now knows 'a' is of type Article
+                            try {
+                              await adminApi.remove('articles', article.id)
                               setArticles(prev => prev.filter(a => a.id !== article.id))
                               logActivity({ action: 'deleted', entityType: 'article', entityLabel: article.title })
+                            } catch (err: any) {
+                              alert('Error deleting article: ' + err.message)
                             }
                           }}>
                             <button 

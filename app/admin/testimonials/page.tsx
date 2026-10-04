@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type Testimonial = {
@@ -23,10 +23,9 @@ export default function AdminTestimonialsPage() {
 
   useEffect(() => {
     async function fetchTestimonials() {
-      const { data, error } = await supabase
-        .from('testimonials')
-        .select('*')
-        .order('order_index', { ascending: true })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('testimonials', { orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
 
       if (error) console.error('Error fetching testimonials:', error)
       else setTestimonials(data || [])
@@ -43,8 +42,10 @@ export default function AdminTestimonialsPage() {
     const current = testimonials[index]
     const target = testimonials[targetIndex]
 
-    const { error: err1 } = await supabase.from('testimonials').update({ order_index: target.order_index }).eq('id', current.id)
-    const { error: err2 } = await supabase.from('testimonials').update({ order_index: current.order_index }).eq('id', target.id)
+    let err1: any = null
+    try { await adminApi.update('testimonials', current.id, { order_index: target.order_index }) } catch (e: any) { err1 = e }
+    let err2: any = null
+    try { await adminApi.update('testimonials', target.id, { order_index: current.order_index }) } catch (e: any) { err2 = e }
 
     if (err1 || err2) {
       alert('Error updating order')
@@ -57,14 +58,16 @@ export default function AdminTestimonialsPage() {
   }
 
   async function toggleActive(t: Testimonial) {
-    const { error } = await supabase.from('testimonials').update({ active: !t.active }).eq('id', t.id)
+    let error: any = null
+    try { await adminApi.update('testimonials', t.id, { active: !t.active }) } catch (e: any) { error = e }
     if (error) alert('Error updating: ' + error.message)
     else setTestimonials(prev => prev.map(x => x.id === t.id ? { ...x, active: !x.active } : x))
   }
 
   async function deleteTestimonial(t: Testimonial) {
     if (!confirm(`Delete the testimonial from "${t.name}"?`)) return
-    const { error } = await supabase.from('testimonials').delete().eq('id', t.id)
+    let error: any = null
+    try { await adminApi.remove('testimonials', t.id) } catch (e: any) { error = e }
     if (error) alert('Error deleting: ' + error.message)
     else setTestimonials(prev => prev.filter(x => x.id !== t.id))
   }

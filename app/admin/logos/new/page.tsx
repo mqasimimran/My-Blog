@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 export default function NewLogoPage() {
@@ -15,9 +16,9 @@ export default function NewLogoPage() {
   async function uploadImage(f: File): Promise<string> {
     const fileExt = f.name.split('.').pop()
     const fileName = `${Math.random()}.${fileExt}`
-    const { error: uploadError } = await supabase.storage.from('resume-images').upload(fileName, f)
+    const { error: uploadError } = await adminStorage.from('resume-images').upload(fileName, f)
     if (uploadError) throw uploadError
-    const { data } = supabase.storage.from('resume-images').getPublicUrl(fileName)
+    const { data } = adminStorage.from('resume-images').getPublicUrl(fileName)
     return data.publicUrl
   }
 
@@ -30,13 +31,14 @@ export default function NewLogoPage() {
       const imageUrl = await uploadImage(file)
       const darkImageUrl = darkFile ? await uploadImage(darkFile) : null
 
-      const { error: dbError } = await supabase.from('client_logos').insert([{
+      let dbError: any = null
+      try { await adminApi.insert('client_logos', {
         name: formData.name,
         link_url: formData.link_url || null,
         order_index: formData.order_index,
         image_url: imageUrl,
         dark_image_url: darkImageUrl,
-      }])
+      }) } catch (e: any) { dbError = e }
 
       if (dbError) throw dbError
 

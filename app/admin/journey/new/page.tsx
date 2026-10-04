@@ -5,6 +5,8 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 export default function NewJourneyEntryPage() {
   const { data: session, status } = useSession()
@@ -24,25 +26,26 @@ export default function NewJourneyEntryPage() {
     if (imageFile) {
       const fileExt = imageFile.name.split('.').pop()
       const fileName = `journey_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, imageFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, imageFile)
       if (uploadError) {
         alert('Error uploading image: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       imageUrl = publicUrlData.publicUrl
     }
 
     const { count } = await supabase.from('journey_entries').select('*', { count: 'exact', head: true })
 
-    const { error } = await supabase.from('journey_entries').insert([{
+    let error: any = null
+    try { await adminApi.insert('journey_entries', {
       date_label: dateLabel,
       title,
       body,
       image_url: imageUrl,
       order_index: count || 0,
-    }])
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error saving entry: ' + error.message)

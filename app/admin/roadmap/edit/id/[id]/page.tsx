@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 
 export default function EditRoadmapItemPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -18,7 +18,9 @@ export default function EditRoadmapItemPage({ params }: { params: Promise<{ id: 
 
   useEffect(() => {
     async function fetchItem() {
-      const { data, error } = await supabase.from('roadmap_items').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('roadmap_items', id) } catch (e: any) { error = e }
       if (data) {
         setTitle(data.title)
         setDescription(data.description || '')
@@ -34,7 +36,8 @@ export default function EditRoadmapItemPage({ params }: { params: Promise<{ id: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    const { error } = await supabase.from('roadmap_items').update({ title, description, status: itemStatus }).eq('id', id)
+    let error: any = null
+    try { await adminApi.update('roadmap_items', id, { title, description, status: itemStatus }) } catch (e: any) { error = e }
     if (error) {
       alert('Error saving: ' + error.message)
       setIsSubmitting(false)

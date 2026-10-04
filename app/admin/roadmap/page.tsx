@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type RoadmapItem = {
@@ -22,10 +22,9 @@ export default function AdminRoadmapPage() {
 
   useEffect(() => {
     async function fetchItems() {
-      const { data, error } = await supabase
-        .from('roadmap_items')
-        .select('id, title, status, order_index')
-        .order('order_index', { ascending: true })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('roadmap_items', { select: 'id, title, status, order_index', orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
 
       if (error) console.error('Error fetching roadmap:', error)
       else setItems(data || [])
@@ -40,8 +39,8 @@ export default function AdminRoadmapPage() {
     const current = items[index]
     const target = items[targetIndex]
 
-    await supabase.from('roadmap_items').update({ order_index: target.order_index }).eq('id', current.id)
-    await supabase.from('roadmap_items').update({ order_index: current.order_index }).eq('id', target.id)
+    try { await adminApi.update('roadmap_items', current.id, { order_index: target.order_index }) } catch (e: any) { console.error(e) }
+    try { await adminApi.update('roadmap_items', target.id, { order_index: current.order_index }) } catch (e: any) { console.error(e) }
 
     const reordered = [...items]
     reordered[index] = target
@@ -52,14 +51,16 @@ export default function AdminRoadmapPage() {
   async function cycleStatus(item: RoadmapItem) {
     const order: RoadmapItem['status'][] = ['planned', 'in_progress', 'shipped']
     const next = order[(order.indexOf(item.status) + 1) % order.length]
-    const { error } = await supabase.from('roadmap_items').update({ status: next }).eq('id', item.id)
+    let error: any = null
+    try { await adminApi.update('roadmap_items', item.id, { status: next }) } catch (e: any) { error = e }
     if (error) alert('Error: ' + error.message)
     else setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: next } : i))
   }
 
   async function deleteItem(item: RoadmapItem) {
     if (!confirm(`Delete "${item.title}"?`)) return
-    const { error } = await supabase.from('roadmap_items').delete().eq('id', item.id)
+    let error: any = null
+    try { await adminApi.remove('roadmap_items', item.id) } catch (e: any) { error = e }
     if (error) alert('Error: ' + error.message)
     else setItems(prev => prev.filter(i => i.id !== item.id))
   }

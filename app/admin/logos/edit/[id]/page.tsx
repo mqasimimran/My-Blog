@@ -2,7 +2,8 @@
 
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 export default function EditLogoPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,7 +19,9 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
 
   useEffect(() => {
     async function fetchLogo() {
-      const { data, error } = await supabase.from('client_logos').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('client_logos', id) } catch (e: any) { error = e }
       if (error) {
         alert('Error loading logo: ' + error.message)
       } else if (data) {
@@ -34,9 +37,9 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
   async function uploadImage(f: File): Promise<string> {
     const fileExt = f.name.split('.').pop()
     const fileName = `${Math.random()}.${fileExt}`
-    const { error: uploadError } = await supabase.storage.from('resume-images').upload(fileName, f)
+    const { error: uploadError } = await adminStorage.from('resume-images').upload(fileName, f)
     if (uploadError) throw uploadError
-    const { data } = supabase.storage.from('resume-images').getPublicUrl(fileName)
+    const { data } = adminStorage.from('resume-images').getPublicUrl(fileName)
     return data.publicUrl
   }
 
@@ -47,13 +50,14 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
       const imageUrl = file ? await uploadImage(file) : currentImageUrl
       const darkImageUrl = darkFile ? await uploadImage(darkFile) : currentDarkImageUrl
 
-      const { error: dbError } = await supabase.from('client_logos').update({
+      let dbError: any = null
+      try { await adminApi.update('client_logos', id, {
         name: formData.name,
         link_url: formData.link_url || null,
         order_index: formData.order_index,
         image_url: imageUrl,
         dark_image_url: darkImageUrl,
-      }).eq('id', id)
+      }) } catch (e: any) { dbError = e }
 
       if (dbError) throw dbError
 

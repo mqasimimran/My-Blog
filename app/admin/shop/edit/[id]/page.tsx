@@ -4,7 +4,8 @@ import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
+import { adminApi } from '@/lib/adminApi'
 
 function slugify(text: string) {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -35,7 +36,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     async function fetchProduct() {
-      const { data, error } = await supabase.from('products').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('products', id) } catch (e: any) { error = e }
       if (error) {
         console.error(error)
       } else if (data) {
@@ -65,13 +68,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     for (const file of newImageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `product_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, file)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, file)
       if (uploadError) {
         alert('Error uploading an image: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       finalImages.push(publicUrlData.publicUrl)
     }
 
@@ -81,17 +84,18 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     } else if (digitalFile) {
       const fileExt = digitalFile.name.split('.').pop()
       const fileName = `digital_${Math.random().toString(36).substring(2)}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('blog-images').upload(fileName, digitalFile)
+      const { error: uploadError } = await adminStorage.from('blog-images').upload(fileName, digitalFile)
       if (uploadError) {
         alert('Error uploading the digital file: ' + uploadError.message)
         setIsSubmitting(false)
         return
       }
-      const { data: publicUrlData } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data: publicUrlData } = adminStorage.from('blog-images').getPublicUrl(fileName)
       finalDigitalFileUrl = publicUrlData.publicUrl
     }
 
-    const { error } = await supabase.from('products').update({
+    let error: any = null
+    try { await adminApi.update('products', id, {
       name,
       slug: slug || slugify(name),
       type,
@@ -104,7 +108,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       stock_quantity: type === 'physical' && stockQuantity ? parseInt(stockQuantity) : null,
       weight_grams: type === 'physical' && weightGrams ? parseInt(weightGrams) : null,
       active,
-    }).eq('id', id)
+    }) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error updating product: ' + error.message)

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
 type Service = {
@@ -23,10 +23,9 @@ export default function AdminServicesPage() {
 
   useEffect(() => {
     async function fetchServices() {
-      const { data, error } = await supabase
-        .from('services')
-        .select('id, name, tagline, order_index, active')
-        .order('order_index', { ascending: true })
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.list('services', { select: 'id, name, tagline, order_index, active', orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
 
       if (error) {
         console.error('Error fetching services:', error)
@@ -48,8 +47,10 @@ export default function AdminServicesPage() {
     const current = services[index]
     const target = services[targetIndex]
 
-    const { error: err1 } = await supabase.from('services').update({ order_index: target.order_index }).eq('id', current.id)
-    const { error: err2 } = await supabase.from('services').update({ order_index: current.order_index }).eq('id', target.id)
+    let err1: any = null
+    try { await adminApi.update('services', current.id, { order_index: target.order_index }) } catch (e: any) { err1 = e }
+    let err2: any = null
+    try { await adminApi.update('services', target.id, { order_index: current.order_index }) } catch (e: any) { err2 = e }
 
     if (err1 || err2) {
       alert('Error updating order')
@@ -62,7 +63,8 @@ export default function AdminServicesPage() {
   }
 
   async function toggleActive(service: Service) {
-    const { error } = await supabase.from('services').update({ active: !service.active }).eq('id', service.id)
+    let error: any = null
+    try { await adminApi.update('services', service.id, { active: !service.active }) } catch (e: any) { error = e }
     if (error) {
       alert('Error updating: ' + error.message)
     } else {
@@ -153,7 +155,8 @@ export default function AdminServicesPage() {
                       e.preventDefault()
                       if (!confirm(`Are you sure you want to delete "${service.name}"?`)) return
 
-                      const { error } = await supabase.from('services').delete().eq('id', service.id)
+                      let error: any = null
+                      try { await adminApi.remove('services', service.id) } catch (e: any) { error = e }
                       if (error) {
                         alert('Error deleting: ' + error.message)
                       } else {

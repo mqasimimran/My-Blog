@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 import { useRouter, useParams } from 'next/navigation'
 
 export default function EditProject() {
@@ -17,7 +17,9 @@ export default function EditProject() {
 
   useEffect(() => {
     async function fetchItem() {
-      const { data, error } = await supabase.from('projects_resume').select('*').eq('id', id).single()
+      let data: any = null
+      let error: any = null
+      try { data = await adminApi.get('projects_resume', id) } catch (e: any) { error = e }
       if (error) {
         alert('Error loading project: ' + error.message)
       } else if (data) {
@@ -37,7 +39,8 @@ export default function EditProject() {
     e.preventDefault()
     setSaving(true)
 
-    const { error } = await supabase.from('projects_resume').update(formData).eq('id', id)
+    let error: any = null
+    try { await adminApi.update('projects_resume', id, formData) } catch (e: any) { error = e }
 
     if (error) {
       alert('Error updating project: ' + error.message)
