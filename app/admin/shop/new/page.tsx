@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
 
@@ -74,7 +73,7 @@ export default function NewProductPage() {
       digitalFileUrl = publicUrlData.publicUrl
     }
 
-    const { count } = await supabase.from('products').select('*', { count: 'exact', head: true })
+    const count = await adminApi.count('products')
 
     let error: any = null
     try { await adminApi.insert('products', {

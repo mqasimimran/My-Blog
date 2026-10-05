@@ -15,6 +15,12 @@ const nextConfig: NextConfig = {
     ],
   },
   async headers() {
+    const noCache = [
+      // Admin pages and admin/auth API responses must never be stored by
+      // browsers, proxies or the CDN, and shouldn't be indexed.
+      { key: 'Cache-Control', value: 'no-store, max-age=0' },
+      { key: 'X-Robots-Tag', value: 'noindex, nofollow' },
+    ]
     return [
       {
         source: '/:path*',
@@ -29,9 +35,21 @@ const nextConfig: NextConfig = {
           // clicks a link off this site
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           // Disables browser features this site has no legitimate use for
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=()' },
+          // Forces HTTPS for a year, including subdomains, once a browser
+          // has seen the site over HTTPS (stops downgrade attacks)
+          { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+          // A deliberately SAFE subset of Content-Security-Policy: blocks
+          // plugin content, <base>-tag hijacking, forms posting to other
+          // sites, and any framing. A full script-src policy isn't
+          // practical here because AdSense and Next's own inline scripts
+          // would force 'unsafe-inline', which defeats the point.
+          { key: 'Content-Security-Policy', value: "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" },
         ],
       },
+      { source: '/admin/:path*', headers: noCache },
+      { source: '/api/admin/:path*', headers: noCache },
+      { source: '/api/auth/:path*', headers: noCache },
     ]
   },
 };

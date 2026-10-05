@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 function LoginForm() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
+  const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -21,11 +22,12 @@ function LoginForm() {
     const result = await signIn('credentials', {
       username,
       password,
+      code,
       redirect: false,
     })
 
     if (result?.error) {
-      setError('Invalid username or password, or too many attempts — please wait a few minutes.')
+      setError('Sign-in failed. Check your details (and authentication code, if you use one), or wait a few minutes if you tried too many times.')
       setIsLoading(false)
     } else {
       router.push('/admin')
@@ -76,6 +78,22 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border-b border-ink-100 py-2 outline-none focus:border-accent-600 transition-colors text-sm text-ink-900"
               placeholder="••••••••"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
+              Authentication Code <span className="text-ink-300 normal-case font-normal">(only if you've enabled 2FA)</span>
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={7}
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="w-full border-b border-ink-100 py-2 outline-none focus:border-accent-600 transition-colors text-sm text-ink-900 tracking-widest"
+              placeholder="123456"
             />
           </div>
 

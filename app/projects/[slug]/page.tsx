@@ -106,7 +106,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
     <article className="min-h-screen bg-paper pt-24 pb-32 font-sans overflow-x-hidden">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
       
       {/* Editorial Header */}

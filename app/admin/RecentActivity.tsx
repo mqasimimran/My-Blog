@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
+import { adminApi } from '@/lib/adminApi'
 
 type ActivityRow = {
   id: string
@@ -42,14 +42,12 @@ export default function RecentActivity() {
 
   useEffect(() => {
     async function fetchActivity() {
-      const { data, error } = await supabase
-        .from('activity_log')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (error) console.error('Error fetching activity log:', error)
-      else setRows(data || [])
+      try {
+        const data = await adminApi.list('activity_log', { orderBy: 'created_at', ascending: false, limit: 10 })
+        setRows(data || [])
+      } catch (err: any) {
+        console.error('Error fetching activity log:', err.message)
+      }
       setIsLoading(false)
     }
     fetchActivity()

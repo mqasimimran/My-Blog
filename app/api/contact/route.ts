@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
+import { escapeHtml, oneLine, EMAIL_RE } from '@/lib/escapeHtml'
 
 
 const MAX_SUBMISSIONS = 5
@@ -24,6 +25,18 @@ export async function POST(request: NextRequest) {
 
     if (!name || !email || !message) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Type + size + format checks. Without these the route accepts
+    // arbitrarily large or non-string input straight into the database
+    // and into the email sent to you.
+    if (
+      typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string' ||
+      (subject != null && typeof subject !== 'string') ||
+      name.length > 100 || email.length > 254 || message.length > 5000 ||
+      (subject && subject.length > 200) || !EMAIL_RE.test(email)
+    ) {
+      return NextResponse.json({ error: 'Please check your details and try again.' }, { status: 400 })
     }
 
     const ip = getClientIp(request)
@@ -68,14 +81,14 @@ export async function POST(request: NextRequest) {
             from: 'Portfolio Contact Form <onboarding@resend.dev>',
             to: [toEmail],
             reply_to: email,
-            subject: `New message: ${subject || 'No subject'}`,
+            subject: `New message: ${oneLine(subject) || 'No subject'}`,
             html: `
               <div style="font-family: sans-serif; max-width: 500px;">
                 <h2 style="color: #aa002a;">New contact form message</h2>
-                <p><strong>From:</strong> ${name} (${email})</p>
-                <p><strong>Subject:</strong> ${subject || '—'}</p>
+                <p><strong>From:</strong> ${escapeHtml(name)} (${escapeHtml(email)})</p>
+                <p><strong>Subject:</strong> ${escapeHtml(subject) || '—'}</p>
                 <p><strong>Message:</strong></p>
-                <p style="white-space: pre-line; background: #f9fafb; padding: 16px; border-radius: 8px;">${message}</p>
+                <p style="white-space: pre-line; background: #f9fafb; padding: 16px; border-radius: 8px;">${escapeHtml(message)}</p>
               </div>
             `,
           }),

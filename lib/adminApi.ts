@@ -28,13 +28,27 @@ async function handle(res: Response) {
 }
 
 export const adminApi = {
-  async list(table: string, opts?: { select?: string; orderBy?: string; ascending?: boolean }) {
+  async list(
+    table: string,
+    opts?: { select?: string; orderBy?: string; ascending?: boolean; limit?: number; eq?: { column: string; value: string | number } }
+  ) {
     const params = new URLSearchParams()
     if (opts?.select) params.set('select', opts.select)
     if (opts?.orderBy) params.set('orderBy', opts.orderBy)
     if (opts?.ascending === false) params.set('ascending', 'false')
+    if (opts?.limit) params.set('limit', String(opts.limit))
+    if (opts?.eq) params.set('eq', `${opts.eq.column}:${opts.eq.value}`)
     const res = await fetch(`/api/admin/${table}?${params}`)
     return handle(res)
+  },
+
+  async count(table: string, eq?: { column: string; value: string | number }): Promise<number> {
+    const params = new URLSearchParams({ count: 'true' })
+    if (eq) params.set('eq', `${eq.column}:${eq.value}`)
+    const res = await fetch(`/api/admin/${table}?${params}`)
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.error || `Request failed (${res.status})`)
+    return json.count as number
   },
 
   async get(table: string, id: Id, select?: string) {

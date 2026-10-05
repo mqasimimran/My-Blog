@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { requireAdminSession } from '@/lib/requireAdminSession'
+import { escapeHtml, oneLine } from '@/lib/escapeHtml'
 
 
 const SITE_URL = 'https://www.muhammadqasimimran.me'
@@ -69,16 +70,16 @@ export async function POST(request: NextRequest) {
             // works when `to` matches your own Resend account email.
             from: 'Muhammad Qasim Imran <orders@muhammadqasimimran.me>',
             to: [order.customer_email],
-            subject: `Your order is confirmed — ${order.product_name}`,
+            subject: `Your order is confirmed — ${oneLine(order.product_name)}`,
             html: `
               <div style="font-family: sans-serif; max-width: 500px;">
                 <h2 style="color: #aa002a;">Payment confirmed!</h2>
-                <p>Hi ${order.customer_name},</p>
-                <p>Your payment for <strong>${order.product_name}</strong> has been verified. Here's your download:</p>
+                <p>Hi ${escapeHtml(order.customer_name)},</p>
+                <p>Your payment for <strong>${escapeHtml(order.product_name)}</strong> has been verified. Here's your download:</p>
                 <p style="margin: 24px 0;">
                   <a href="${downloadUrl}" style="background: #aa002a; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Download Now</a>
                 </p>
-                <p style="color: #9ca3af; font-size: 12px;">Order ${order.order_number}. Keep this email — the link above works any time.</p>
+                <p style="color: #9ca3af; font-size: 12px;">Order ${escapeHtml(order.order_number)}. Keep this email — the link above works any time.</p>
               </div>
             `,
           }),

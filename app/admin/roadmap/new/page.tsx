@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { adminApi } from '@/lib/adminApi'
 
 export default function NewRoadmapItemPage() {
@@ -18,7 +17,7 @@ export default function NewRoadmapItemPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    const { count } = await supabase.from('roadmap_items').select('*', { count: 'exact', head: true })
+    const count = await adminApi.count('roadmap_items')
     let error: any = null
     try { await adminApi.insert('roadmap_items', {
       title, description, status: itemStatus, order_index: count || 0,

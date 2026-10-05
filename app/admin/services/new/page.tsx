@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
 
@@ -52,7 +51,7 @@ export default function NewServicePage() {
     }
 
     // Put this new service at the end of the current order
-    const { count } = await supabase.from('services').select('*', { count: 'exact', head: true })
+    const count = await adminApi.count('services')
 
     let inserted: any = null
     let error: any = null

@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { href: '/admin/roadmap', label: 'Roadmap' },
   { href: '/admin/newsletter', label: 'Newsletter' },
   { href: '/admin/messages', label: 'Messages' },
+  { href: '/admin/security', label: 'Security' },
   { href: '/admin/settings', label: 'Site Settings' },
 ]
 

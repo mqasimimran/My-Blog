@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
 
@@ -36,7 +35,7 @@ export default function NewJourneyEntryPage() {
       imageUrl = publicUrlData.publicUrl
     }
 
-    const { count } = await supabase.from('journey_entries').select('*', { count: 'exact', head: true })
+    const count = await adminApi.count('journey_entries')
 
     let error: any = null
     try { await adminApi.insert('journey_entries', {

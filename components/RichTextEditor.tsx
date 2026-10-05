@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
-import { supabase } from '@/lib/supabase'
+import { adminStorage } from '@/lib/adminStorage'
 import { useState } from 'react'
 
 export default function RichTextEditor({ 
@@ -61,13 +61,13 @@ export default function RichTextEditor({
       const fileExt = file.name.split('.').pop()
       const fileName = `${Math.random()}.${fileExt}`
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await adminStorage
         .from('blog-images')
         .upload(fileName, file)
 
       if (uploadError) throw uploadError
 
-      const { data } = supabase.storage.from('blog-images').getPublicUrl(fileName)
+      const { data } = adminStorage.from('blog-images').getPublicUrl(fileName)
       editor.chain().focus().setImage({ src: data.publicUrl }).run()
     } catch (error) {
       console.error('Upload failed:', error)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
+import { escapeHtml, oneLine, EMAIL_RE } from '@/lib/escapeHtml'
 
 
 function getClientIp(request: NextRequest): string {
@@ -36,6 +37,16 @@ export async function POST(request: NextRequest) {
 
     if (!productId || !customerName || !customerEmail || !paymentMethod || !customerTransactionId) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Type + size + format checks (also: payment method must be one we
+    // actually offer, not an arbitrary string).
+    if (
+      [productId, customerName, customerEmail, paymentMethod, customerTransactionId].some((v) => typeof v !== 'string') ||
+      customerName.length > 100 || customerEmail.length > 254 || customerTransactionId.length > 100 ||
+      !EMAIL_RE.test(customerEmail) || !Object.prototype.hasOwnProperty.call(METHOD_LABELS, paymentMethod)
+    ) {
+      return NextResponse.json({ error: 'Please check your details and try again.' }, { status: 400 })
     }
 
     // Rate limit: max 5 order submissions per hour per IP
@@ -125,16 +136,16 @@ export async function POST(request: NextRequest) {
             from: 'Portfolio Store <onboarding@resend.dev>',
             to: [toEmail],
             reply_to: customerEmail,
-            subject: `New order: ${product.name} (${orderNumber})`,
+            subject: `New order: ${oneLine(product.name)} (${orderNumber})`,
             html: `
               <div style="font-family: sans-serif; max-width: 500px;">
                 <h2 style="color: #aa002a;">New order awaiting verification</h2>
                 <p><strong>Order:</strong> ${orderNumber}</p>
-                <p><strong>Product:</strong> ${product.name} — $${product.price}</p>
+                <p><strong>Product:</strong> ${escapeHtml(product.name)} — $${escapeHtml(product.price)}</p>
                 <p><strong>Amount to verify:</strong> ${currencyLocal === 'PKR' ? `Rs ${amountLocal.toLocaleString('en-PK')}` : `$${amountLocal}`}</p>
-                <p><strong>Customer:</strong> ${customerName} (${customerEmail})</p>
+                <p><strong>Customer:</strong> ${escapeHtml(customerName)} (${escapeHtml(customerEmail)})</p>
                 <p><strong>Paid via:</strong> ${METHOD_LABELS[paymentMethod] || paymentMethod}</p>
-                <p><strong>Transaction ID given:</strong> ${customerTransactionId}</p>
+                <p><strong>Transaction ID given:</strong> ${escapeHtml(customerTransactionId)}</p>
                 <p style="color: #9ca3af; font-size: 12px; margin-top: 16px;">
                   Confirm this transaction via ${METHOD_LABELS[paymentMethod] || paymentMethod}, then go to /admin/orders to verify and release the download link.
                 </p>

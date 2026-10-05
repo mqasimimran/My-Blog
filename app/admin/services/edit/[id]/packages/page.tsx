@@ -3,7 +3,6 @@
 import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabase'
 import { adminApi } from '@/lib/adminApi'
 
 type ServicePackage = {
@@ -32,14 +31,16 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
       try { service = await adminApi.get('services', serviceId, 'name') } catch (e: any) { console.error(e) }
       if (service) setServiceName(service.name)
 
-      const { data, error } = await supabase
-        .from('service_packages')
-        .select('*')
-        .eq('service_id', serviceId)
-        .order('order_index', { ascending: true })
-
-      if (error) console.error('Error fetching packages:', error)
-      else setPackages(data || [])
+      try {
+        const data = await adminApi.list('service_packages', {
+          eq: { column: 'service_id', value: String(serviceId) },
+          orderBy: 'order_index',
+          ascending: true,
+        })
+        setPackages(data || [])
+      } catch (err: any) {
+        console.error('Error fetching packages:', err.message)
+      }
       setIsLoading(false)
     }
 

@@ -1,20 +1,23 @@
 import type { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { timingSafeEqual, createHash } from 'crypto'
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
+import { verifyPassword } from '@/lib/passwordHash'
+import { verifyTotp } from '@/lib/totp'
+import { logSecurityEvent } from '@/lib/audit'
+import { isRateLimited, recordEvent } from '@/lib/rateLimit'
 
 // Hashing both sides to a fixed-length digest first lets us use
-// timingSafeEqual regardless of the two strings' actual lengths —
-// comparing raw strings of different lengths would throw.
+// timingSafeEqual regardless of the two strings' actual lengths.
 function safeCompare(a: string, b: string): boolean {
   const hashA = createHash('sha256').update(a).digest()
   const hashB = createHash('sha256').update(b).digest()
   return timingSafeEqual(hashA, hashB)
 }
 
-
 const MAX_ATTEMPTS = 5
 const LOCKOUT_WINDOW_MINUTES = 15
+let warnedLegacyPassword = false
 
 function getClientIp(req: any): string {
   const forwarded = req?.headers?.['x-forwarded-for']
@@ -28,13 +31,15 @@ export const authOptions: NextAuthOptions = {
       name: "Credentials",
       credentials: {
         username: { label: "Username", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        code: { label: "Authentication code", type: "text" },
       },
       async authorize(credentials, req) {
         const ip = getClientIp(req)
+        const userAgent = (req?.headers?.['user-agent'] as string | undefined)?.slice(0, 300) ?? null
         const windowStart = new Date(Date.now() - LOCKOUT_WINDOW_MINUTES * 60 * 1000).toISOString()
 
-        // Check how many failed attempts this IP has made recently
+        // Too many recent failures from this address? Refuse before doing any work.
         const { count } = await supabase
           .from('login_attempts')
           .select('*', { count: 'exact', head: true })
@@ -44,27 +49,71 @@ export const authOptions: NextAuthOptions = {
 
         if ((count || 0) >= MAX_ATTEMPTS) {
           console.warn(`Login blocked — too many failed attempts from ${ip}`)
+          await logSecurityEvent({ event: 'login_blocked', ip, userAgent })
           return null
         }
 
-        // Hardcoded admin check for your personal portfolio CMS.
-        // No fallback password — if ADMIN_PASSWORD isn't set, login fails
-        // closed instead of silently accepting a known default.
-        const adminUser = { id: "1", name: "Qasim", email: "qasimshibli12@gmail.com" }
-        const adminPassword = process.env.ADMIN_PASSWORD
-        if (!adminPassword) {
-          console.error('ADMIN_PASSWORD is not set — refusing all admin logins until it is.')
+        // Preferred: ADMIN_PASSWORD_HASH (scrypt — generate with
+        // `node scripts/admin-setup.mjs hash`). Legacy: ADMIN_PASSWORD in
+        // plain text, still accepted so existing deployments keep working.
+        // With neither set, login fails closed — there is no default password.
+        const passwordHash = process.env.ADMIN_PASSWORD_HASH
+        const legacyPassword = process.env.ADMIN_PASSWORD
+        if (!passwordHash && !legacyPassword) {
+          console.error('Neither ADMIN_PASSWORD_HASH nor ADMIN_PASSWORD is set — refusing all admin logins.')
           return null
         }
 
-        // Using toLowerCase() allows you to log in whether you type 'Qasim' or 'qasim'
-        const isValid = credentials?.username?.toLowerCase() === "qasim" && !!credentials?.password && safeCompare(credentials.password, adminPassword)
+        const adminUsername = (process.env.ADMIN_USERNAME || 'qasim').toLowerCase()
+        const givenUser = (credentials?.username || '').toLowerCase()
+        const givenPass = credentials?.password || ''
 
-        // Log every attempt, success or failure, so the lockout window has data
-        await supabase.from('login_attempts').insert([{ identifier: ip, success: isValid }])
+        // Always evaluate EVERY factor, even once one has failed, so response
+        // timing doesn't reveal which part was wrong.
+        const userOk = safeCompare(givenUser, adminUsername)
+        let passOk: boolean
+        if (passwordHash) {
+          passOk = !!givenPass && verifyPassword(givenPass, passwordHash)
+        } else {
+          if (!warnedLegacyPassword) {
+            console.warn('Using plain-text ADMIN_PASSWORD. Switch to ADMIN_PASSWORD_HASH: node scripts/admin-setup.mjs hash')
+            warnedLegacyPassword = true
+          }
+          passOk = !!givenPass && safeCompare(givenPass, legacyPassword!)
+        }
 
-        if (isValid) return adminUser
-        return null
+        // Optional two-factor code, enabled by setting ADMIN_TOTP_SECRET.
+        const totpSecret = process.env.ADMIN_TOTP_SECRET
+        let totpStep: number | null = null
+        let totpOk = true
+        if (totpSecret) {
+          try { totpStep = verifyTotp(totpSecret, credentials?.code || '') } catch { totpStep = null }
+          totpOk = totpStep !== null
+        }
+
+        let ok = userOk && passOk && totpOk
+        let reason: string | null = !userOk || !passOk ? 'credentials' : !totpOk ? 'two_factor_code' : null
+
+        // A 6-digit code is valid for ~90s; refuse to accept the same one twice.
+        if (ok && totpSecret && totpStep !== null) {
+          const action = `totp:${totpStep}`
+          if (await isRateLimited({ identifier: 'admin', action, max: 1, windowMinutes: 5 })) {
+            ok = false
+            reason = 'two_factor_replay'
+          } else {
+            await recordEvent('admin', action)
+          }
+        }
+
+        await supabase.from('login_attempts').insert([{ identifier: ip, success: ok }])
+        await logSecurityEvent({ event: ok ? 'login_success' : 'login_failed', ip, userAgent, detail: ok ? undefined : { reason } })
+
+        if (!ok) return null
+        return {
+          id: '1',
+          name: process.env.ADMIN_NAME || 'Qasim',
+          email: process.env.ADMIN_EMAIL || 'qasimshibli12@gmail.com',
+        }
       }
     })
   ],
