@@ -20,15 +20,17 @@ export async function isRateLimited(opts: {
   windowMinutes: number
 }): Promise<boolean> {
   const windowStart = new Date(Date.now() - opts.windowMinutes * 60 * 1000).toISOString()
-  const { count } = await supabaseAdmin
+  const { count, error } = await supabaseAdmin
     .from('rate_limit_log')
     .select('*', { count: 'exact', head: true })
     .eq('identifier', opts.identifier)
     .eq('action', opts.action)
     .gte('created_at', windowStart)
+  if (error) console.error(`Rate-limit check failed for "${opts.action}" — limit NOT enforced:`, error.message)
   return (count || 0) >= opts.max
 }
 
 export async function recordEvent(identifier: string, action: string) {
-  await supabaseAdmin.from('rate_limit_log').insert([{ identifier, action }])
+  const { error } = await supabaseAdmin.from('rate_limit_log').insert([{ identifier, action }])
+  if (error) console.error(`Could not record rate-limit event "${action}":`, error.message)
 }

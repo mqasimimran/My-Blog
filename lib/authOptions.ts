@@ -5,7 +5,7 @@ import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { verifyPassword } from '@/lib/passwordHash'
 import { verifyTotp } from '@/lib/totp'
 import { logSecurityEvent } from '@/lib/audit'
-import { isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { claimTotpStep } from '@/lib/totpReplay'
 
 // Hashing both sides to a fixed-length digest first lets us use
 // timingSafeEqual regardless of the two strings' actual lengths.
@@ -40,13 +40,16 @@ export const authOptions: NextAuthOptions = {
         const windowStart = new Date(Date.now() - LOCKOUT_WINDOW_MINUTES * 60 * 1000).toISOString()
 
         // Too many recent failures from this address? Refuse before doing any work.
-        const { count } = await supabase
+        const { count, error: lockoutError } = await supabase
           .from('login_attempts')
           .select('*', { count: 'exact', head: true })
           .eq('identifier', ip)
           .eq('success', false)
           .gte('created_at', windowStart)
 
+        if (lockoutError) {
+          console.error('Login lockout check FAILED — brute-force protection is not active:', lockoutError.message)
+        }
         if ((count || 0) >= MAX_ATTEMPTS) {
           console.warn(`Login blocked — too many failed attempts from ${ip}`)
           await logSecurityEvent({ event: 'login_blocked', ip, userAgent })
@@ -94,18 +97,17 @@ export const authOptions: NextAuthOptions = {
         let ok = userOk && passOk && totpOk
         let reason: string | null = !userOk || !passOk ? 'credentials' : !totpOk ? 'two_factor_code' : null
 
-        // A 6-digit code is valid for ~90s; refuse to accept the same one twice.
+        // A 6-digit code stays valid for ~90s, so a captured one could be
+        // reused — claim its time step atomically; a second use is refused.
+        // If the claim store is broken we refuse too (fail closed).
         if (ok && totpSecret && totpStep !== null) {
-          const action = `totp:${totpStep}`
-          if (await isRateLimited({ identifier: 'admin', action, max: 1, windowMinutes: 5 })) {
-            ok = false
-            reason = 'two_factor_replay'
-          } else {
-            await recordEvent('admin', action)
-          }
+          const claim = await claimTotpStep(totpStep)
+          if (claim === 'replay') { ok = false; reason = 'two_factor_replay' }
+          else if (claim === 'error') { ok = false; reason = 'two_factor_store_error' }
         }
 
-        await supabase.from('login_attempts').insert([{ identifier: ip, success: ok }])
+        const { error: attemptError } = await supabase.from('login_attempts').insert([{ identifier: ip, success: ok }])
+        if (attemptError) console.error('Could not record login attempt — lockout counting is not working:', attemptError.message)
         await logSecurityEvent({ event: ok ? 'login_success' : 'login_failed', ip, userAgent, detail: ok ? undefined : { reason } })
 
         if (!ok) return null

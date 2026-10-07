@@ -13,6 +13,8 @@ type AuditEvent = {
   detail: Record<string, any> | null
 }
 
+type HealthCheck = { id: string; label: string; status: 'ok' | 'warn' | 'fail'; hint?: string }
+
 const WARN = new Set(['login_failed', 'login_blocked', 'admin_unauthorized', 'admin_cross_site_blocked', 'admin_table_blocked', 'upload_refused'])
 const LABELS: Record<string, string> = {
   login_success: 'Login succeeded',
@@ -32,7 +34,11 @@ function describe(e: AuditEvent): string {
     const n = Array.isArray(d.ids) ? d.ids.length : 0
     return `${d.op} on ${d.table}${n > 1 ? ` (${n} rows)` : ''}${d.fields ? ` — ${d.fields.join(', ')}` : ''}`
   }
-  if (e.event === 'login_failed') return `reason: ${String(d.reason || 'unknown').replace(/_/g, ' ')}`
+  if (e.event === 'login_failed') {
+    const why = String(d.reason || 'unknown')
+    const nice = why === 'two_factor_store_error' ? 'two factor store error — run supabase/migrations/admin-totp-used.sql' : why.replace(/_/g, ' ')
+    return `reason: ${nice}`
+  }
   if (e.event === 'upload_issued' || e.event === 'upload_refused') return `${d.bucket || ''}/${d.path || ''}${d.reason ? ` — ${d.reason}` : ''}`
   if (e.event === 'admin_table_blocked') return `${d.method} ${d.table}`
   return ''
@@ -44,6 +50,7 @@ export default function SecurityPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [filter, setFilter] = useState<'all' | 'warnings' | 'logins' | 'changes'>('warnings')
+  const [health, setHealth] = useState<HealthCheck[] | null>(null)
 
   useEffect(() => {
     if (status !== 'authenticated') return
@@ -55,6 +62,11 @@ export default function SecurityPage() {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
+
+    fetch('/api/admin/security-health')
+      .then((r) => r.json())
+      .then((j) => setHealth(j.checks || []))
+      .catch(() => setHealth([]))
   }, [status])
 
   const stats = useMemo(() => {
@@ -84,6 +96,24 @@ export default function SecurityPage() {
         <div className="max-w-5xl mx-auto">
           <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Security Log</h1>
           <p className="text-xs text-ink-500 mt-1 mb-8">Every login attempt, admin change, and blocked request — recorded by the server, not the browser.</p>
+
+
+          {/* Protection status — what is actually switched on and actually working */}
+          <div className="border border-ink-100 p-5 mb-8">
+            <p className="text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-3">Protection status</p>
+            {health === null && <p className="text-xs text-ink-300 font-mono">Checking...</p>}
+            <ul className="space-y-2">
+              {(health || []).map((c) => (
+                <li key={c.id} className="text-sm">
+                  <span className={`inline-block w-5 font-bold ${c.status === 'ok' ? 'text-green-600' : c.status === 'warn' ? 'text-amber-500' : 'text-red-500'}`}>
+                    {c.status === 'ok' ? '✓' : c.status === 'warn' ? '!' : '✗'}
+                  </span>
+                  <span className="text-ink-900">{c.label}</span>
+                  {c.hint && <span className="block ml-5 text-xs text-ink-500 break-words">{c.hint}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
             <div className="border border-ink-100 p-4">
