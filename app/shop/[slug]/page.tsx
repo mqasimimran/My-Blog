@@ -84,9 +84,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
         {/* Images: stay in view on large screens while you read the details */}
         <div className="lg:col-span-7">
           <div className="lg:sticky lg:top-28">
-            <div className="grid aspect-square place-items-center overflow-hidden bg-ink-50">
+            <div className="relative grid aspect-square place-items-center overflow-hidden bg-ink-50">
               {product.images?.[activeImage] ? (
-                <img src={product.images[activeImage]} alt={product.name} className="h-full w-full object-contain" />
+                <img src={product.images[activeImage]} alt={product.name} className="absolute inset-0 h-full w-full object-contain" />
               ) : product.type === 'digital' ? (
                 <DownloadSimple size={64} weight="light" aria-hidden className="text-ink-300" />
               ) : (

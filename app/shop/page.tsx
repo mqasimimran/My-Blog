@@ -77,13 +77,14 @@ export default function ShopPage() {
             <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((product) => (
                 <Link key={product.id} href={`/shop/${product.slug}`} data-cursor="View" className="group block">
-                  {/* Square frame + object-contain: the WHOLE design is always visible, never cropped. */}
-                  <div className="grid aspect-square place-items-center overflow-hidden bg-ink-50">
+                  {/* Square frame; the image is pinned to it and fits inside, so the WHOLE design is always visible
+                      (tall posters get plain space at the sides, wide ones above and below). */}
+                  <div className="relative grid aspect-square place-items-center overflow-hidden bg-ink-50">
                     {product.images?.[0] ? (
                       <img
                         src={product.images[0]}
                         alt={product.name}
-                        className="h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
+                        className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
                       />
                     ) : product.type === 'digital' ? (
                       <DownloadSimple size={48} weight="light" aria-hidden className="text-ink-300" />
