@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
+import { CheckCircle } from '@phosphor-icons/react'
 
 type Order = {
   product_name: string
@@ -75,21 +76,21 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
   }
 
   if (isLoading) {
-    return <main className="min-h-screen bg-paper flex items-center justify-center"><p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p></main>
+    return <main className="min-h-screen bg-paper flex items-center justify-center"><p className="text-ink-300 text-xs font-mono">Loading...</p></main>
   }
 
   if (notFound || !order) {
     return (
       <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center">
         <p className="text-ink-500">This download link isn't valid, or the order hasn't been verified yet.</p>
-        <Link href="/contact" className="text-accent-600 text-xs font-bold uppercase tracking-widest">Contact support</Link>
+        <Link href="/contact" className="text-accent-600 text-xs font-medium">Contact support</Link>
       </main>
     )
   }
 
   return (
     <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center max-w-md mx-auto">
-      <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center text-3xl">🎉</div>
+      <CheckCircle size={56} weight="light" aria-hidden className="text-success" />
       <h1 className="text-2xl font-light text-ink-900">Thanks, {order.customer_name}!</h1>
       <p className="text-ink-500 text-sm">Here's your download for <strong>{order.product_name}</strong>.</p>
 
@@ -97,7 +98,7 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
         <button
           onClick={handleDownload}
           disabled={isDownloading}
-          className="inline-block bg-accent-600 text-white text-xs font-bold tracking-widest uppercase px-8 py-4 rounded-none hover:bg-gray-900 transition-colors disabled:opacity-60"
+          className="inline-block bg-accent-600 text-white text-xs font-medium px-8 py-4 rounded-none hover:bg-gray-900 transition-colors disabled:opacity-60"
         >
           {isDownloading ? 'Preparing...' : 'Download Now'}
         </button>
@@ -106,13 +107,13 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
           href={fileUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-block bg-accent-600 text-white text-xs font-bold tracking-widest uppercase px-8 py-4 rounded-none hover:bg-gray-900 transition-colors"
+          className="inline-block bg-accent-600 text-white text-xs font-medium px-8 py-4 rounded-none hover:bg-gray-900 transition-colors"
         >
           Open Link
         </a>
       ) : (
         <p className="text-sm text-amber-600 bg-amber-50 rounded-none p-4">
-          This file hasn't been uploaded yet — I'll send it to you directly. Reach out via the contact page if you don't hear from me soon.
+          This file hasn't been uploaded yet. I'll send it to you directly. Reach out via the contact page if you don't hear from me soon.
         </p>
       )}
 

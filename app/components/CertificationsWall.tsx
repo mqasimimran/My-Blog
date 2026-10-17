@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { ArrowUpRight } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
+import SectionHeader from '@/app/components/ui/SectionHeader'
 
 type Certification = {
   id: string
@@ -31,67 +33,56 @@ export default function CertificationsWall() {
     fetchCertifications()
   }, [])
 
-  // Nothing added yet — don't show an empty section on the homepage
-  if (!isLoading && certs.length === 0) return null
-  if (isLoading) return null
+  // Nothing added yet: don't show an empty section on the homepage
+  if (isLoading || certs.length === 0) return null
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-paper">
-      <div className="max-w-lg mb-12">
-        <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-3">
-          Licenses &amp; Certifications
-        </h2>
-        <p className="text-sm text-ink-500 leading-relaxed">
-          Verified credentials across software, design, and AI.
-        </p>
-      </div>
+    <section className="border-t border-ink-100">
+      <div className="container-page section-y grid gap-12 lg:grid-cols-12 lg:gap-x-16">
+        <div className="lg:col-span-4">
+          <div className="lg:sticky lg:top-32">
+            <SectionHeader title="Licenses and certifications" description="Verified credentials across software, design, and AI." meta="(Verified)" />
+          </div>
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {certs.map((cert) => {
-          const link = cert.verify_url || cert.image_url
-          const linkLabel = cert.verify_url ? 'Verify' : 'View Certificate'
+        <ul className="border-b border-ink-100 lg:col-span-8">
+          {certs.map((cert) => {
+            const link = cert.verify_url || cert.image_url
+            const linkLabel = cert.verify_url ? 'Verify' : 'View certificate'
 
-          const CardInner = (
-            <>
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 shrink-0 bg-accent-600 text-white flex items-center justify-center text-sm font-bold uppercase rounded-none">
-                  {cert.issuer.charAt(0)}
-                </div>
+            const row = (
+              <>
                 <div className="min-w-0">
-                  <h3 className="text-sm font-medium text-ink-900 leading-snug group-hover:text-accent-600 transition-colors">
-                    {cert.title}
-                  </h3>
-                  <p className="text-xs text-ink-500 mt-0.5">{cert.issuer}</p>
+                  <h3 className="text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{cert.title}</h3>
+                  <p className="mt-1 text-[15px] text-ink-500">{cert.issuer}</p>
                 </div>
-              </div>
-              <div className="flex items-center justify-between mt-6 pt-4 border-t border-ink-100">
-                {cert.date && (
-                  <span className="text-[10px] tracking-wider uppercase text-ink-300">
-                    Issued {cert.date}
-                  </span>
-                )}
-                {link && (
-                  <span className="text-xs font-bold tracking-wide text-ink-500 group-hover:text-accent-600 transition-colors ml-auto">
-                    {linkLabel} ↗
-                  </span>
-                )}
-              </div>
-            </>
-          )
+                <div className="flex shrink-0 flex-col items-end gap-2 text-right">
+                  {cert.date && <span className="type-meta">Issued {cert.date}</span>}
+                  {link && (
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-ink-700 transition-colors duration-300 group-hover:text-accent-600">
+                      {linkLabel}
+                      <ArrowUpRight size={14} weight="bold" aria-hidden className="transition-transform duration-300 ease-[var(--ease-smooth)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    </span>
+                  )}
+                </div>
+              </>
+            )
 
-          const cardClass =
-            'group bg-paper border border-ink-100 rounded-none p-5 shadow-sm hover:border-accent-600 transition-all flex flex-col justify-between'
+            const rowClass = 'group flex items-start justify-between gap-6 border-t border-ink-100 py-6'
 
-          return link ? (
-            <a key={cert.id} href={link} target="_blank" rel="noopener noreferrer" className={cardClass}>
-              {CardInner}
-            </a>
-          ) : (
-            <div key={cert.id} className={cardClass}>
-              {CardInner}
-            </div>
-          )
-        })}
+            return (
+              <li key={cert.id}>
+                {link ? (
+                  <a href={link} target="_blank" rel="noopener noreferrer" className={rowClass}>
+                    {row}
+                  </a>
+                ) : (
+                  <div className={rowClass}>{row}</div>
+                )}
+              </li>
+            )
+          })}
+        </ul>
       </div>
     </section>
   )

@@ -33,42 +33,49 @@ export default function NewsletterSignup() {
   }
 
   return (
-    <section className="bg-paper border-t border-b border-ink-100 py-16 px-6 font-sans">
-      <div className="max-w-xl mx-auto text-center">
-        <h2 className="text-2xl font-light tracking-wide uppercase text-ink-900 mb-2">
-          Get New Posts By Email
-        </h2>
-        <p className="text-sm text-ink-500 mb-6">
-          No spam — just an email when something new goes up.
-        </p>
+    <section className="border-t border-ink-100">
+      <div className="container-page section-y grid gap-10 lg:grid-cols-12 lg:items-end">
+        <div className="lg:col-span-6">
+          <h2 className="type-h3 text-ink-900 md:text-[1.75rem]">Get new posts by email</h2>
+          <p className="mt-3 max-w-[44ch] text-base leading-relaxed text-ink-700">No spam. Just an email when something new goes up.</p>
+        </div>
 
-        {status === 'success' ? (
-          <p className="text-sm font-medium text-accent-600">You're in — thanks for subscribing.</p>
-        ) : status === 'duplicate' ? (
-          <p className="text-sm text-ink-500">That email is already subscribed.</p>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@email.com"
-              suppressHydrationWarning
-              className="flex-1 border border-ink-100 rounded-none px-4 py-3 text-sm outline-none focus:border-accent-600 transition-colors"
-            />
-            <button
-              type="submit"
-              disabled={status === 'loading'}
-              className="bg-accent-600 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none hover:bg-gray-900 transition-colors disabled:opacity-60"
-            >
-              {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
-            </button>
-          </form>
-        )}
-        {status === 'error' && (
-          <p className="text-xs text-red-500 mt-3">Something went wrong — try again in a moment.</p>
-        )}
+        <div className="lg:col-span-5 lg:col-start-8">
+          {status === 'success' ? (
+            <p role="status" className="text-base font-medium text-ink-900">You&rsquo;re in. Thanks for subscribing.</p>
+          ) : status === 'duplicate' ? (
+            <p role="status" className="text-base text-ink-700">That email is already subscribed.</p>
+          ) : (
+            <form onSubmit={handleSubmit} noValidate={false}>
+              <label htmlFor="newsletter-email" className="mb-2 block text-sm font-medium text-ink-900">
+                Email address
+              </label>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  id="newsletter-email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@example.com"
+                  suppressHydrationWarning
+                  className="h-12 w-full flex-1 border border-ink-500 bg-paper-raised px-4 text-base text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-500 focus:border-accent-600"
+                />
+                <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="h-12 shrink-0 bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px disabled:opacity-60"
+                >
+                  {status === 'loading' ? 'Subscribing...' : 'Subscribe'}
+                </button>
+              </div>
+              {status === 'error' && (
+                <p role="alert" className="mt-3 text-sm text-error">Something went wrong. Try again in a moment.</p>
+              )}
+            </form>
+          )}
+        </div>
       </div>
     </section>
   )

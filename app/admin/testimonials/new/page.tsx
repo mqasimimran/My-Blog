@@ -84,7 +84,7 @@ export default function NewTestimonialPage() {
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Role / Context</label>
-              <input type="text" value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. President, TEDxUMTLahore" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
+              <input type="text" value={role} onChange={(e) => setRole(e.target.value)} placeholder="e.g. President, Acme Inc." className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
             </div>
 
             <div>

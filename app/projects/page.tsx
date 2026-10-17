@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { ArrowUpRight } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
+import PageHeader from '@/app/components/ui/PageHeader'
+import FilterTabs from '@/app/components/ui/FilterTabs'
+import EmptyState from '@/app/components/EmptyState'
 import { SkeletonTextCardGrid } from '@/app/components/Skeleton'
 
 type Project = {
@@ -16,6 +20,16 @@ type Project = {
   live_url: string | null
 }
 
+// `key` is compared (upper-case) with the category stored in the database. `label` is what visitors read.
+const CATEGORIES = [
+  { key: 'ALL', label: 'All' },
+  { key: 'AI & ML', label: 'AI & ML' },
+  { key: 'GAME DEV', label: 'Game dev' },
+  { key: 'SOFTWARE ENG', label: 'Software eng' },
+  { key: 'WEB APPS', label: 'Web apps' },
+  { key: 'DESIGN', label: 'Design' },
+]
+
 export default function AllProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -23,8 +37,7 @@ export default function AllProjectsPage() {
 
   useEffect(() => {
     async function fetchAllProjects() {
-      // Notice there is no .eq('featured', true) filter here. 
-      // This pulls everything in the database.
+      // No featured filter here: the archive shows every published project.
       const { data, error } = await supabase
         .from('projects')
         .select('id, title, slug, category, tech_stack, description, status, live_url')
@@ -39,94 +52,58 @@ export default function AllProjectsPage() {
     fetchAllProjects()
   }, [])
 
-  const categories = ['ALL', 'AI & ML', 'GAME DEV', 'SOFTWARE ENG', 'WEB APPS', 'DESIGN']
-
-  const filteredProjects = activeCategory === 'ALL' 
-    ? projects 
-    : projects.filter(project => project.category.toUpperCase() === activeCategory)
+  const filteredProjects =
+    activeCategory === 'ALL' ? projects : projects.filter((project) => project.category.toUpperCase() === activeCategory)
 
   return (
-    <main className="min-h-screen bg-paper pt-28 pb-24 font-sans w-full">
-      <div className="max-w-7xl mx-auto px-6">
-        
-        {/* Page Header */}
-        <div className="mb-14 text-center">
-          <h1 className="text-4xl md:text-5xl font-light tracking-wide uppercase text-ink-900 mb-4">
-            Project Archive
-          </h1>
-          <p className="text-ink-500 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
-            A complete collection of my work across software engineering, machine learning, game development, and design.
-          </p>
-        </div>
+    <main className="pb-24">
+      <PageHeader
+        title="Project archive"
+        description="A complete collection of my work across software engineering, machine learning, game development, and design."
+      />
 
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-12 border-b border-ink-100 pb-8">
-          {categories.map((category, index) => {
-            const isActive = activeCategory === category
-            return (
-              <button
-                key={index}
-                onClick={() => setActiveCategory(category)}
-                className={`text-[10px] font-bold tracking-[0.15em] uppercase px-5 py-2.5 rounded-none transition-colors ${
-                  isActive 
-                    ? 'bg-accent-600 text-white shadow-sm' 
-                    : 'bg-paper text-ink-500 hover:text-ink-900 border border-ink-100 hover:border-ink-100'
-                }`}
-              >
-                {category}
-              </button>
-            )
-          })}
-        </div>
+      <section className="container-page">
+        <FilterTabs label="Filter projects by category" options={CATEGORIES} value={activeCategory} onChange={setActiveCategory} />
 
-        {/* 3-Column Card Grid */}
-        {isLoading ? (
-          <SkeletonTextCardGrid count={6} columns={3} />
-        ) : filteredProjects.length === 0 ? (
-          <div className="text-center py-20 text-ink-300 text-sm">
-            No projects found in this category.
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project) => (
-              <div key={project.id} className="bg-paper border border-ink-100 rounded-none p-8 flex flex-col shadow-sm hover:shadow-md transition-shadow">
-                
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-[10px] font-bold tracking-widest uppercase text-accent-600">
-                    {project.category}
-                  </span>
-                  {project.status && (
-                    <span className="text-[9px] font-bold tracking-widest uppercase text-amber-600 bg-amber-50 px-2 py-1 rounded-none">
-                      {project.status}
-                    </span>
-                  )}
-                </div>
-                
-                <h3 className="text-xl font-medium text-ink-900 mb-1">
-                  {project.title}
-                </h3>
-                
-                <p className="text-[11px] text-ink-300 font-mono mb-5 tracking-wide">
-                  {project.tech_stack}
-                </p>
-                
-                <p className="text-sm text-ink-700 leading-relaxed mb-8 flex-grow">
-                  {project.description}
-                </p>
-                
-                <Link 
-                  href={project.live_url || `/projects/${project.slug}`} 
-                  className="text-[10px] font-bold uppercase tracking-widest text-ink-900 hover:text-accent-600 transition-colors mt-auto flex items-center gap-1"
-                >
-                  {project.category === 'Game Dev' ? 'Play Demo' : 'View Details'} ↗
-                </Link>
-                
-              </div>
-            ))}
-          </div>
-        )}
-        
-      </div>
+        <div className="mt-12">
+          {isLoading ? (
+            <SkeletonTextCardGrid count={4} columns={2} />
+          ) : filteredProjects.length === 0 ? (
+            <EmptyState icon="search" title="No projects in this category yet" description="Try another category." />
+          ) : (
+            // An index, not a wall of boxes: these entries have no images, so type and spacing do the work.
+            <ul className="border-b border-ink-100">
+              {filteredProjects.map((project) => (
+                <li key={project.id} className="border-t border-ink-100">
+                  <Link
+                    href={project.live_url || `/projects/${project.slug}`}
+                    data-cursor="View"
+                    className="group grid gap-x-10 gap-y-3 py-8 md:grid-cols-12 md:py-10"
+                  >
+                    <div className="type-meta flex flex-wrap items-start gap-x-3 gap-y-1 md:col-span-3 md:pt-1.5">
+                      <span>{project.category}</span>
+                      {project.status && <span className="border border-ink-100 px-1.5 py-0.5">{project.status}</span>}
+                    </div>
+                    <div className="md:col-span-4">
+                      <h2 className="type-h3 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{project.title}</h2>
+                      {project.tech_stack && <p className="type-meta mt-2">{project.tech_stack}</p>}
+                    </div>
+                    <div className="flex items-start justify-between gap-6 md:col-span-5">
+                      <p className="max-w-[52ch] text-[15px] leading-relaxed text-ink-700">{project.description}</p>
+                      <span className="sr-only">{project.category === 'Game Dev' ? 'Play demo' : 'View details'}</span>
+                      <ArrowUpRight
+                        size={20}
+                        aria-hidden
+                        className="mt-0.5 shrink-0 text-ink-300 transition-[color,transform] duration-300 ease-[var(--ease-smooth)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent-600"
+                      />
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
     </main>
   )
 }

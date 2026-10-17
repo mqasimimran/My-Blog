@@ -3,8 +3,8 @@ import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { requireAdminSession } from '@/lib/requireAdminSession'
 
 
-const SITE_URL = 'https://www.muhammadqasimimran.me'
 
+import { siteConfig, SITE_URL } from '@/site.config'
 export async function POST(request: NextRequest) {
   // Emails your entire subscriber list — only /admin/new and /admin/edit
   // should ever call this, when you actually publish a post. Previously
@@ -52,16 +52,16 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           // Requires muhammadqasimimran.me to be verified in Resend — see
           // the same note in app/api/orders/notify-customer/route.ts.
-          from: 'Muhammad Qasim Imran <newsletter@muhammadqasimimran.me>',
+          from: siteConfig.mail.newsletterFrom,
           to: [subscriber.email],
           subject: `New post: ${articleTitle}`,
           html: `
             <div style="font-family: sans-serif; max-width: 500px;">
-              <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: #aa002a; font-weight: bold;">New Post</p>
+              <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 11px; color: ${siteConfig.brand.accent}; font-weight: bold;">New Post</p>
               <h2 style="margin: 8px 0;">${articleTitle}</h2>
               ${articleExcerpt ? `<p style="color: #4b5563;">${articleExcerpt}</p>` : ''}
               <p style="margin: 24px 0;">
-                <a href="${postUrl}" style="background: #aa002a; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Read It</a>
+                <a href="${postUrl}" style="background: ${siteConfig.brand.accent}; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">Read It</a>
               </p>
               <p style="color: #9ca3af; font-size: 11px; margin-top: 32px; border-top: 1px solid #e5e7eb; padding-top: 16px;">
                 You're getting this because you subscribed at ${SITE_URL}.

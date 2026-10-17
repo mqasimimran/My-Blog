@@ -20,7 +20,7 @@ export default function CalendlyEmbed() {
   if (!isConfigured) {
     return (
       <div className="border border-dashed border-ink-100 p-8 text-center text-sm text-ink-300">
-        Calendly isn't connected yet — set <code className="font-mono text-xs">CALENDLY_URL</code> in{' '}
+        Calendly isn't connected yet. Set <code className="font-mono text-xs">CALENDLY_URL</code> in{' '}
         <code className="font-mono text-xs">CalendlyEmbed.tsx</code> to your real scheduling link to enable this.
       </div>
     )

@@ -16,7 +16,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-[10px] font-bold uppercase tracking-widest text-ink-300">Share</span>
+      <span className="text-xs font-medium text-ink-300">Share</span>
       <a
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
         target="_blank"
@@ -37,7 +37,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
       </a>
       <button
         onClick={handleCopy}
-        className="text-[10px] font-bold uppercase tracking-widest text-ink-500 hover:text-accent-600 transition-colors border border-ink-100 rounded-full px-3 py-2"
+        className="text-xs font-medium text-ink-500 hover:text-accent-600 transition-colors border border-ink-100 rounded-full px-3 py-2"
       >
         {copied ? 'Copied!' : 'Copy Link'}
       </button>

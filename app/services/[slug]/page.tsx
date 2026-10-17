@@ -3,6 +3,11 @@
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { siteConfig } from '@/site.config'
+import { ArrowLeft, ArrowRight, Check } from '@phosphor-icons/react'
+import { SkeletonBlock } from '@/app/components/Skeleton'
+import EmptyState from '@/app/components/EmptyState'
+import SplitText from '@/app/components/ui/SplitText'
 
 type ServicePackage = {
   id: string
@@ -61,96 +66,95 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
     fetchService()
   }, [slug])
 
+  const backLink = (
+    <Link href="/services" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 transition-colors duration-200 hover:text-ink-900">
+      <ArrowLeft size={16} aria-hidden /> All services
+    </Link>
+  )
+
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-paper flex items-center justify-center">
-        <p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p>
+      <main className="container-page pb-24 pt-10 md:pt-14">
+        <div className="mt-12 max-w-3xl space-y-5">
+          <SkeletonBlock className="h-14 w-2/3" />
+          <SkeletonBlock className="h-5 w-full" />
+        </div>
+        <div className="mt-16 grid gap-6 md:grid-cols-3">
+          {[0, 1, 2].map((i) => <SkeletonBlock key={i} className="h-96 w-full" />)}
+        </div>
       </main>
     )
   }
 
   if (notFound || !service) {
     return (
-      <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center">
-        <p className="text-ink-500">This service couldn't be found.</p>
-        <Link href="/services" className="text-accent-600 text-xs font-bold uppercase tracking-widest">← Back to Services</Link>
+      <main className="container-page pb-24 pt-10">
+        {backLink}
+        <EmptyState icon="search" title="This service couldn't be found" description="It may have been removed or renamed." />
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen bg-paper font-sans">
-
-      {/* Header */}
-      <section className="bg-gradient-to-br from-ink-100 to-paper pt-24 pb-16 px-6">
-        <div className="max-w-4xl mx-auto">
-          <Link href="/services" className="text-[10px] font-bold uppercase tracking-widest text-ink-300 hover:text-ink-900 transition-colors block mb-6">
-            ← All Services
-          </Link>
-          <div className="flex items-center gap-3 mb-3">
-            {service.icon && <span className="text-3xl">{service.icon}</span>}
-            <h1 className="text-3xl md:text-5xl font-light tracking-wide text-ink-900">{service.name}</h1>
+    <main className="pb-24 pt-10 md:pt-14">
+      <div className="container-page">
+        {backLink}
+        <header className="mt-12 max-w-3xl md:mt-16">
+          <div className="flex items-center gap-4">
+            {service.icon && <span className="text-4xl">{service.icon}</span>}
+            <h1 className="type-display text-ink-900"><SplitText text={service.name} /></h1>
           </div>
-          {service.tagline && (
-            <p className="text-accent-600 text-sm font-bold tracking-[0.15em] uppercase mb-6">{service.tagline}</p>
-          )}
-          {service.description && (
-            <p className="text-ink-700 leading-relaxed max-w-2xl">{service.description}</p>
-          )}
-        </div>
-      </section>
+          {service.tagline && <p className="mt-5 text-lg font-medium text-accent-600">{service.tagline}</p>}
+          {service.description && <p className="type-lead mt-5 max-w-[56ch]">{service.description}</p>}
+        </header>
+      </div>
 
-      {/* Package Cards */}
-      <section className="max-w-6xl mx-auto px-6 py-16">
+      {/* Packages, compared side by side */}
+      <section className="container-page mt-16 md:mt-20">
         {packages.length === 0 ? (
-          <div className="text-center py-16 text-ink-300 text-sm">
-            No packages set up for this service yet.
-          </div>
+          <EmptyState icon="inbox" title="No packages set up for this service yet" description="Get in touch for a custom quote." />
         ) : (
-          <div className={`grid grid-cols-1 gap-6 ${packages.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' : 'md:grid-cols-3'}`}>
+          <div className={`grid grid-cols-1 gap-6 ${packages.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
             {packages.map((pkg, index) => {
-              const isMiddle = packages.length === 3 && index === 1
-              const featuresList = pkg.features
-                ? pkg.features.split('\n').map((line) => line.trim()).filter(Boolean)
-                : []
+              const isFeatured = packages.length === 3 && index === 1
+              const featuresList = pkg.features ? pkg.features.split('\n').map((line) => line.trim()).filter(Boolean) : []
+              const contactHref = `/contact?subject=${encodeURIComponent(`${service.name} - ${pkg.tier} package`)}&message=${encodeURIComponent(`Hi ${siteConfig.firstName}, I'd like to get started on the ${pkg.tier} package (${pkg.price}) for ${service.name}.`)}`
 
               return (
                 <div
                   key={pkg.id}
-                  className={`rounded-none border flex flex-col p-8 ${
-                    isMiddle ? 'border-accent-600 shadow-lg relative' : 'border-ink-100'
-                  }`}
+                  className={`flex flex-col border bg-paper-raised p-8 ${isFeatured ? 'border-ink-900 border-t-4 border-t-accent-600' : 'border-ink-100'}`}
                 >
-                  {isMiddle && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent-600 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
-                      Most Popular
-                    </span>
-                  )}
-                  <p className="text-xs font-bold uppercase tracking-[0.2em] text-ink-500 mb-2">{pkg.tier}</p>
-                  <p className="text-3xl font-light text-ink-900 mb-4">{pkg.price}</p>
-
-                  <div className="flex items-center gap-4 text-xs text-ink-500 mb-6 pb-6 border-b border-ink-100">
-                    {pkg.delivery_days && <span>{pkg.delivery_days}-day delivery</span>}
-                    {pkg.delivery_days && pkg.revisions && <span>·</span>}
-                    {pkg.revisions && <span>{pkg.revisions}</span>}
+                  <div className="flex items-baseline justify-between gap-4">
+                    <p className="text-sm font-medium text-ink-900">{pkg.tier}</p>
+                    {isFeatured && <p className="type-meta text-accent-600">Most popular</p>}
                   </div>
+                  <p className="mt-4 text-[2.5rem] font-semibold leading-none tracking-[-0.04em] text-ink-900 tabular-nums">{pkg.price}</p>
 
-                  <ul className="space-y-3 mb-8 flex-1">
+                  {(pkg.delivery_days || pkg.revisions) && (
+                    <p className="type-meta mt-5 flex flex-wrap gap-x-4 border-b border-ink-100 pb-6">
+                      {pkg.delivery_days && <span>{pkg.delivery_days}-day delivery</span>}
+                      {pkg.revisions && <span>{pkg.revisions}</span>}
+                    </p>
+                  )}
+
+                  <ul className="mb-10 mt-6 flex-1 space-y-3">
                     {featuresList.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2 text-sm text-ink-700">
-                        <span className="text-accent-600 mt-0.5">✓</span>
+                      <li key={feature} className="flex items-start gap-2.5 text-[15px] text-ink-700">
+                        <Check size={16} weight="bold" aria-hidden className="mt-1 shrink-0 text-accent-600" />
                         {feature}
                       </li>
                     ))}
                   </ul>
 
                   <Link
-                    href={`/contact?subject=${encodeURIComponent(`${service.name} — ${pkg.tier} package`)}&message=${encodeURIComponent(`Hi Qasim, I'd like to get started on the ${pkg.tier} package (${pkg.price}) for ${service.name}.`)}`}
-                    className={`text-center text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none transition-colors ${
-                      isMiddle ? 'bg-accent-600 text-white hover:bg-gray-900' : 'bg-ink-100 text-ink-900 hover:bg-ink-100'
+                    href={contactHref}
+                    className={`group inline-flex h-12 items-center justify-center gap-2 text-sm font-medium tracking-tight transition-[background-color,color,transform,border-color] duration-300 ease-[var(--ease-smooth)] active:translate-y-px ${
+                      isFeatured ? 'bg-ink-900 text-paper hover:bg-accent-600 hover:text-on-accent' : 'border border-ink-900 text-ink-900 hover:bg-ink-900 hover:text-paper'
                     }`}
                   >
-                    Get Started
+                    Get started
+                    <ArrowRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
               )
@@ -158,7 +162,6 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
           </div>
         )}
       </section>
-
     </main>
   )
 }

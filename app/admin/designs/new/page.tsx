@@ -133,7 +133,7 @@ export default function NewDesignPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Design Title</label>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-ink-900 text-sm" placeholder="e.g. TEDxUMTLahore Registration Poster" />
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-ink-900 text-sm" placeholder="e.g. Acme Inc. Registration Poster" />
             </div>
 
             <div>

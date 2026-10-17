@@ -24,16 +24,16 @@ export default function CodeSnippet({ code, language = 'text' }: CodeSnippetProp
     <div className="my-8 rounded-none overflow-hidden bg-[#0d1117] border border-gray-800 shadow-sm">
       {/* Header bar with language and copy button */}
       <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-gray-800">
-        <span className="text-[10px] font-mono tracking-widest uppercase text-ink-300">
+        <span className="text-xs font-mono text-ink-300">
           {language}
         </span>
         <button
           onClick={handleCopy}
-          className={`text-[10px] font-mono tracking-widest uppercase transition-colors ${
+          className={`text-xs font-mono transition-colors ${
             copied ? 'text-[#d9534f]' : 'text-ink-300 hover:text-white'
           }`}
         >
-          {copied ? 'Copied ✓' : 'Copy'}
+          {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
       

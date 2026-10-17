@@ -3,6 +3,10 @@
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { ArrowLeft, ArrowRight, DownloadSimple, Package } from '@phosphor-icons/react'
+import { SkeletonBlock } from '@/app/components/Skeleton'
+import EmptyState from '@/app/components/EmptyState'
+import SplitText from '@/app/components/ui/SplitText'
 
 type Product = {
   id: string
@@ -38,15 +42,34 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
     fetchProduct()
   }, [slug])
 
+  const backLink = (
+    <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 transition-colors duration-200 hover:text-ink-900">
+      <ArrowLeft size={16} aria-hidden /> All products
+    </Link>
+  )
+
   if (isLoading) {
-    return <main className="min-h-screen bg-paper flex items-center justify-center"><p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p></main>
+    return (
+      <main className="container-page pb-24 pt-10 md:pt-14">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+          <SkeletonBlock className="aspect-square w-full lg:col-span-7" />
+          <div className="space-y-5 lg:col-span-5">
+            <SkeletonBlock className="h-3 w-28" />
+            <SkeletonBlock className="h-10 w-3/4" />
+            <SkeletonBlock className="h-6 w-24" />
+            <SkeletonBlock className="h-24 w-full" />
+            <SkeletonBlock className="h-12 w-full" />
+          </div>
+        </div>
+      </main>
+    )
   }
 
   if (notFound || !product) {
     return (
-      <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center">
-        <p className="text-ink-500">This product couldn't be found.</p>
-        <Link href="/shop" className="text-accent-600 text-xs font-bold uppercase tracking-widest">← Back to Shop</Link>
+      <main className="container-page pb-24 pt-10">
+        {backLink}
+        <EmptyState icon="search" title="This product couldn't be found" description="It may have been removed or renamed." />
       </main>
     )
   }
@@ -54,70 +77,72 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
   const outOfStock = product.type === 'physical' && product.stock_quantity !== null && product.stock_quantity <= 0
 
   return (
-    <main className="min-h-screen bg-paper font-sans pt-24 pb-24 px-6">
-      <div className="max-w-5xl mx-auto">
-        <Link href="/shop" className="text-[10px] font-bold uppercase tracking-widest text-ink-300 hover:text-ink-900 transition-colors block mb-10">
-          ← All Products
-        </Link>
+    <main className="container-page pb-24 pt-10 md:pt-14">
+      {backLink}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-
-          {/* Images */}
-          <div>
-            <div className="aspect-square bg-ink-100 rounded-none overflow-hidden mb-4 flex items-center justify-center">
+      <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-16">
+        {/* Images: stay in view on large screens while you read the details */}
+        <div className="lg:col-span-7">
+          <div className="lg:sticky lg:top-28">
+            <div className="grid aspect-square place-items-center overflow-hidden bg-ink-50">
               {product.images?.[activeImage] ? (
-                <img src={product.images[activeImage]} alt={product.name} className="w-full h-full object-cover" />
+                <img src={product.images[activeImage]} alt={product.name} className="h-full w-full object-contain" />
+              ) : product.type === 'digital' ? (
+                <DownloadSimple size={64} weight="light" aria-hidden className="text-ink-300" />
               ) : (
-                <span className="text-6xl">{product.type === 'digital' ? '📦' : '🛍️'}</span>
+                <Package size={64} weight="light" aria-hidden className="text-ink-300" />
               )}
             </div>
             {product.images && product.images.length > 1 && (
-              <div className="flex gap-3">
+              <div className="mt-4 flex flex-wrap gap-3">
                 {product.images.map((img, i) => (
-                  <button key={i} onClick={() => setActiveImage(i)} className={`w-16 h-16 rounded-none overflow-hidden border-2 ${i === activeImage ? 'border-accent-600' : 'border-transparent'}`}>
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  <button
+                    key={i}
+                    onClick={() => setActiveImage(i)}
+                    aria-label={`Show image ${i + 1}`}
+                    aria-pressed={i === activeImage}
+                    className={`h-20 w-20 overflow-hidden border-2 bg-ink-50 transition-colors duration-200 ${i === activeImage ? 'border-accent-600' : 'border-transparent hover:border-ink-300'}`}
+                  >
+                    <img src={img} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>
             )}
           </div>
+        </div>
 
-          {/* Info */}
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-3 block">
-              {product.type}{product.category ? ` · ${product.category}` : ''}
-            </span>
-            <h1 className="text-3xl md:text-4xl font-light text-ink-900 mb-4">{product.name}</h1>
+        {/* Details */}
+        <div className="lg:col-span-5">
+          <p className="type-meta flex gap-x-4 capitalize">
+            <span>{product.type}</span>
+            {product.category && <span>{product.category}</span>}
+          </p>
+          <h1 className="type-title mt-4 text-ink-900"><SplitText text={product.name} /></h1>
 
-            <div className="flex items-center gap-3 mb-8">
-              <span className="text-2xl font-bold text-ink-900">${Number(product.price).toFixed(2)}</span>
-              {product.compare_at_price && (
-                <span className="text-sm text-ink-300 line-through">${Number(product.compare_at_price).toFixed(2)}</span>
-              )}
-            </div>
+          <p className="mt-6 flex items-baseline gap-3 font-mono tabular-nums">
+            <span className="text-2xl text-ink-900">${Number(product.price).toFixed(2)}</span>
+            {product.compare_at_price && <span className="text-base text-ink-500 line-through">${Number(product.compare_at_price).toFixed(2)}</span>}
+          </p>
 
-            {product.description && (
-              <p className="text-ink-700 leading-relaxed mb-10 whitespace-pre-line">{product.description}</p>
-            )}
+          {product.description && <p className="mt-8 whitespace-pre-line text-base leading-relaxed text-ink-700">{product.description}</p>}
 
+          <div className="mt-10 border-t border-ink-100 pt-8">
             {outOfStock ? (
-              <div className="bg-ink-100 text-ink-500 text-center text-xs font-bold uppercase tracking-widest py-4 rounded-none">
-                Out of Stock
-              </div>
+              <p className="flex h-12 items-center justify-center bg-ink-50 text-sm font-medium text-ink-500">Out of stock</p>
             ) : (
               <Link
                 href={`/shop/${slug}/checkout`}
-                className="block text-center bg-accent-600 text-white text-xs font-bold tracking-widest uppercase py-4 rounded-none hover:bg-gray-900 transition-colors"
+                className="group flex h-12 w-full items-center justify-center gap-2 bg-ink-900 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px"
               >
-                Buy Now — ${Number(product.price).toFixed(2)}
+                Buy now, ${Number(product.price).toFixed(2)}
+                <ArrowRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5" />
               </Link>
             )}
-
             {product.type === 'physical' && product.stock_quantity !== null && product.stock_quantity > 0 && (
-              <p className="text-xs text-ink-300 mt-4">{product.stock_quantity} in stock</p>
+              <p className="type-meta mt-4">{product.stock_quantity} in stock</p>
             )}
+            {product.type === 'digital' && <p className="type-meta mt-4">Instant download after your payment is confirmed</p>}
           </div>
-
         </div>
       </div>
     </main>

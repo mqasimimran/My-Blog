@@ -1,41 +1,35 @@
 import './globals.css'
-import { Space_Grotesk, Inter } from 'next/font/google'
-import Link from 'next/link'
+import { GeistSans } from 'geist/font/sans'
+import { GeistMono } from 'geist/font/mono'
+import localFont from 'next/font/local'
 import Navbar from './Navbar'
 import Script from 'next/script'
 import ReadingProgress from '@/app/components/ReadingProgress'
-import Providers from '@/app/components/Providers'
 import { Analytics } from '@vercel/analytics/next'
 import ConsoleEasterEgg from '@/app/components/ConsoleEasterEgg'
 import CommandPalette from '@/app/components/CommandPalette'
 import WhatsAppButton from '@/app/components/WhatsAppButton'
+import SiteFooter from '@/app/components/SiteFooter'
+import ScrollAnimator from '@/app/components/ScrollAnimator'
+import CursorBadge from '@/app/components/CursorBadge'
+
+// Headline face (condensed). The font file lives in the project (app/fonts), so it needs no
+// install step and no Google request. Anton is under the SIL Open Font License (app/fonts/Anton-OFL.txt).
+const anton = localFont({
+  src: './fonts/anton-latin-400-normal.woff2',
+  variable: '--font-anton',
+  display: 'swap',
+})
 import type { Metadata } from 'next'
 
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-  variable: '--font-space-grotesk',
-  display: 'swap',
-})
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-// TODO: replace with your real production domain once you know it for sure —
-// this powers absolute URLs for Open Graph/Twitter card previews.
-const SITE_URL = 'https://www.muhammadqasimimran.me/'
-const SITE_DESCRIPTION =
-  'Software Engineer and Graphic Designer building Unity games, AI/ML projects, and web apps — bridging functional code with minimalist design.'
+import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
+const SITE_DESCRIPTION = siteConfig.description
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Muhammad Qasim Imran — Software Engineer & Graphic Designer',
-    template: '%s | Muhammad Qasim Imran',
+    default: `${siteConfig.name} - ${siteConfig.jobTitle}`,
+    template: `%s | ${siteConfig.name}`,
   },
   description: SITE_DESCRIPTION,
   alternates: {
@@ -46,14 +40,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     url: SITE_URL,
-    title: 'Muhammad Qasim Imran — Software Engineer & Graphic Designer',
+    title: `${siteConfig.name} - ${siteConfig.jobTitle}`,
     description: SITE_DESCRIPTION,
-    siteName: 'Muhammad Qasim Imran',
-    images: [{ url: '/profile.png', width: 1080, height: 1080, alt: 'Muhammad Qasim Imran' }],
+    siteName: siteConfig.name,
+    images: [{ url: '/profile.png', width: 1080, height: 1080, alt: siteConfig.name }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Muhammad Qasim Imran — Software Engineer & Graphic Designer',
+    title: `${siteConfig.name} - ${siteConfig.jobTitle}`,
     description: SITE_DESCRIPTION,
     images: ['/profile.png'],
   },
@@ -61,7 +55,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${anton.variable}`} suppressHydrationWarning>
       <head>
         {/* Site-wide Person structured data — helps Google associate this
             site with you specifically (knowledge panel, rich results) */}
@@ -71,14 +65,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'Person',
-              name: 'Muhammad Qasim Imran',
+              name: siteConfig.name,
               url: SITE_URL,
-              jobTitle: 'Software Engineer & Graphic Designer',
+              jobTitle: siteConfig.jobTitle,
               sameAs: [
-                'https://linkedin.com/in/muhammadqasimimran',
-                'https://github.com/mqasimimran',
-                'https://youtube.com/@qasimdevelops',
-                'https://instagram.com/muhammadqasimimrann',
+                siteConfig.social.linkedin,
+                siteConfig.social.github,
+                siteConfig.social.youtube,
+                siteConfig.social.instagramPersonal,
               ],
             }),
           }}
@@ -120,70 +114,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ></script>
       </head>
       <body
-        className="bg-white text-gray-900 font-sans antialiased"
+        className="bg-paper text-ink-900 font-sans antialiased"
         suppressHydrationWarning
       >
         
-        {/* 2. Wrap everything inside the body with Providers */}
-        <Providers>
+        {/* The login session provider lives in app/admin/layout.tsx: only the admin area uses it, so
+            public pages never ask the server who is logged in. */}
+        <>
           {/* Sticky Reading Progress Bar for Blog Posts */}
           <ReadingProgress />
 
+          <a href="#main" className="skip-link">Skip to content</a>
+
           <Navbar />
+          {/* Spacer: the nav floats (position: fixed), so this keeps pages starting below it */}
+          <div aria-hidden className="h-12" />
 
-          <main className="min-h-screen">
+          <div id="main" tabIndex={-1} className="min-h-[100dvh] outline-none">
             {children}
-          </main>
+          </div>
 
-          <footer className="bg-[#0a0a0a] text-white">
-            <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-1 sm:grid-cols-3 gap-10">
-
-              <div>
-                <div className="font-display text-lg font-semibold tracking-wide mb-3">
-                  Muhammad Qasim Imran
-                </div>
-                <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
-                  Software Engineer &amp; Graphic Designer, Lahore, Pakistan.
-                </p>
-              </div>
-
-              <div>
-                <div className="text-gray-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-4">Explore</div>
-                <div className="flex flex-col gap-2 text-sm text-gray-200">
-                  <Link href="/projects" className="hover:text-accent-600 transition-colors">Projects</Link>
-                  <Link href="/design" className="hover:text-accent-600 transition-colors">Design</Link>
-                  <Link href="/blog" className="hover:text-accent-600 transition-colors">Blog</Link>
-                  <Link href="/resume" className="hover:text-accent-600 transition-colors">Resume</Link>
-                  <Link href="/roadmap" className="hover:text-accent-600 transition-colors">Roadmap</Link>
-                </div>
-              </div>
-
-              <div>
-                <div className="text-gray-500 text-[10px] font-bold tracking-[0.2em] uppercase mb-4">Connect</div>
-                <div className="flex flex-col gap-2 text-sm text-gray-200">
-                  <a href="mailto:m.qasimimran01@gmail.com" className="hover:text-accent-600 transition-colors">m.qasimimran01@gmail.com</a>
-                  <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">LinkedIn</a>
-                  <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">GitHub</a>
-                  <a href="https://youtube.com/@qasimdevelops" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">YouTube</a>
-                  <a href="/api/stats" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors font-mono text-xs">/api/stats ↗</a>
-                </div>
-              </div>
-
-            </div>
-
-            <div className="border-t border-white/10">
-              <p className="max-w-7xl mx-auto px-6 py-6 text-center text-xs text-gray-500">
-                © {new Date().getFullYear()} Muhammad Qasim Imran. All rights reserved.
-              </p>
-              <Link
-                href="/privacy"
-                className="hover:text-accent-600 transition-colors flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pb-6 text-xs text-gray-500"
-              >
-                Privacy Policy
-              </Link>
-            </div>
-          </footer>
-        </Providers>
+          <SiteFooter />
+          <ScrollAnimator />
+          <CursorBadge />
+          <div aria-hidden className="frame-rails z-rails" />
+        </>
 
         <Analytics />
         <ConsoleEasterEgg />

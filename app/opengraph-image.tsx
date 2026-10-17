@@ -1,7 +1,8 @@
 import { ImageResponse } from 'next/og'
 
+import { siteConfig } from '@/site.config'
 export const runtime = 'edge'
-export const alt = 'Muhammad Qasim Imran — Software Engineer & Graphic Designer'
+export const alt = `${siteConfig.name} - ${siteConfig.jobTitle}`
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -25,7 +26,7 @@ export default async function Image() {
           style={{
             width: 56,
             height: 6,
-            background: '#aa002a',
+            background: siteConfig.brand.accent,
             marginBottom: 36,
             display: 'flex',
           }}
@@ -36,12 +37,12 @@ export default async function Image() {
             fontWeight: 700,
             letterSpacing: 6,
             textTransform: 'uppercase',
-            color: '#aa002a',
+            color: siteConfig.brand.accent,
             marginBottom: 28,
             display: 'flex',
           }}
         >
-          Software Engineer &amp; Graphic Designer
+          {siteConfig.jobTitle}
         </div>
         <div
           style={{
@@ -52,7 +53,7 @@ export default async function Image() {
             display: 'flex',
           }}
         >
-          Muhammad Qasim Imran
+          {siteConfig.name}
         </div>
         <div
           style={{
@@ -62,7 +63,7 @@ export default async function Image() {
             display: 'flex',
           }}
         >
-          Web Development · Graphic Design · Unity Game Development
+          {siteConfig.skillsLine}
         </div>
       </div>
     ),

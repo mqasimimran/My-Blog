@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import Image from '@/components/SafeImage'
 import { supabase } from '@/lib/supabase'
 
 type ClientLogo = {
@@ -30,49 +30,41 @@ export default function LogosStrip() {
     fetchLogos()
   }, [])
 
-  // Nothing added yet — don't show an empty section on the homepage
+  // Nothing added yet: don't show an empty section on the homepage
   if (isLoading || logos.length === 0) return null
 
+  // A continuous scrolling row. Short lists are repeated so the row is always full.
+  const row = logos.length >= 8 ? logos : Array.from({ length: Math.ceil(8 / logos.length) }, () => logos).flat()
+
   return (
-    <section className="max-w-5xl mx-auto px-6 py-14 font-sans">
-      <p className="text-center text-[10px] font-bold tracking-[0.2em] uppercase text-ink-300 mb-8">
-        Work Seen At
-      </p>
-      <div className="flex flex-wrap items-center justify-center gap-x-16 gap-y-8">
-        {logos.map((logo) => {
-          const LogoImages = (
-            <>
-              <Image
-                src={logo.image_url}
-                alt={logo.name}
-                width={400}
-                height={120}
-                className={`h-7 sm:h-8 w-auto max-w-[160px] object-contain ${logo.dark_image_url ? 'dark:hidden' : ''}`}
-              />
-              {logo.dark_image_url && (
-                <Image
-                  src={logo.dark_image_url}
-                  alt={logo.name}
-                  width={400}
-                  height={120}
-                  className="h-7 sm:h-8 w-auto max-w-[160px] object-contain hidden dark:block"
-                />
-              )}
-            </>
-          )
-
-          const wrapperClass = 'h-7 sm:h-8 opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0'
-
-          return logo.link_url ? (
-            <a key={logo.id} href={logo.link_url} target="_blank" rel="noopener noreferrer" className={wrapperClass}>
-              {LogoImages}
-            </a>
-          ) : (
-            <div key={logo.id} className={wrapperClass}>
-              {LogoImages}
-            </div>
-          )
-        })}
+    <section className="border-b border-ink-100 py-10 md:py-12">
+      <p className="text-center text-sm text-ink-500">Work seen at</p>
+      <div className="mt-8 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
+        <div className="animate-marquee items-center" style={{ animationDuration: `${row.length * 4}s` }}>
+          {[0, 1].map((copy) => (
+            <ul key={copy} aria-hidden={copy === 1} className="flex shrink-0 items-center gap-16 pr-16">
+              {row.map((logo, i) => {
+                const imgClass = 'h-auto max-h-10 w-auto max-w-[170px] object-contain'
+                const images = (
+                  <>
+                    <Image src={logo.image_url} alt={copy === 0 && i < logos.length ? logo.name : ''} width={400} height={120} className={`${imgClass} ${logo.dark_image_url ? 'dark:hidden' : ''}`} />
+                    {logo.dark_image_url && <Image src={logo.dark_image_url} alt="" width={400} height={120} className={`hidden ${imgClass} dark:block`} />}
+                  </>
+                )
+                const cell = 'flex h-12 shrink-0 items-center opacity-70 grayscale transition-[opacity,filter] duration-300 hover:opacity-100 hover:grayscale-0'
+                return (
+                  <li key={`${logo.id}-${i}`}>
+                    {logo.link_url ? (
+                      <a href={logo.link_url} target="_blank" rel="noopener noreferrer" tabIndex={copy === 1 || i >= logos.length ? -1 : undefined} className={cell}>{images}</a>
+                    ) : (
+                      <div className={cell}>{images}</div>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          ))}
+        </div>
       </div>
     </section>
   )

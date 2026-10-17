@@ -5,6 +5,10 @@ import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { SkeletonMasonryGrid } from '@/app/components/Skeleton'
 import BeforeAfterSlider from '@/app/components/BeforeAfterSlider'
+import FilterTabs from '@/app/components/ui/FilterTabs'
+import EmptyState from '@/app/components/EmptyState'
+import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
+import SplitText from '@/app/components/ui/SplitText'
 
 type DesignItem = {
   id: string
@@ -18,7 +22,7 @@ function DesignGalleryInner() {
   const searchParams = useSearchParams()
   const [designPortfolio, setDesignPortfolio] = useState<DesignItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeCategory, setActiveCategory] = useState('ALL')
+  const [activeCategory, setActiveCategory] = useState('All')
   const [selectedItem, setSelectedItem] = useState<DesignItem | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
@@ -52,9 +56,9 @@ function DesignGalleryInner() {
     }
   }, [searchParams, designPortfolio])
 
-  const categories = ['ALL', 'Branding & Identity', 'Logo Design', 'Social Media Posts', 'Print Design', 'Packaging Design', 'Product Design', 'Advertising', 'UI/UX Design', 'Illustration', 'Graphic Design']
+  const categories = ['All', 'Branding & Identity', 'Logo Design', 'Social Media Posts', 'Print Design', 'Packaging Design', 'Product Design', 'Advertising', 'UI/UX Design', 'Illustration', 'Graphic Design']
 
-  const filteredDesigns = activeCategory === 'ALL'
+  const filteredDesigns = activeCategory === 'All'
     ? designPortfolio
     : designPortfolio.filter(item => item.category === activeCategory)
 
@@ -81,170 +85,117 @@ function DesignGalleryInner() {
     setCurrentImageIndex(0)
   }
 
+  // Keyboard: Escape closes the viewer; arrow keys step through a set.
+  useEffect(() => {
+    if (!selectedItem) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSelectedItem(null)
+      if (selectedItem.images.length < 2) return
+      if (e.key === 'ArrowRight') setCurrentImageIndex((i) => (i === selectedItem.images.length - 1 ? 0 : i + 1))
+      if (e.key === 'ArrowLeft') setCurrentImageIndex((i) => (i === 0 ? selectedItem.images.length - 1 : i - 1))
+    }
+    window.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [selectedItem])
+
   return (
-    <main className="min-h-screen bg-paper py-20 px-6 font-sans">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Page Header */}
-        <header className="mb-16">
-          <h1 className="text-4xl md:text-5xl font-light tracking-wide text-ink-900 uppercase mb-4">
-            Visual Design
-          </h1>
-          <p className="text-ink-500 text-sm md:text-base max-w-2xl leading-relaxed">
-            A curated showcase of brand identities, UI/UX architecture, and promotional graphics. Click on a project to view the full design set.
-          </p>
-        </header>
+    <main className="pb-24">
+      <header className="container-page pb-12 pt-12 md:pb-16 md:pt-20">
+        <h1 className="type-display text-ink-900"><SplitText text={"Visual Design"} /></h1>
+        <p className="type-lead mt-6 max-w-[52ch]">
+          A curated showcase of brand identities, UI/UX architecture, and promotional graphics. Select a piece to see the full design set.
+        </p>
+      </header>
 
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-2 mb-12 border-b border-ink-100 pb-6">
-          {categories.map((category) => {
-            const isActive = activeCategory === category
-            return (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`text-xs font-bold uppercase tracking-[0.15em] px-4 py-2 rounded-none transition-colors ${
-                  isActive 
-                    ? 'bg-accent-600 text-white shadow-sm' 
-                    : 'bg-paper text-ink-700 border border-ink-100 hover:bg-ink-100 hover:text-ink-900'
-                }`}
-              >
-                {category}
-              </button>
-            )
-          })}
-        </div>
+      <section className="container-page">
+        <FilterTabs label="Filter designs by category" options={categories.map((c) => ({ key: c, label: c }))} value={activeCategory} onChange={setActiveCategory} />
 
-        {/* Masonry Grid Layout */}
-        {isLoading ? (
-          <SkeletonMasonryGrid count={9} />
-        ) : filteredDesigns.length === 0 ? (
-          <div className="text-center py-20 text-ink-300 text-sm">
-            No design entries found in this category.
-          </div>
-        ) : (
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-            {filteredDesigns.map((item) => (
-              <div 
-                key={item.id} 
-                className="break-inside-avoid relative group cursor-pointer overflow-hidden rounded-none shadow-sm hover:shadow-xl transition-all duration-500 bg-paper"
-                onClick={() => openModal(item)}
-              >
-                {item.images?.[0] && (
-                  <img 
-                    src={item.images[0]} 
-                    alt={item.title} 
-                    loading="lazy"
-                    className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-                  />
-                )}
-                
-                <div className="absolute inset-0 bg-gray-900/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-mono tracking-widest uppercase text-accent-600">
-                      {item.category}
-                    </span>
-                    {item.images?.length > 1 && (
-                      <span className="text-[10px] text-white/70 bg-paper/10 px-2 py-1 rounded-none">
-                        1 / {item.images.length}
-                      </span>
+        <div className="mt-12">
+          {isLoading ? (
+            <SkeletonMasonryGrid count={9} />
+          ) : filteredDesigns.length === 0 ? (
+            <EmptyState icon="image" title="No designs in this category yet" description="Try another category." />
+          ) : (
+            <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
+              {filteredDesigns.map((item) => (
+                <button key={item.id} type="button" onClick={() => openModal(item)} data-cursor="Open" className="group mb-10 block w-full break-inside-avoid text-left">
+                  <div className="overflow-hidden bg-ink-50">
+                    {item.images?.[0] && (
+                      <img
+                        src={item.images[0]}
+                        alt={item.title}
+                        loading="lazy"
+                        className="h-auto w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
+                      />
                     )}
                   </div>
-                  <h3 className="text-white text-lg font-medium tracking-wide">
-                    {item.title}
-                  </h3>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="mt-3 flex items-baseline justify-between gap-4">
+                    <h2 className="text-[15px] font-medium tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{item.title}</h2>
+                    {item.images?.length > 1 && <span className="type-meta shrink-0">{item.images.length} images</span>}
+                  </div>
+                  <p className="type-meta mt-0.5">{item.category}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
-      </div>
-
-      {/* Carousel Lightbox Modal */}
+      {/* Image viewer */}
       {selectedItem && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/95 p-4 sm:p-8 backdrop-blur-sm transition-opacity"
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={selectedItem.title}
+          className="fixed inset-0 z-overlay flex items-center justify-center bg-zinc-950/95 p-4 backdrop-blur-sm sm:p-8"
           onClick={() => setSelectedItem(null)}
         >
-          <div 
-            className="relative max-w-5xl w-full flex flex-col items-center group"
-            onClick={(e) => e.stopPropagation()} 
-          >
-            <button 
-              className="absolute -top-12 right-0 text-white hover:text-accent-600 transition-colors text-sm font-bold tracking-widest uppercase z-10"
+          <div className="relative flex w-full max-w-5xl flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <button
+              autoFocus
+              aria-label="Close"
+              className="absolute -top-12 right-0 z-10 grid h-10 w-10 place-items-center text-white transition-colors duration-200 hover:text-accent-600"
               onClick={() => setSelectedItem(null)}
             >
-              Close ✕
+              <X size={24} aria-hidden />
             </button>
-            
-            <div className="relative w-full flex items-center justify-center">
+
+            <div className="relative flex w-full items-center justify-center">
               {selectedItem.images.length > 1 && (
-                <button 
-                  onClick={handlePrev}
-                  className="absolute left-0 md:-left-12 p-3 text-white/50 hover:text-accent-600 transition-colors z-10"
-                >
-                  <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
+                <button onClick={handlePrev} aria-label="Previous image" className="absolute left-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-left-14">
+                  <CaretLeft size={32} aria-hidden />
                 </button>
               )}
 
               {selectedItem.before_image ? (
                 <div className="w-full max-w-2xl">
-                  <BeforeAfterSlider
-                    beforeSrc={selectedItem.before_image}
-                    afterSrc={selectedItem.images[currentImageIndex]}
-                    alt={selectedItem.title}
-                  />
+                  <BeforeAfterSlider beforeSrc={selectedItem.before_image} afterSrc={selectedItem.images[currentImageIndex]} alt={selectedItem.title} />
                 </div>
               ) : (
-                <img 
-                  src={selectedItem.images[currentImageIndex]} 
-                  alt={`${selectedItem.title} - ${currentImageIndex + 1}`} 
-                  className="max-h-[80vh] w-auto object-contain rounded-none shadow-2xl transition-opacity duration-300"
-                />
+                <img src={selectedItem.images[currentImageIndex]} alt={`${selectedItem.title}, ${currentImageIndex + 1} of ${selectedItem.images.length}`} className="max-h-[80vh] w-auto object-contain" />
               )}
 
               {selectedItem.images.length > 1 && (
-                <button 
-                  onClick={handleNext}
-                  className="absolute right-0 md:-right-12 p-3 text-white/50 hover:text-accent-600 transition-colors z-10"
-                >
-                  <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
+                <button onClick={handleNext} aria-label="Next image" className="absolute right-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-right-14">
+                  <CaretRight size={32} aria-hidden />
                 </button>
               )}
             </div>
-            
-            <div className="mt-6 text-center w-full">
-              <h3 className="text-white text-xl font-medium tracking-wide mb-1">
-                {selectedItem.title}
-              </h3>
-              
-              {selectedItem.images.length > 1 ? (
-                <div className="flex items-center justify-center gap-2 mt-3">
-                  {selectedItem.images.map((_, idx) => (
-                    <span 
-                      key={idx} 
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        idx === currentImageIndex ? 'w-6 bg-accent-600' : 'w-1.5 bg-paper/30'
-                      }`}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <span className="text-[10px] font-mono tracking-widest uppercase text-accent-600 block mt-2">
-                  {selectedItem.category}
-                </span>
-              )}
+
+            <div className="mt-6 w-full text-center">
+              <h3 className="text-lg font-medium tracking-tight text-white">{selectedItem.title}</h3>
+              <p className="mt-1 font-mono text-xs text-white/60">
+                {selectedItem.category}
+                {selectedItem.images.length > 1 && <span className="ml-4">{currentImageIndex + 1} / {selectedItem.images.length}</span>}
+              </p>
             </div>
-            
           </div>
         </div>
       )}
-
     </main>
   )
 }
@@ -252,8 +203,8 @@ function DesignGalleryInner() {
 export default function DesignGalleryPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-paper flex items-center justify-center">
-        <p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading design gallery...</p>
+      <main className="container-page pb-24 pt-20">
+        <div className="h-14 w-72 bg-ink-50 motion-safe:animate-pulse" />
       </main>
     }>
       <DesignGalleryInner />

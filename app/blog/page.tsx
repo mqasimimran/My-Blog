@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import NewsletterSignup from '@/app/components/NewsletterSignup'
 import { SkeletonBlogList } from '@/app/components/Skeleton'
+import FilterTabs from '@/app/components/ui/FilterTabs'
+import EmptyState from '@/app/components/EmptyState'
+import SplitText from '@/app/components/ui/SplitText'
 
 type Article = {
   id: string
@@ -23,8 +26,14 @@ const DAILY_QUOTES = [
   { text: "Yesterday I was clever, so I wanted to change the world. Today I am wise, so I am changing myself.", author: "Rumi" },
   { text: "The wound is the place where the Light enters you.", author: "Rumi" },
   { text: "A person's true wealth is the good they do in the world.", author: "Prophet Muhammad (PBUH)" },
-  { text: "Patience is not the ability to wait, but the ability to keep a good attitude while waiting.", author: "Unknown" }
+  { text: "Patience is not the ability to wait, but the ability to keep a good attitude while waiting.", author: "Unknown" },
 ]
+
+const CATEGORIES = ['All', 'Engineering', 'Design', 'Productivity', 'Leadership', 'Personal Growth', 'Game Development', 'Artificial Intelligence'].map(
+  (c) => ({ key: c, label: c })
+)
+
+const formatDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
 export default function BlogPage() {
   const [articles, setArticles] = useState<Article[]>([])
@@ -43,118 +52,67 @@ export default function BlogPage() {
         .eq('published', true)
         .order('created_at', { ascending: false })
 
-      if (error) {
-        console.error('Error fetching blogs:', error)
-      } else {
-        setArticles(data || [])
-      }
+      if (error) console.error('Error fetching blogs:', error)
+      else setArticles(data || [])
       setIsLoading(false)
     }
 
     fetchPublishedArticles()
   }, [])
 
-  const filteredArticles = activeCategory === 'All' 
-    ? articles 
-    : articles.filter(article => article.category === activeCategory)
-
-  // Fully updated category list
-  const categories = [
-    'All', 
-    'Engineering', 
-    'Design', 
-    'Productivity', 
-    'Leadership', 
-    'Personal Growth', 
-    'Game Development', 
-    'Artificial Intelligence'
-  ]
+  const filteredArticles = activeCategory === 'All' ? articles : articles.filter((article) => article.category === activeCategory)
 
   return (
-    <main className="min-h-screen bg-paper pt-24 pb-20 font-sans w-full overflow-x-hidden">
-      
-      <div className="max-w-4xl mx-auto px-4 md:px-6 flex flex-col items-center text-center mb-10">
-        <h1 className="text-5xl md:text-7xl font-serif font-bold text-ink-900 tracking-[0.1em] uppercase mb-8">
-          EDITORIAL
-        </h1>
-        
-        <p className="text-ink-500 font-serif italic text-lg md:text-xl max-w-2xl leading-relaxed transition-opacity duration-500">
-          "{quote.text}"
-          <span className="block not-italic font-sans text-[10px] font-bold tracking-[0.2em] uppercase text-ink-300 mt-4">
-            — {quote.author}
-          </span>
-        </p>
-      </div>
+    <main>
+      <header className="container-page grid gap-10 pb-12 pt-12 md:pb-16 md:pt-20 lg:grid-cols-12 lg:items-end">
+        <h1 className="type-display text-ink-900 lg:col-span-6"><SplitText text={"Editorial"} /></h1>
+        {/* The quote of the day */}
+        <figure className="lg:col-span-5 lg:col-start-8">
+          <blockquote className="text-lg leading-relaxed text-ink-700">&ldquo;{quote.text}&rdquo;</blockquote>
+          <figcaption className="type-meta mt-3">{quote.author}</figcaption>
+        </figure>
+      </header>
 
-      <div className="w-full border-b border-ink-100 mb-16">
-        {/* Added gap-y-6 so wrapped items have perfect vertical spacing */}
-        <div className="max-w-5xl mx-auto px-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-6 pb-4">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`text-[10px] font-bold tracking-[0.15em] uppercase transition-colors relative top-[17px] ${
-                activeCategory === cat 
-                  ? 'text-ink-900 border-b-2 border-ink-900 pb-3' 
-                  : 'text-ink-300 hover:text-ink-700 pb-3'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+      <section className="container-page pb-24">
+        <FilterTabs label="Filter articles by category" options={CATEGORIES} value={activeCategory} onChange={setActiveCategory} />
+
+        <div className="mt-12">
+          {isLoading ? (
+            <SkeletonBlogList count={3} />
+          ) : filteredArticles.length === 0 ? (
+            <EmptyState icon="search" title="No articles in this category yet" description="Try another category." />
+          ) : (
+            <div className="flex flex-col">
+              {filteredArticles.map((article) => (
+                <article key={article.id} className="border-t border-ink-100 py-10 first:border-t-0 first:pt-0 md:py-14">
+                  <Link href={`/blog/${article.slug}`} data-cursor="Read" className="group grid gap-x-12 gap-y-6 md:grid-cols-12 md:items-center">
+                    {article.feature_image && (
+                      <div className="overflow-hidden bg-ink-50 md:col-span-5">
+                        <img
+                          src={article.feature_image}
+                          alt={article.title}
+                          loading="lazy"
+                          className="h-auto w-full transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
+                        />
+                      </div>
+                    )}
+                    <div className={article.feature_image ? 'md:col-span-7' : 'md:col-span-9'}>
+                      <p className="type-meta flex gap-x-4">
+                        <span>{article.category}</span>
+                        <time dateTime={article.created_at}>{formatDate(article.created_at)}</time>
+                      </p>
+                      <h2 className="type-h2 mt-3 max-w-[22ch] text-ink-900 transition-colors duration-300 group-hover:text-accent-600 md:text-[2.25rem]">{article.title}</h2>
+                      {article.excerpt && article.excerpt.trim() !== '' && (
+                        <p className="mt-4 max-w-[58ch] text-base leading-relaxed text-ink-700">{article.excerpt}</p>
+                      )}
+                    </div>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
-      </div>
-
-      {isLoading ? (
-        <SkeletonBlogList count={3} />
-      ) : filteredArticles.length === 0 ? (
-        <div className="text-center py-20 text-ink-300 text-sm">
-          No articles found for this category.
-        </div>
-      ) : (
-        <div className="max-w-4xl mx-auto flex flex-col gap-20">
-          {filteredArticles.map((article) => (
-            <article key={article.id} className="w-full flex flex-col items-center">
-              
-              {article.feature_image && (
-                <Link href={`/blog/${article.slug}`} className="w-full block mb-4">
-                  <img 
-                    src={article.feature_image} 
-                    alt={article.title}
-                    loading="lazy"
-                    className="w-full h-auto max-h-[80vh] object-cover transition-opacity hover:opacity-90"
-                  />
-                </Link>
-              )}
-
-              <div className="flex flex-col items-center gap-1.5 max-w-xl text-center w-full px-4">
-                <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink-300">
-                  {article.category}
-                </div>
-                
-                <Link href={`/blog/${article.slug}`} className="no-underline">
-                  <h2 className="text-3xl md:text-4xl font-sans font-bold text-ink-900 hover:text-ink-700 transition-colors tracking-tight leading-none">
-                    {article.title}
-                  </h2>
-                </Link>
-
-                <div className="w-6 h-[1px] bg-ink-100 my-1"></div>
-
-                <div className="text-[11px] text-ink-300 italic">
-                  Posted On {new Date(article.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </div>
-                
-                {article.excerpt && article.excerpt.trim() !== '' && (
-                  <p className="text-ink-500 text-sm font-light leading-snug mt-2">
-                    {article.excerpt}
-                  </p>
-                )}
-              </div>
-
-            </article>
-          ))}
-        </div>
-      )}
+      </section>
       <NewsletterSignup />
     </main>
   )

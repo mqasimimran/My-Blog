@@ -36,7 +36,7 @@ export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { before
       onTouchMove={(e) => updatePosition(e.touches[0].clientX)}
     >
       {/* After (full, underneath) */}
-      <img src={afterSrc} alt={`${alt} — after`} className="absolute inset-0 w-full h-full object-contain pointer-events-none" draggable={false} />
+      <img src={afterSrc} alt={`${alt}, after`} className="absolute inset-0 w-full h-full object-contain pointer-events-none" draggable={false} />
 
       {/* Before (clipped to slider position, on top) — the image itself is
           pinned to the container's full width so it stays aligned with the
@@ -44,7 +44,7 @@ export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { before
       <div className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none" style={{ width: `${position}%` }}>
         <img
           src={beforeSrc}
-          alt={`${alt} — before`}
+          alt={`${alt}, before`}
           className="absolute inset-y-0 left-0 h-full object-contain"
           style={{ width: containerWidth || '100vw', maxWidth: 'none' }}
           draggable={false}
@@ -58,8 +58,8 @@ export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { before
         </div>
       </div>
 
-      <span className="absolute top-3 left-3 text-[9px] font-bold uppercase tracking-widest bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">Before</span>
-      <span className="absolute top-3 right-3 text-[9px] font-bold uppercase tracking-widest bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">After</span>
+      <span className="absolute top-3 left-3 text-xs font-medium bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">Before</span>
+      <span className="absolute top-3 right-3 text-xs font-medium bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">After</span>
     </div>
   )
 }

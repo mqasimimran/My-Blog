@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { siteConfig } from '@/site.config'
 
 type Package = {
   id: string
@@ -53,7 +54,7 @@ export default function QuoteCalculator() {
         if (selected[pkg.id]) {
           const parsed = parsePrice(pkg.price)
           if (parsed !== null) sum += parsed
-          lines.push(`${service.name} — ${pkg.tier} (${pkg.price})`)
+          lines.push(`${service.name}, ${pkg.tier} (${pkg.price})`)
         }
       }
     }
@@ -66,24 +67,24 @@ export default function QuoteCalculator() {
 
   const hasSelection = selectedLines.length > 0
   const message = hasSelection
-    ? `Hi Qasim, I'd like a quote for:\n\n${selectedLines.map((l) => `- ${l}`).join('\n')}\n\nEstimated starting total: $${total.toLocaleString()}`
+    ? `Hi ${siteConfig.firstName}, I'd like a quote for:\n\n${selectedLines.map((l) => `- ${l}`).join('\n')}\n\nEstimated starting total: $${total.toLocaleString()}`
     : ''
 
   return (
     <section className="max-w-4xl mx-auto px-6 py-20 font-sans">
       <div className="max-w-lg mb-10">
-        <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-3">
+        <h2 className="text-3xl font-semibold text-ink-900 mb-3 tracking-[-0.035em]">
           Build a Quote
         </h2>
         <p className="text-sm text-ink-500 leading-relaxed">
-          Pick what you need and get a ballpark price instantly — no back-and-forth required to get started.
+          Pick what you need and get a ballpark price instantly, no back-and-forth required to get started.
         </p>
       </div>
 
       <div className="space-y-8">
         {servicesWithPackages.map((service) => (
           <div key={service.id}>
-            <h3 className="text-xs font-bold tracking-[0.2em] uppercase text-ink-900 mb-3 pb-2 border-b border-ink-100">
+            <h3 className="text-xs font-medium text-ink-900 mb-3 pb-2 border-b border-ink-100">
               {service.name}
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -113,18 +114,18 @@ export default function QuoteCalculator() {
 
       <div className="mt-10 pt-8 border-t border-ink-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
-          <p className="text-[10px] font-bold tracking-widest uppercase text-ink-300 mb-1">Estimated Starting Total</p>
-          <p className="text-3xl font-light text-ink-900">
-            {hasSelection ? `$${total.toLocaleString()}` : '—'}
+          <p className="text-xs font-medium text-ink-300 mb-1">Estimated Starting Total</p>
+          <p className="text-3xl font-semibold text-ink-900 tracking-[-0.035em]">
+            {hasSelection ? `$${total.toLocaleString()}` : '-'}
           </p>
           {hasSelection && (
-            <p className="text-xs text-ink-300 mt-1">Based on listed starting prices — final quote may vary with scope.</p>
+            <p className="text-xs text-ink-300 mt-1">Based on listed starting prices. The final quote may vary with scope.</p>
           )}
         </div>
         <Link
           href={hasSelection ? `/contact?subject=${encodeURIComponent('Quote Request')}&message=${encodeURIComponent(message)}` : '#'}
           aria-disabled={!hasSelection}
-          className={`inline-flex items-center justify-center gap-2 text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded-none transition-colors ${
+          className={`inline-flex items-center justify-center gap-2 text-xs font-medium px-8 py-4 rounded-none transition-colors ${
             hasSelection
               ? 'bg-accent-600 text-white hover:bg-gray-900'
               : 'bg-ink-100 text-ink-300 pointer-events-none'

@@ -9,6 +9,7 @@ import AdminNav from '@/app/admin/AdminNav'
 import RecentActivity from '@/app/admin/RecentActivity'
 import { logActivity } from '@/lib/logActivity'
 
+import { siteConfig } from '@/site.config'
 // Define the exact shape of your data to keep TypeScript happy
 interface Article {
   id: string
@@ -142,7 +143,7 @@ export default function AdminDashboard() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <div>
               <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Manage Articles</h1>
-              <p className="text-xs text-ink-500 mt-1">Logged in AS {session.user?.name || 'Qasim'}</p>
+              <p className="text-xs text-ink-500 mt-1">Logged in AS {session.user?.name || siteConfig.firstName}</p>
             </div>
             <Link 
               href="/admin/new" 

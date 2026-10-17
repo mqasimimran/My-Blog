@@ -1,5 +1,6 @@
 import { ImageResponse } from 'next/og'
 
+import { siteConfig } from '@/site.config'
 export const runtime = 'edge'
 export const size = { width: 32, height: 32 }
 export const contentType = 'image/png'
@@ -14,14 +15,14 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#aa002a',
+          background: siteConfig.brand.accent,
           color: 'white',
           fontSize: 18,
           fontWeight: 700,
           fontFamily: 'sans-serif',
         }}
       >
-        MQ
+        {siteConfig.initials}
       </div>
     ),
     { ...size }

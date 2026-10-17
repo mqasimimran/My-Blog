@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Fire } from '@phosphor-icons/react'
 
 export default function ReactionButton({ slug, initialCount }: { slug: string; initialCount: number }) {
   const [count, setCount] = useState(initialCount)
@@ -42,7 +43,7 @@ export default function ReactionButton({ slug, initialCount }: { slug: string; i
           : 'border-ink-100 text-ink-700 hover:border-accent-600 hover:text-accent-600'
       }`}
     >
-      <span>🔥</span>
+      <Fire size={18} weight="fill" aria-hidden />
       <span>{count > 0 ? `${count} loved this` : 'Loved this?'}</span>
     </button>
   )

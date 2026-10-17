@@ -26,6 +26,7 @@ const LABELS: Record<string, string> = {
   admin_write: 'Content changed',
   upload_issued: 'Upload permitted',
   upload_refused: 'Upload refused',
+  order_paid: 'Order paid',
 }
 
 function describe(e: AuditEvent): string {
@@ -41,6 +42,7 @@ function describe(e: AuditEvent): string {
   }
   if (e.event === 'upload_issued' || e.event === 'upload_refused') return `${d.bucket || ''}/${d.path || ''}${d.reason ? ` — ${d.reason}` : ''}`
   if (e.event === 'admin_table_blocked') return `${d.method} ${d.table}`
+  if (e.event === 'order_paid') return `${d.order_number} via ${d.method} (verified by you)`
   return ''
 }
 

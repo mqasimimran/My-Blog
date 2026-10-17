@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
+import { siteConfig } from '@/site.config'
 export const runtime = 'edge'
 export const alt = 'Blog post'
 export const size = { width: 1200, height: 630 }
@@ -11,14 +12,18 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default async function Image({ params }: { params: { slug: string } }) {
+// Next.js 16 made `params` a Promise. Reading it synchronously (the old way)
+// silently produced `undefined`, so every post/project share-card fell back to
+// the generic site title instead of the post's own title.
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const { data: article } = await supabase
     .from('articles')
     .select('title, category')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single()
 
-  const title = article?.title || 'Muhammad Qasim Imran'
+  const title = article?.title || siteConfig.name
   const category = article?.category || 'Blog'
 
   return new ImageResponse(
@@ -36,14 +41,14 @@ export default async function Image({ params }: { params: { slug: string } }) {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ width: 56, height: 6, background: '#aa002a', marginBottom: 32, display: 'flex' }} />
+          <div style={{ width: 56, height: 6, background: siteConfig.brand.accent, marginBottom: 32, display: 'flex' }} />
           <div
             style={{
               fontSize: 22,
               fontWeight: 700,
               letterSpacing: 4,
               textTransform: 'uppercase',
-              color: '#aa002a',
+              color: siteConfig.brand.accent,
               marginBottom: 24,
               display: 'flex',
             }}
@@ -70,7 +75,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
           }}
         >
           <div style={{ fontSize: 24, color: '#0a0a0a', fontWeight: 600, display: 'flex' }}>
-            Muhammad Qasim Imran
+            {siteConfig.name}
           </div>
           <div style={{ fontSize: 18, color: '#a3a3a3', display: 'flex' }}>
             From the Blog

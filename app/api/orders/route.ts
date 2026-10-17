@@ -1,28 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { escapeHtml, oneLine, EMAIL_RE } from '@/lib/escapeHtml'
+import { getManualMethod, labelFor } from '@/lib/paymentMethods'
+import { generateOrderNumber } from '@/lib/orderNumber'
 
 
+import { sendEmail } from '@/lib/mail'
+import { siteConfig } from '@/site.config'
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0].trim()
   return request.headers.get('x-real-ip') || 'unknown'
-}
-
-const METHOD_LABELS: Record<string, string> = {
-  jazzcash: 'JazzCash',
-  easypaisa: 'EasyPaisa',
-  bank_transfer: 'Bank Transfer',
-  payoneer: 'Payoneer',
-}
-
-function generateOrderNumber(): string {
-  const date = new Date()
-  const y = date.getFullYear().toString().slice(-2)
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  const rand = Math.random().toString(36).substring(2, 6).toUpperCase()
-  return `ORD-${y}${m}${d}-${rand}`
 }
 
 export async function POST(request: NextRequest) {
@@ -44,7 +32,7 @@ export async function POST(request: NextRequest) {
     if (
       [productId, customerName, customerEmail, paymentMethod, customerTransactionId].some((v) => typeof v !== 'string') ||
       customerName.length > 100 || customerEmail.length > 254 || customerTransactionId.length > 100 ||
-      !EMAIL_RE.test(customerEmail) || !Object.prototype.hasOwnProperty.call(METHOD_LABELS, paymentMethod)
+      !EMAIL_RE.test(customerEmail) || !getManualMethod(paymentMethod)
     ) {
       return NextResponse.json({ error: 'Please check your details and try again.' }, { status: 400 })
     }
@@ -88,7 +76,7 @@ export async function POST(request: NextRequest) {
     // client-supplied amount for money, and never recompute with a later
     // day's rate when verifying, since that could drift from what the
     // buyer actually saw and sent.
-    const isPkrMethod = paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa' || paymentMethod === 'bank_transfer'
+    const isPkrMethod = getManualMethod(paymentMethod)?.pkr === true
     let amountLocal = product.price
     let currencyLocal = 'USD'
 
@@ -125,37 +113,29 @@ export async function POST(request: NextRequest) {
     await supabase.from('rate_limit_log').insert([{ identifier: ip, action: 'order' }])
 
     // Notify me to go verify the payment
-    const apiKey = process.env.RESEND_API_KEY
     const toEmail = process.env.NOTIFY_TO_EMAIL
-    if (apiKey && toEmail) {
-      try {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            from: 'Portfolio Store <onboarding@resend.dev>',
-            to: [toEmail],
-            reply_to: customerEmail,
-            subject: `New order: ${oneLine(product.name)} (${orderNumber})`,
-            html: `
+    if (toEmail) {
+      const mail = await sendEmail({
+        from: siteConfig.mail.storeFallbackFrom,
+        to: [toEmail],
+        replyTo: customerEmail,
+        subject: `New order: ${oneLine(product.name)} (${orderNumber})`,
+        html: `
               <div style="font-family: sans-serif; max-width: 500px;">
-                <h2 style="color: #aa002a;">New order awaiting verification</h2>
+                <h2 style="color: ${siteConfig.brand.accent};">New order awaiting verification</h2>
                 <p><strong>Order:</strong> ${orderNumber}</p>
                 <p><strong>Product:</strong> ${escapeHtml(product.name)} — $${escapeHtml(product.price)}</p>
                 <p><strong>Amount to verify:</strong> ${currencyLocal === 'PKR' ? `Rs ${amountLocal.toLocaleString('en-PK')}` : `$${amountLocal}`}</p>
                 <p><strong>Customer:</strong> ${escapeHtml(customerName)} (${escapeHtml(customerEmail)})</p>
-                <p><strong>Paid via:</strong> ${METHOD_LABELS[paymentMethod] || paymentMethod}</p>
+                <p><strong>Paid via:</strong> ${labelFor(paymentMethod)}</p>
                 <p><strong>Transaction ID given:</strong> ${escapeHtml(customerTransactionId)}</p>
                 <p style="color: #9ca3af; font-size: 12px; margin-top: 16px;">
-                  Confirm this transaction via ${METHOD_LABELS[paymentMethod] || paymentMethod}, then go to /admin/orders to verify and release the download link.
+                  Confirm this transaction via ${labelFor(paymentMethod)}, then go to /admin/orders to verify and release the download link.
                 </p>
               </div>
             `,
-          }),
-        })
-      } catch (emailError) {
-        console.error('Order notification email failed (order was still saved):', emailError)
-      }
+      })
+      if (!mail.ok) console.error('Order notification email failed (order was still saved):', mail.error)
     }
 
     return NextResponse.json({ success: true, orderNumber })

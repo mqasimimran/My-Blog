@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
+import Image from '@/components/SafeImage'
 import { supabase } from '@/lib/supabase'
+import SectionHeader from '@/app/components/ui/SectionHeader'
 
 type Testimonial = {
   id: string
@@ -10,6 +11,26 @@ type Testimonial = {
   role: string | null
   quote: string
   avatar_url: string | null
+}
+
+export function Person({ t }: { t: Testimonial }) {
+  return (
+    <div className="flex items-center gap-3">
+      {t.avatar_url ? (
+        <div className="relative h-11 w-11 shrink-0 overflow-hidden bg-ink-50">
+          <Image src={t.avatar_url} alt={t.name} fill sizes="44px" className="object-cover" />
+        </div>
+      ) : (
+        <div className="grid h-11 w-11 shrink-0 place-items-center bg-ink-50 text-sm font-medium text-ink-700" aria-hidden>
+          {t.name.charAt(0)}
+        </div>
+      )}
+      <div>
+        <p className="text-sm font-medium text-ink-900">{t.name}</p>
+        {t.role && <p className="type-meta mt-0.5">{t.role}</p>}
+      </div>
+    </div>
+  )
 }
 
 export default function Testimonials() {
@@ -32,43 +53,35 @@ export default function Testimonials() {
     fetchTestimonials()
   }, [])
 
-  // Nothing added yet — don't show an empty section on the homepage
-  if (!isLoading && testimonials.length === 0) return null
-  if (isLoading) return null
+  // Nothing added yet: don't show an empty section on the homepage
+  if (isLoading || testimonials.length === 0) return null
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-paper">
-      <div className="max-w-lg mb-12">
-        <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-3">
-          What People Say
-        </h2>
-        <p className="text-sm text-ink-500 leading-relaxed">
-          A few words from people I've worked with.
-        </p>
-      </div>
+    <section className="border-t border-ink-100">
+      <div className="container-page section-y">
+        <SectionHeader title="What people say" meta={`(${testimonials.length} kind ${testimonials.length === 1 ? 'word' : 'words'})`} />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {testimonials.map((t) => (
-          <div key={t.id} className="border border-ink-100 rounded-none p-8 flex flex-col">
-            <p className="text-accent-600 text-3xl font-serif leading-none mb-4">"</p>
-            <p className="text-ink-700 text-sm leading-relaxed mb-6 flex-1">{t.quote}</p>
-            <div className="flex items-center gap-3 pt-4 border-t border-ink-100">
-              {t.avatar_url ? (
-                <div className="relative w-10 h-10 shrink-0">
-                  <Image src={t.avatar_url} alt={t.name} fill sizes="40px" className="rounded-full object-cover" />
+        {/* Each card sticks under the navbar; the next one slides up and covers it. */}
+        <ul className="mt-12">
+          {testimonials.map((t) => (
+            <li data-no-animate key={t.id} className="sticky top-[72px] bg-paper pb-6">
+              <figure className="grid border border-ink-100 bg-paper md:min-h-[400px] md:grid-cols-12">
+                <div className="relative aspect-[4/3] border-b border-ink-100 bg-ink-50 md:col-span-4 md:aspect-auto md:border-b-0 md:border-r">
+                  {t.avatar_url ? (
+                    <Image src={t.avatar_url} alt={t.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover" />
+                  ) : (
+                    <div className="absolute inset-0 grid place-items-center font-display text-[6rem] uppercase text-ink-300" aria-hidden>{t.name.charAt(0)}</div>
+                  )}
                 </div>
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-ink-100 flex items-center justify-center text-ink-300 text-xs font-bold uppercase">
-                  {t.name.charAt(0)}
+                <div className="flex flex-col justify-center p-8 md:col-span-8 md:p-12">
+                  <p className="type-meta text-ink-900">{t.name}</p>
+                  <blockquote className="mt-5 max-w-[44ch] text-[clamp(1.25rem,1.05rem+0.8vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.02em] text-ink-900">&ldquo;{t.quote}&rdquo;</blockquote>
+                  {t.role && <figcaption className="mt-6 text-sm text-ink-500">{t.name}, {t.role}</figcaption>}
                 </div>
-              )}
-              <div>
-                <p className="text-sm font-medium text-ink-900">{t.name}</p>
-                {t.role && <p className="text-xs text-ink-300">{t.role}</p>}
-              </div>
-            </div>
-          </div>
-        ))}
+              </figure>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )

@@ -59,7 +59,7 @@ export default function NewLogoPage() {
           <h1 className="text-2xl font-light tracking-wide uppercase text-ink-900 mb-6">Add Client Logo</h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
-              type="text" placeholder="Organization name (e.g. TEDxUMT)" required
+              type="text" placeholder="Organization name (e.g. Acme Inc.)" required
               className="w-full p-3 border border-ink-100 rounded-none text-sm bg-paper text-ink-900"
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />

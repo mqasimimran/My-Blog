@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import SplitText from '@/app/components/ui/SplitText'
 
 export default function NotFound() {
   const router = useRouter()
@@ -16,42 +17,31 @@ export default function NotFound() {
   }
 
   return (
-    <main className="min-h-screen bg-white flex items-center justify-center px-6 font-sans">
-      <div className="max-w-md w-full text-center">
-        <p className="text-accent-600 text-8xl font-light tracking-tight mb-4">404</p>
-        <h1 className="text-2xl font-light tracking-wide uppercase text-gray-900 mb-3">
-          Page Not Found
-        </h1>
-        <p className="text-sm text-gray-500 leading-relaxed mb-10">
-          Whatever you were looking for isn't here — it may have moved, or the link might just be wrong.
-        </p>
+    <main className="container-page flex min-h-[70dvh] flex-col justify-center pb-24 pt-12">
+      <p className="font-mono text-sm text-accent-600">404</p>
+      <h1 className="type-display mt-4 text-ink-900"><SplitText text={"Page not found"} /></h1>
+      <p className="type-lead mt-6 max-w-[48ch]">Whatever you were looking for isn&rsquo;t here. It may have moved, or the link might just be wrong.</p>
 
-        <form onSubmit={handleSearch} className="flex gap-2 mb-8">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search the blog..."
-            className="flex-1 border border-gray-300 rounded-none px-4 py-3 text-sm outline-none focus:border-accent-600 transition-colors"
-          />
-          <button
-            type="submit"
-            className="bg-gray-900 text-white text-xs font-bold uppercase tracking-widest px-5 py-3 rounded-none hover:bg-accent-600 transition-colors"
-          >
-            Search
-          </button>
-        </form>
+      <form onSubmit={handleSearch} role="search" className="mt-10 flex max-w-xl flex-col gap-3 sm:flex-row">
+        <label htmlFor="nf-search" className="sr-only">Search the blog</label>
+        <input
+          id="nf-search"
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search the blog"
+          className="h-12 flex-1 border border-ink-500 bg-paper-raised px-4 text-base text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-500 focus:border-accent-600"
+        />
+        <button type="submit" className="h-12 bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color] duration-300 hover:bg-accent-600 hover:text-on-accent">
+          Search
+        </button>
+      </form>
 
-        <div className="flex flex-wrap justify-center gap-4 text-xs font-bold uppercase tracking-widest">
-          <Link href="/" className="text-gray-500 hover:text-accent-600 transition-colors">Home</Link>
-          <span className="text-gray-300">/</span>
-          <Link href="/projects" className="text-gray-500 hover:text-accent-600 transition-colors">Projects</Link>
-          <span className="text-gray-300">/</span>
-          <Link href="/blog" className="text-gray-500 hover:text-accent-600 transition-colors">Blog</Link>
-          <span className="text-gray-300">/</span>
-          <Link href="/contact" className="text-gray-500 hover:text-accent-600 transition-colors">Contact</Link>
-        </div>
-      </div>
+      <nav aria-label="Helpful links" className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-sm font-medium">
+        {[['/', 'Home'], ['/projects', 'Projects'], ['/blog', 'Blog'], ['/contact', 'Contact']].map(([href, label]) => (
+          <Link key={href} href={href} className="link-draw text-ink-900">{label}</Link>
+        ))}
+      </nav>
     </main>
   )
 }

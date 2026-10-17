@@ -3,6 +3,11 @@
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import { labelFor, MANUAL_METHODS, type ManualMethod, type ManualMethodId } from '@/lib/paymentMethods'
+import { ArrowLeft, CheckCircle } from '@phosphor-icons/react'
+import { SkeletonBlock } from '@/app/components/Skeleton'
+import EmptyState from '@/app/components/EmptyState'
+import SplitText from '@/app/components/ui/SplitText'
 
 type Product = {
   id: string
@@ -23,14 +28,8 @@ type PaymentAccounts = {
   payoneer_email: string | null
 }
 
-type PaymentMethod = 'jazzcash' | 'easypaisa' | 'bank_transfer' | 'payoneer'
-
-const METHOD_LABELS: Record<PaymentMethod, string> = {
-  jazzcash: 'JazzCash',
-  easypaisa: 'EasyPaisa',
-  bank_transfer: 'Bank Transfer',
-  payoneer: 'Payoneer',
-}
+// The methods offered come from site.config.ts (payments.manualMethods)
+type PaymentMethod = ManualMethodId
 
 export default function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params)
@@ -38,7 +37,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
   const [accounts, setAccounts] = useState<PaymentAccounts | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('jazzcash')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(MANUAL_METHODS[0]?.id ?? 'jazzcash')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [transactionId, setTransactionId] = useState('')
@@ -107,28 +106,46 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
     }
   }
 
+  const fieldClass =
+    'h-12 w-full border border-ink-500 bg-paper-raised px-4 text-base text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-500 focus:border-accent-600'
+  const labelClass = 'mb-2 block text-sm font-medium text-ink-900'
+
   if (isLoading) {
-    return <main className="min-h-screen bg-paper flex items-center justify-center"><p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p></main>
+    return (
+      <main className="container-page pb-24 pt-10 md:pt-14">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="space-y-5 lg:col-span-7">
+            <SkeletonBlock className="h-10 w-48" />
+            <SkeletonBlock className="h-40 w-full" />
+            <SkeletonBlock className="h-12 w-full" />
+            <SkeletonBlock className="h-12 w-full" />
+          </div>
+          <SkeletonBlock className="h-40 w-full lg:col-span-4 lg:col-start-9" />
+        </div>
+      </main>
+    )
   }
 
   if (!product) {
     return (
-      <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center">
-        <p className="text-ink-500">This product couldn't be found.</p>
-        <Link href="/shop" className="text-accent-600 text-xs font-bold uppercase tracking-widest">← Back to Shop</Link>
+      <main className="container-page pb-24 pt-10">
+        <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 hover:text-ink-900"><ArrowLeft size={16} aria-hidden /> Back to the shop</Link>
+        <EmptyState icon="search" title="This product couldn't be found" description="It may have been removed or renamed." />
       </main>
     )
   }
 
   if (submitted) {
     return (
-      <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center max-w-md mx-auto">
-        <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center text-3xl">✓</div>
-        <h1 className="text-2xl font-light text-ink-900">Thanks — order received</h1>
-        <p className="text-ink-500 text-sm leading-relaxed">
-          I'll verify your payment and email your download link to <strong>{email}</strong> shortly, usually within a few hours.
-        </p>
-        <Link href="/shop" className="text-accent-600 text-xs font-bold uppercase tracking-widest">← Back to Shop</Link>
+      <main className="container-page flex flex-col items-start pb-24 pt-16 md:pt-24">
+        <div className="max-w-xl">
+          <CheckCircle size={56} weight="light" aria-hidden className="text-success" />
+          <h1 className="type-h2 mt-8 text-ink-900"><SplitText text={"Thanks, order received"} /></h1>
+          <p className="type-lead mt-5">
+            I&rsquo;ll verify your payment and email your download link to <strong className="font-medium text-ink-900">{email}</strong> shortly, usually within a few hours.
+          </p>
+          <Link href="/shop" className="link-draw mt-10 inline-block text-sm font-medium text-ink-900">Back to the shop</Link>
+        </div>
       </main>
     )
   }
@@ -142,135 +159,149 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
     return false
   }
 
-  const localMethods: PaymentMethod[] = ['jazzcash', 'easypaisa', 'bank_transfer']
-  const internationalMethods: PaymentMethod[] = ['payoneer']
+  const groups = MANUAL_METHODS.reduce<{ name: string; methods: ManualMethod[] }[]>((acc, m) => {
+    const g = acc.find((x) => x.name === m.group)
+    if (g) g.methods.push(m)
+    else acc.push({ name: m.group, methods: [m] })
+    return acc
+  }, [])
+
+  const amountLine = (
+    <>
+      Send{' '}
+      {usdToPkr ? <strong className="font-medium text-ink-900">{formatPkr(Number(product.price))}</strong> : <strong className="font-medium text-ink-900">${Number(product.price).toFixed(2)}</strong>}
+      {usdToPkr && <span className="text-ink-500"> (about ${Number(product.price).toFixed(2)} USD)</span>} to:
+    </>
+  )
+  const rateNote = usdToPkr && (
+    <p className="type-meta mt-4">
+      Converted at about {usdToPkr.toFixed(1)} PKR/USD{rateSource === 'fallback' ? ' (estimated rate)' : ''}. Small differences from your bank&rsquo;s exact rate are fine.
+    </p>
+  )
 
   return (
-    <main className="min-h-screen bg-paper font-sans pt-24 pb-24 px-6">
-      <div className="max-w-md mx-auto">
-        <Link href={`/shop/${slug}`} className="text-[10px] font-bold uppercase tracking-widest text-ink-300 hover:text-ink-900 transition-colors block mb-8">
-          ← Back to Product
-        </Link>
+    <main className="container-page pb-24 pt-10 md:pt-14">
+      <Link href={`/shop/${slug}`} className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 transition-colors duration-200 hover:text-ink-900">
+        <ArrowLeft size={16} aria-hidden /> Back to product
+      </Link>
 
-        <h1 className="text-2xl font-light text-ink-900 mb-1">Checkout</h1>
-        <p className="text-sm text-ink-500 mb-8">{product.name} — <strong className="text-ink-900">${Number(product.price).toFixed(2)}</strong></p>
+      <div className="mt-10 grid gap-14 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-7">
+          <h1 className="type-h2 text-ink-900"><SplitText text={"Checkout"} /></h1>
 
-        <div className="bg-paper border border-ink-100 rounded-none p-5 mb-8">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-ink-500 mb-3">Step 1 — Choose How To Pay</p>
+          {/* Step 1: payment method */}
+          <section className="mt-12" aria-labelledby="pay-heading">
+            <h2 id="pay-heading" className="type-h3 text-ink-900"><SplitText text={"Choose how to pay"} /></h2>
 
-          <p className="text-[9px] font-bold uppercase tracking-widest text-ink-300 mb-2">Local — Pakistan</p>
-          <div className="flex gap-2 mb-4">
-            {localMethods.map((method) => (
-              <button
-                key={method}
-                type="button"
-                onClick={() => setPaymentMethod(method)}
-                className={`flex-1 py-2 text-[11px] font-bold uppercase tracking-widest rounded-none border ${paymentMethod === method ? 'bg-accent-600 text-white border-accent-600' : 'border-ink-100 text-ink-500'}`}
-              >
-                {METHOD_LABELS[method]}
-              </button>
+            {groups.map((group) => (
+              <div key={group.name} className="mt-6">
+                <p className="type-meta mb-3">{group.name}</p>
+                <div role="radiogroup" aria-label={group.name} className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {group.methods.map((m) => {
+                    const selected = paymentMethod === m.id
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        onClick={() => setPaymentMethod(m.id)}
+                        className={`h-12 border px-4 text-sm font-medium transition-colors duration-200 ${
+                          selected ? 'border-ink-900 bg-ink-900 text-paper' : 'border-ink-100 bg-paper-raised text-ink-700 hover:border-ink-500'
+                        }`}
+                      >
+                        {labelFor(m.id)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             ))}
-          </div>
 
-          <p className="text-[9px] font-bold uppercase tracking-widest text-ink-300 mb-2">International</p>
-          <div className="flex gap-2 mb-5">
-            {internationalMethods.map((method) => (
-              <button
-                key={method}
-                type="button"
-                onClick={() => setPaymentMethod(method)}
-                className={`flex-1 py-2 text-[11px] font-bold uppercase tracking-widest rounded-none border ${paymentMethod === method ? 'bg-accent-600 text-white border-accent-600' : 'border-ink-100 text-ink-500'}`}
-              >
-                {METHOD_LABELS[method]}
-              </button>
-            ))}
-          </div>
-
-          {!hasAccount(paymentMethod) ? (
-            <p className="text-sm text-amber-600">Payment details for {METHOD_LABELS[paymentMethod]} haven't been set up yet — please choose another method or contact me directly.</p>
-          ) : paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa' ? (
-            <div className="text-sm text-ink-700">
-              <p>
-                Send{' '}
-                {usdToPkr ? (
-                  <strong>{formatPkr(Number(product.price))}</strong>
-                ) : (
-                  <strong>${Number(product.price).toFixed(2)}</strong>
-                )}
-                {usdToPkr && <span className="text-ink-300"> (≈ ${Number(product.price).toFixed(2)} USD)</span>} to:
-              </p>
-              <p className="font-mono text-lg mt-2">
-                {paymentMethod === 'jazzcash' ? accounts?.jazzcash_number : accounts?.easypaisa_number}
-              </p>
-              <p className="text-ink-500">
-                {paymentMethod === 'jazzcash' ? accounts?.jazzcash_account_name : accounts?.easypaisa_account_name}
-              </p>
-              {usdToPkr && (
-                <p className="text-[10px] text-ink-300 mt-2">
-                  Converted at ~{usdToPkr.toFixed(1)} PKR/USD{rateSource === 'fallback' ? ' (estimated rate)' : ''}. Small differences from your bank's exact rate are fine.
-                </p>
+            <div className="mt-8 border-l-2 border-accent-600 bg-ink-50 p-6 text-[15px] leading-relaxed text-ink-700">
+              {!hasAccount(paymentMethod) ? (
+                <p className="text-warning">Payment details for {labelFor(paymentMethod)} haven&rsquo;t been set up yet. Please choose another method or contact me directly.</p>
+              ) : paymentMethod === 'jazzcash' || paymentMethod === 'easypaisa' ? (
+                <div>
+                  <p>{amountLine}</p>
+                  <p className="mt-3 font-mono text-xl tabular-nums text-ink-900">{paymentMethod === 'jazzcash' ? accounts?.jazzcash_number : accounts?.easypaisa_number}</p>
+                  <p className="text-ink-500">{paymentMethod === 'jazzcash' ? accounts?.jazzcash_account_name : accounts?.easypaisa_account_name}</p>
+                  {rateNote}
+                </div>
+              ) : paymentMethod === 'bank_transfer' ? (
+                <div>
+                  <p className="mb-4">{amountLine}</p>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2">
+                    <dt className="text-ink-500">Bank</dt><dd className="text-ink-900">{accounts?.bank_name}</dd>
+                    <dt className="text-ink-500">Account title</dt><dd className="text-ink-900">{accounts?.bank_account_title}</dd>
+                    <dt className="text-ink-500">Account #</dt><dd className="font-mono tabular-nums text-ink-900">{accounts?.bank_account_number}</dd>
+                    {accounts?.bank_iban && (<><dt className="text-ink-500">IBAN</dt><dd className="break-all font-mono text-ink-900">{accounts.bank_iban}</dd></>)}
+                  </dl>
+                  {rateNote}
+                </div>
+              ) : (
+                <div>
+                  <p>Send <strong className="font-medium text-ink-900">${Number(product.price).toFixed(2)} USD</strong> via Payoneer (Pay a Payoneer User) to:</p>
+                  <p className="mt-3 break-all font-mono text-xl text-ink-900">{accounts?.payoneer_email}</p>
+                </div>
               )}
             </div>
-          ) : paymentMethod === 'bank_transfer' ? (
-            <div className="text-sm text-ink-700 space-y-1">
-              <p className="mb-2">
-                Send{' '}
-                {usdToPkr ? (
-                  <strong>{formatPkr(Number(product.price))}</strong>
-                ) : (
-                  <strong>${Number(product.price).toFixed(2)}</strong>
-                )}
-                {usdToPkr && <span className="text-ink-300"> (≈ ${Number(product.price).toFixed(2)} USD)</span>} to:
-              </p>
-              <p><span className="text-ink-300">Bank:</span> {accounts?.bank_name}</p>
-              <p><span className="text-ink-300">Account Title:</span> {accounts?.bank_account_title}</p>
-              <p className="font-mono"><span className="text-ink-300 font-sans">Account #:</span> {accounts?.bank_account_number}</p>
-              {accounts?.bank_iban && <p className="font-mono"><span className="text-ink-300 font-sans">IBAN:</span> {accounts.bank_iban}</p>}
-              {usdToPkr && (
-                <p className="text-[10px] text-ink-300 pt-2">
-                  Converted at ~{usdToPkr.toFixed(1)} PKR/USD{rateSource === 'fallback' ? ' (estimated rate)' : ''}. Small differences from your bank's exact rate are fine.
-                </p>
-              )}
+          </section>
+
+          {/* Step 2: details */}
+          <form onSubmit={handleSubmit} className="mt-14 space-y-6" aria-labelledby="details-heading">
+            <h2 id="details-heading" className="type-h3 text-ink-900"><SplitText text={"Confirm your details"} /></h2>
+
+            {/* Honeypot */}
+            <div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
+              <input type="text" tabIndex={-1} autoComplete="off" />
             </div>
-          ) : (
-            <div className="text-sm text-ink-700">
-              <p>Send <strong>${Number(product.price).toFixed(2)} USD</strong> via Payoneer (Pay a Payoneer User) to:</p>
-              <p className="font-mono text-lg mt-2">{accounts?.payoneer_email}</p>
+
+            <div>
+              <label htmlFor="co-name" className={labelClass}>Your name</label>
+              <input id="co-name" type="text" required autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className={fieldClass} />
             </div>
-          )}
+
+            <div>
+              <label htmlFor="co-email" className={labelClass}>Email (your download link goes here)</label>
+              <input id="co-email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass} />
+            </div>
+
+            <div>
+              <label htmlFor="co-txn" className={labelClass}>
+                {paymentMethod === 'bank_transfer' ? 'Transaction / reference number' : `Transaction ID from ${labelFor(paymentMethod)}`}
+              </label>
+              <input id="co-txn" type="text" required value={transactionId} onChange={(e) => setTransactionId(e.target.value)} className={fieldClass} />
+              <p className="type-meta mt-2">Found in your payment confirmation</p>
+            </div>
+
+            {error && <p role="alert" className="text-sm text-error">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="h-12 w-full bg-ink-900 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px disabled:opacity-60"
+            >
+              {isSubmitting ? 'Submitting...' : 'I\u2019ve sent payment'}
+            </button>
+          </form>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-ink-500">Step 2 — Confirm Your Details</p>
-
-          {/* Honeypot */}
-          <div style={{ position: 'absolute', left: '-9999px' }} aria-hidden="true">
-            <input type="text" tabIndex={-1} autoComplete="off" />
+        {/* Order summary: always in view on large screens */}
+        <aside className="lg:col-span-4 lg:col-start-9">
+          <div className="border border-ink-100 bg-paper-raised p-6 lg:sticky lg:top-28">
+            <p className="type-meta">Order summary</p>
+            <p className="mt-4 text-lg font-medium tracking-tight text-ink-900">{product.name}</p>
+            <div className="mt-6 flex items-baseline justify-between border-t border-ink-100 pt-5">
+              <span className="text-sm text-ink-500">Total</span>
+              <span className="text-right font-mono tabular-nums">
+                <span className="block text-xl text-ink-900">${Number(product.price).toFixed(2)}</span>
+                {usdToPkr && <span className="block text-sm text-ink-500">{formatPkr(Number(product.price))}</span>}
+              </span>
+            </div>
+            {product.type === 'digital' && <p className="type-meta mt-5">Download link emailed after your payment is verified.</p>}
           </div>
-
-          <div>
-            <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Your Name</label>
-            <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-accent-600 text-sm" />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Email (your download link goes here)</label>
-            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-accent-600 text-sm" />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
-              {paymentMethod === 'bank_transfer' ? 'Transaction / Reference Number' : `Transaction ID from ${METHOD_LABELS[paymentMethod]}`}
-            </label>
-            <input type="text" required value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="Found in your payment confirmation" className="w-full border-b border-ink-100 py-2 outline-none focus:border-accent-600 text-sm" />
-          </div>
-
-          {error && <p className="text-xs text-red-500">{error}</p>}
-
-          <button type="submit" disabled={isSubmitting} className="w-full bg-accent-600 text-white text-xs font-bold tracking-widest uppercase py-4 rounded-none hover:bg-gray-900 transition-colors">
-            {isSubmitting ? 'Submitting...' : "I've Sent Payment"}
-          </button>
-        </form>
+        </aside>
       </div>
     </main>
   )

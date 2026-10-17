@@ -19,16 +19,10 @@ export default function NowWidget() {
   if (isLoading || !nowText) return null
 
   return (
-    <div className="max-w-7xl mx-auto px-6 -mt-2 mb-2">
-      <div className="bg-paper border border-ink-100 rounded-none p-6 flex items-start gap-4">
-        <span className="relative flex h-2.5 w-2.5 mt-1.5 shrink-0">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-600 opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-accent-600"></span>
-        </span>
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-ink-300 mb-1">Right Now</p>
-          <p className="text-sm text-ink-700 leading-relaxed">{nowText}</p>
-        </div>
+    <div className="container-page pb-4">
+      <div className="flex max-w-3xl flex-col gap-2 border-l-2 border-accent-600 pl-5 sm:flex-row sm:gap-8">
+        <p className="type-meta shrink-0 pt-1">Right now</p>
+        <p className="text-base leading-relaxed text-ink-700">{nowText}</p>
       </div>
     </div>
   )

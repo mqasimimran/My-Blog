@@ -48,7 +48,7 @@ export default function LeadMagnet() {
         <a
           href={ASSET_PATH}
           download
-          className="inline-flex items-center gap-2 bg-accent-600 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none hover:bg-gray-900 transition-colors"
+          className="inline-flex items-center gap-2 bg-accent-600 text-white text-xs font-medium px-6 py-3 rounded-none hover:bg-gray-900 transition-colors"
         >
           Download Now ↓
         </a>
@@ -65,14 +65,14 @@ export default function LeadMagnet() {
           <button
             type="submit"
             disabled={status === 'loading'}
-            className="bg-accent-600 text-white text-xs font-bold uppercase tracking-widest px-6 py-3 rounded-none hover:bg-gray-900 transition-colors disabled:opacity-60"
+            className="bg-accent-600 text-white text-xs font-medium px-6 py-3 rounded-none hover:bg-gray-900 transition-colors disabled:opacity-60"
           >
             {status === 'loading' ? 'Unlocking...' : 'Get It Free'}
           </button>
         </form>
       )}
       {status === 'error' && (
-        <p className="text-xs text-red-500 mt-3">Something went wrong — try again in a moment.</p>
+        <p className="text-xs text-red-500 mt-3">Something went wrong. Try again in a moment.</p>
       )}
     </section>
   )

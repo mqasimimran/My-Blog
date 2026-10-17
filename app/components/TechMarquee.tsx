@@ -1,39 +1,34 @@
-'use client'
+const TOOLS = [
+  'Unity 3D',
+  'C#',
+  'Python',
+  'Next.js',
+  'TypeScript',
+  'Tailwind CSS',
+  'Figma',
+  'TensorFlow',
+  'Node.js',
+  'Playwright',
+  'Django',
+  'React.js',
+]
 
 export default function TechMarquee() {
-  const tools = [
-    "Unity 3D",
-    "C#",
-    "Python",
-    "Next.js",
-    "TypeScript",
-    "Tailwind CSS",
-    "Figma",
-    "TensorFlow",
-    "Node.js",
-    "Playwright",
-    "Django",
-    "React.js"
-  ]
-
   return (
-    <div className="py-8 bg-paper border-y border-ink-100 overflow-hidden relative select-none">
-      {/* Subtle fade edges for a polished look */}
-      <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-paper to-transparent z-10 pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-paper to-transparent z-10 pointer-events-none" />
-
-      <div className="animate-marquee flex items-center space-x-12">
-        {/* Render the array twice to create a seamless infinite loop effect */}
-        {[...tools, ...tools].map((tool, index) => (
-          <div 
-            key={index} 
-            className="flex items-center space-x-3 text-ink-300 font-mono text-xs tracking-[0.2em] uppercase hover:text-accent-600 transition-colors cursor-default group"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-ink-100 group-hover:bg-accent-600 transition-colors" />
-            <span>{tool}</span>
-          </div>
+    <section aria-label="Tools and technologies" className="select-none overflow-hidden border-y border-ink-100 py-5">
+      <div className="animate-marquee items-center">
+        {/* The list is rendered twice for a seamless loop; the copy is hidden from screen readers. */}
+        {[0, 1].map((copy) => (
+          <ul key={copy} aria-hidden={copy === 1} className="flex shrink-0 items-center">
+            {TOOLS.map((tool) => (
+              <li key={tool} className="flex items-center whitespace-nowrap font-display text-[clamp(2.75rem,1.5rem+5vw,6.5rem)] uppercase leading-none text-ink-900">
+                {tool}
+                <span aria-hidden className="px-[0.35em] text-ink-300">/</span>
+              </li>
+            ))}
+          </ul>
         ))}
       </div>
-    </div>
+    </section>
   )
 }

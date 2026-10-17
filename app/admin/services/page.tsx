@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
+import { siteConfig } from '@/site.config'
 type Service = {
   id: string
   name: string
@@ -91,7 +92,7 @@ export default function AdminServicesPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <div>
               <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Manage Services</h1>
-              <p className="text-xs text-ink-500 mt-1">Logged in AS {session.user?.name || 'Qasim'}</p>
+              <p className="text-xs text-ink-500 mt-1">Logged in AS {session.user?.name || siteConfig.firstName}</p>
             </div>
             <Link
               href="/admin/services/new"

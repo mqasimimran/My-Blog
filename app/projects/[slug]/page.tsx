@@ -3,11 +3,17 @@
 import { useEffect, useState, use } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import Image from 'next/image'
+import Image from '@/components/SafeImage'
 import ShareButtons from '@/app/components/ShareButtons'
+import { ArrowLeft } from '@phosphor-icons/react'
+import { ButtonLink } from '@/app/components/ui/Button'
+import CountUp from '@/app/components/ui/CountUp'
+import { SkeletonBlock } from '@/app/components/Skeleton'
+import EmptyState from '@/app/components/EmptyState'
 
-const SITE_URL = 'https://www.muhammadqasimimran.me/'
 
+import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
+import SplitText from '@/app/components/ui/SplitText'
 type Project = {
   title: string
   category: string
@@ -67,21 +73,30 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
     fetchProjectDetails()
   }, [slug])
 
+  const backLink = (
+    <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 transition-colors duration-200 hover:text-ink-900">
+      <ArrowLeft size={16} aria-hidden /> Project archive
+    </Link>
+  )
+
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-mono text-xs uppercase tracking-widest text-ink-300 bg-paper">
-        Loading architecture...
+      <div className="container-page pb-24 pt-10 md:pt-14">
+        <div className="mt-12 max-w-3xl space-y-5">
+          <SkeletonBlock className="h-3 w-32" />
+          <SkeletonBlock className="h-14 w-3/4" />
+          <SkeletonBlock className="h-5 w-full" />
+        </div>
+        <SkeletonBlock className="mt-14 aspect-[16/9] w-full" />
       </div>
     )
   }
 
   if (!project) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-paper text-center px-6">
-        <h1 className="text-3xl font-serif font-bold text-ink-900 mb-4">Project Not Found</h1>
-        <Link href="/projects" className="text-[10px] font-bold tracking-widest uppercase text-ink-500 hover:text-ink-900 border-b border-ink-900 pb-1 transition-colors">
-          Return to Portfolio
-        </Link>
+      <div className="container-page pb-24 pt-10">
+        {backLink}
+        <EmptyState icon="search" title="Project not found" description="It may have been unpublished or renamed." />
       </div>
     )
   }
@@ -97,186 +112,143 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
     url: `${SITE_URL}/projects/${slug}`,
     creator: {
       '@type': 'Person',
-      name: 'Muhammad Qasim Imran',
+      name: siteConfig.name,
       url: `${SITE_URL}/about`,
     },
   }
 
-  return (
-    <article className="min-h-screen bg-paper pt-24 pb-32 font-sans overflow-x-hidden">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
-      />
-      
-      {/* Editorial Header */}
-      <div className="max-w-4xl mx-auto px-6 text-center mb-16">
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600">
-            {project.category}
-          </span>
-          {project.status && (
-            <span className="text-[9px] font-bold tracking-widest uppercase text-amber-600 bg-amber-50 px-2 py-1 rounded-none">
-              {project.status}
-            </span>
-          )}
-        </div>
-        
-        <h1 className="text-4xl md:text-6xl font-serif font-bold text-ink-900 tracking-tight leading-none mb-6">
-          {project.title}
-        </h1>
-        
-        {project.tech_stack && (
-          <p className="text-[11px] font-mono text-ink-300 tracking-widest uppercase mb-8">
-            {project.tech_stack}
-          </p>
-        )}
-        
-        <p className="text-lg md:text-xl text-ink-500 font-light leading-relaxed max-w-2xl mx-auto">
-          {project.description}
-        </p>
+  // One row of the case study: the section name on the left, the text on the right.
+  const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
+    <section className="grid gap-4 border-t border-ink-100 py-12 md:grid-cols-12 md:gap-10 md:py-16">
+      <h2 className="type-h3 text-ink-900 md:col-span-4">{label}</h2>
+      <div className="md:col-span-8">{children}</div>
+    </section>
+  )
+  const bodyText = 'whitespace-pre-line text-lg leading-[1.75] text-ink-700 max-w-[62ch]'
+  const proseClass =
+    'prose prose-lg max-w-[62ch] prose-headings:font-semibold prose-headings:tracking-[-0.025em] prose-headings:text-ink-900 prose-p:text-ink-700 prose-li:text-ink-700 prose-strong:text-ink-900 prose-a:text-ink-900 prose-a:decoration-accent-600 prose-a:underline-offset-4 hover:prose-a:text-accent-600 prose-pre:rounded-none prose-pre:bg-ink-900 prose-pre:text-paper'
 
-        {/* Action Links */}
-        <div className="flex items-center justify-center gap-8 mt-10">
-          {project.live_url && (
-            <a href={project.live_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold tracking-widest uppercase text-ink-900 border-b border-ink-900 pb-1 hover:text-ink-500 transition-colors">
-              Live Demo ↗
-            </a>
+  return (
+    <article className="pb-24 pt-10 md:pt-14">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+
+      <div className="container-page">
+        {backLink}
+
+        <header className="mt-12 max-w-4xl md:mt-16">
+          <p className="type-meta flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="text-ink-900">{project.category}</span>
+            {project.status && <span className="border border-ink-100 px-1.5 py-0.5">{project.status}</span>}
+          </p>
+          <h1 className="type-title mt-5 text-ink-900"><SplitText text={project.title} /></h1>
+          {project.tech_stack && <p className="type-meta mt-5">{project.tech_stack}</p>}
+          <p className="type-lead mt-6 max-w-[52ch]">{project.description}</p>
+
+          {(project.live_url || project.github_url) && (
+            <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
+              {project.live_url && <ButtonLink href={project.live_url} external>Live demo</ButtonLink>}
+              {project.github_url && <ButtonLink href={project.github_url} external variant="text">GitHub repo</ButtonLink>}
+            </div>
           )}
-          {project.github_url && (
-            <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="text-[11px] font-bold tracking-widest uppercase text-ink-900 border-b border-ink-900 pb-1 hover:text-ink-500 transition-colors">
-              GitHub Repo ↗
-            </a>
-          )}
-        </div>
+        </header>
       </div>
 
-      {/* Edge-to-Edge Feature Image */}
       {project.feature_image && (
-        <div className="w-full mb-20">
-          <img 
-            src={project.feature_image} 
-            alt={project.title}
-            className="w-full h-auto max-h-[80vh] object-cover"
-          />
-        </div>
+        <figure className="container-page mt-14 md:mt-20">
+          <div className="overflow-hidden bg-ink-50">
+            <img src={project.feature_image} alt={project.title} className="h-auto max-h-[80vh] w-full object-cover" />
+          </div>
+        </figure>
       )}
 
-      {/* Stat Callouts */}
-      {project.stats && (
-        <div className="max-w-3xl mx-auto px-6 mb-16">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 py-8 border-y border-ink-100">
+      <div className="container-page">
+        {/* Stats */}
+        {project.stats && (
+          <div className="mt-14 grid grid-cols-2 gap-x-8 gap-y-10 border-y border-ink-100 py-10 sm:grid-cols-3 md:mt-20">
             {project.stats.split('\n').map((line) => {
               const [value, label] = line.split('|').map((s) => s.trim())
               if (!value) return null
               return (
-                <div key={line} className="text-center">
-                  <p className="text-3xl md:text-4xl font-light text-accent-600 mb-1">{value}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-ink-500">{label}</p>
+                <div key={line}>
+                  <p className="text-[clamp(2rem,1.4rem+2vw,3.25rem)] font-semibold leading-none tracking-[-0.04em] text-accent-600"><CountUp value={value} /></p>
+                  <p className="mt-3 text-sm text-ink-500">{label}</p>
                 </div>
               )
             })}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Case Study Content */}
-      {(project.problem || project.approach || project.outcome) ? (
-        <div className="max-w-3xl mx-auto px-6 space-y-16">
-          {project.problem && (
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Problem</p>
-              <p className="text-ink-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.problem}</p>
-            </div>
-          )}
-          {project.approach && (
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Approach</p>
-              <p className="text-ink-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.approach}</p>
-            </div>
-          )}
-          {project.tech_stack && (
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Stack</p>
-              <div className="flex flex-wrap gap-2">
-                {project.tech_stack.split(',').map((tech) => (
-                  <span key={tech} className="text-xs font-mono uppercase tracking-wide text-ink-700 bg-ink-100 px-3 py-1.5 rounded-none">
-                    {tech.trim()}
-                  </span>
+        {/* Case study */}
+        {project.problem || project.approach || project.outcome ? (
+          <div className="mt-8 md:mt-12">
+            {project.problem && <Row label="The problem"><p className={bodyText}>{project.problem}</p></Row>}
+            {project.approach && <Row label="The approach"><p className={bodyText}>{project.approach}</p></Row>}
+            {project.tech_stack && (
+              <Row label="The stack">
+                <ul className="flex flex-wrap gap-2">
+                  {project.tech_stack.split(',').map((tech) => (
+                    <li key={tech} className="border border-ink-100 bg-paper-raised px-3 py-1.5 font-mono text-[13px] text-ink-700">{tech.trim()}</li>
+                  ))}
+                </ul>
+              </Row>
+            )}
+            {project.screenshots && project.screenshots.length > 0 && (
+              <div className="grid grid-cols-1 gap-6 border-t border-ink-100 py-12 sm:grid-cols-2 md:py-16">
+                {project.screenshots.map((src, i) => (
+                  <div key={i} className="overflow-hidden bg-ink-50">
+                    <img src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="h-auto w-full" />
+                  </div>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+            {project.outcome && <Row label="The outcome"><p className={bodyText}>{project.outcome}</p></Row>}
+            {project.content && (
+              <Row label="Notes">
+                <div className={proseClass} dangerouslySetInnerHTML={{ __html: project.content }} />
+              </Row>
+            )}
+          </div>
+        ) : (
+          <div className="mt-14 border-t border-ink-100 pt-12 md:mt-20">
+            {project.content ? (
+              <div className={`${proseClass} mx-auto`} dangerouslySetInnerHTML={{ __html: project.content }} />
+            ) : (
+              <p className="text-base text-ink-500">A detailed case study for this project is on its way.</p>
+            )}
+          </div>
+        )}
 
-          {/* Screenshots */}
-          {project.screenshots && project.screenshots.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {project.screenshots.map((src, i) => (
-                <img key={i} src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="w-full h-auto rounded-none border border-ink-100 shadow-sm" />
+        {/* Share */}
+        <div className="mt-12 border-t border-ink-100 pt-10">
+          <ShareButtons url={`${SITE_URL}/projects/${slug}`} title={project.title} />
+        </div>
+
+        {/* Related projects */}
+        {relatedProjects.length > 0 && (
+          <section className="mt-24 border-t border-ink-100 pt-16">
+            <h2 className="type-h3 text-ink-900">More {project.category} projects</h2>
+            <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-3">
+              {relatedProjects.map((related) => (
+                <Link key={related.slug} href={`/projects/${related.slug}`} className="group block">
+                  <div className="relative aspect-[4/3] overflow-hidden bg-ink-50">
+                    {related.feature_image && (
+                      <Image
+                        src={related.feature_image}
+                        alt={related.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
+                      />
+                    )}
+                  </div>
+                  <p className="type-meta mt-4">{related.category}</p>
+                  <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{related.title}</h3>
+                </Link>
               ))}
             </div>
-          )}
-
-          {project.outcome && (
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-accent-600 mb-3">The Outcome</p>
-              <p className="text-ink-700 leading-relaxed text-lg font-light whitespace-pre-line">{project.outcome}</p>
-            </div>
-          )}
-
-          {project.content && (
-            <div className="prose prose-lg prose-headings:font-serif prose-headings:text-ink-900 prose-a:text-accent-600 prose-a:no-underline hover:prose-a:underline text-ink-700 pt-4 border-t border-ink-100">
-              <div dangerouslySetInnerHTML={{ __html: project.content }} />
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="max-w-2xl mx-auto px-6 text-ink-700 prose prose-lg prose-headings:font-serif prose-headings:text-ink-900 prose-a:text-accent-600 prose-a:no-underline hover:prose-a:underline">
-          {project.content ? (
-            <div dangerouslySetInnerHTML={{ __html: project.content }} />
-          ) : (
-            <div className="text-center italic text-ink-300 py-10">
-              A detailed case study for this project is currently in development.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Share */}
-      <div className="max-w-3xl mx-auto px-6 flex justify-center mt-16 pt-10 border-t border-ink-100">
-        <ShareButtons url={`${SITE_URL}/projects/${slug}`} title={project.title} />
+          </section>
+        )}
       </div>
-
-      {/* Related Projects */}
-      {relatedProjects.length > 0 && (
-        <div className="max-w-5xl mx-auto px-6 mt-24 pt-16 border-t border-ink-100">
-          <h2 className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink-300 mb-8 text-center">
-            More {project.category} Projects
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {relatedProjects.map((related) => (
-              <Link key={related.slug} href={`/projects/${related.slug}`} className="group block">
-                {related.feature_image && (
-                  <div className="relative aspect-video mb-3 overflow-hidden rounded-none bg-paper">
-                    <Image
-                      src={related.feature_image}
-                      alt={related.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                )}
-                <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-1">{related.category}</p>
-                <h3 className="text-sm font-medium text-ink-900 group-hover:text-accent-600 transition-colors leading-snug">
-                  {related.title}
-                </h3>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
     </article>
   )
 }

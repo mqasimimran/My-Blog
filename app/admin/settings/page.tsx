@@ -6,6 +6,8 @@ import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
+import { siteConfig } from '@/site.config'
+import { getManualMethod, MANUAL_METHODS } from '@/lib/paymentMethods'
 export default function AdminSettingsPage() {
   const { data: session, status } = useSession()
   const [availableForWork, setAvailableForWork] = useState(true)
@@ -125,6 +127,9 @@ export default function AdminSettingsPage() {
 
   if (!session) return null
 
+  // Headings and which account fields appear follow site.config.ts (payments.manualMethods)
+  const localGroup = MANUAL_METHODS.find((m) => ['jazzcash', 'easypaisa', 'bank_transfer'].includes(m.id))?.group
+
   return (
     <div className="min-h-screen bg-paper flex flex-col md:flex-row font-sans">
       <AdminNav />
@@ -166,8 +171,10 @@ export default function AdminSettingsPage() {
               <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-1">Payment Accounts</p>
               <p className="text-[11px] text-ink-300 mb-5">Shown to buyers on the checkout page so they know where to send payment. Leave any section blank to hide that option.</p>
 
-              <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-3">Local — Pakistan</p>
+              {localGroup && <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-3">{localGroup}</p>}
 
+              {getManualMethod('jazzcash') && (
+                <>
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">JazzCash Number</label>
@@ -175,10 +182,14 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Account Name</label>
-                  <input type="text" value={jazzcashAccountName} onChange={(e) => setJazzcashAccountName(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
+                  <input type="text" value={jazzcashAccountName} onChange={(e) => setJazzcashAccountName(e.target.value)} placeholder={siteConfig.name} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
+                </>
+              )}
 
+              {getManualMethod('easypaisa') && (
+                <>
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">EasyPaisa Number</label>
@@ -186,10 +197,14 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Account Name</label>
-                  <input type="text" value={easypaisaAccountName} onChange={(e) => setEasypaisaAccountName(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
+                  <input type="text" value={easypaisaAccountName} onChange={(e) => setEasypaisaAccountName(e.target.value)} placeholder={siteConfig.name} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
+                </>
+              )}
 
+              {getManualMethod('bank_transfer') && (
+                <>
               <div className="grid grid-cols-2 gap-4 mb-2">
                 <div>
                   <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Bank Name</label>
@@ -197,7 +212,7 @@ export default function AdminSettingsPage() {
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Account Title</label>
-                  <input type="text" value={bankAccountTitle} onChange={(e) => setBankAccountTitle(e.target.value)} placeholder="Muhammad Qasim Imran" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
+                  <input type="text" value={bankAccountTitle} onChange={(e) => setBankAccountTitle(e.target.value)} placeholder={siteConfig.name} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 mb-8">
@@ -210,13 +225,19 @@ export default function AdminSettingsPage() {
                   <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value)} placeholder="Helps international senders" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 </div>
               </div>
+                </>
+              )}
 
-              <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-3">International</p>
+              {getManualMethod('payoneer') && (
+                <>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-3">{getManualMethod('payoneer')?.group}</p>
               <div>
                 <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Payoneer Email</label>
                 <input type="email" value={payoneerEmail} onChange={(e) => setPayoneerEmail(e.target.value)} placeholder="The email tied to your Payoneer account" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
                 <p className="text-[10px] text-ink-300 mt-1">Buyers will send a Payoneer-to-Payoneer payment to this email.</p>
               </div>
+                </>
+              )}
             </div>
 
             <button onClick={handleSave} disabled={isSaving} className="w-full bg-accent-600 text-white text-xs font-bold tracking-widest uppercase py-4 rounded-none hover:bg-gray-900 transition-colors">

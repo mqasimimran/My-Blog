@@ -5,73 +5,358 @@
    DarkModeToggle.tsx + localStorage), instead of only system preference. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ── Design system tokens ───────────────────────────────────────────────
-   Defined in the Tailwind v4 @theme namespace, so these also generate
-   real utility classes: bg-ink-900, text-accent-600, border-ink-100,
-   font-display, etc. — usable directly in className, no inline styles
-   needed. --font-sans is overridden here too, so every existing
-   `font-sans` class already used across the site picks up Inter
-   automatically with no per-file changes required. */
+/* ── DESIGN TOKENS ──────────────────────────────────────────────────────
+   Direction: editorial studio. Warm paper, near-black ink, condensed uppercase headlines,
+   visible hairline grid. The accent colour is used rarely.
+   Everything in the site reads these tokens, so changing a value here
+   re-skins the whole site (public pages and admin). They generate real
+   utilities: bg-paper, text-ink-900, border-ink-100, text-accent-600 ...
+
+   ink-*     text and lines   (ink-900 is body text, ink-100 is hairlines)
+   paper-*   surfaces         (paper = page, paper-raised = inputs/cards)
+   accent-*  your brand colour. Change it together with
+             site.config.ts -> brand.accent (used where CSS can't reach).
+
+   Dark mode flips the same names, so markup never says "dark:" for colour. */
 @theme {
-  --color-accent-600: #aa002a;
-  --color-accent-700: #8a0022;
+  --color-accent-50: #fbeff1;
+  --color-accent-600: #b0233f;
+  --color-accent-700: #8f1c33;
+  /* Text/icons placed ON an accent-coloured fill. White in light mode; near-black in
+     dark mode, where the accent is lighter and white text would fail contrast. */
+  --color-on-accent: #ffffff;
 
-  --color-ink-900: #0a0a0a;
-  --color-ink-700: #3a3a3a;
-  --color-ink-500: #6b6b6b;
-  --color-ink-300: #a3a3a3;
-  --color-ink-100: #e5e5e5;
+  --color-ink-900: #111110;
+  --color-ink-700: #3a3936;
+  --color-ink-500: #686763;
+  --color-ink-300: #a8a6a0;
+  --color-ink-100: #d6d4cd;
+  --color-ink-50: #e5e3dd;
 
-  /* Page/card surface — white in light mode, near-black in dark mode.
-     Use bg-paper instead of bg-white for anything that should flip. */
-  --color-paper: #ffffff;
-  --color-paper-raised: #fafafa;
+  --color-paper: #efeeea;
+  --color-paper-raised: #f7f6f3;
 
   --color-success: #1a7f4e;
   --color-warning: #b5750a;
   --color-error: #c0362c;
 
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  /* Geist is self-hosted (see layout.tsx), so there is no Google Fonts request. */
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  /* Headlines: Anton, condensed. Self-hosted from the @fontsource/anton package. */
+  --font-display: var(--font-anton), Impact, 'Arial Narrow', sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* One easing curve for all motion: fast start, long soft landing. */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dark mode: ink-900 (normally near-black text) becomes near-white, and so
-   on down the scale — so every existing text-ink and bg-ink usage across
-   the site already flips correctly with no markup changes. Only bg-paper
-   (page/card backgrounds) needs to be adopted in place of literal bg-white
-   for a section to fully support dark mode. */
 .dark {
-  --color-ink-900: #f5f5f5;
-  --color-ink-700: #d4d4d4;
-  --color-ink-500: #a3a3a3;
-  --color-ink-300: #6b6b6b;
-  --color-ink-100: #2a2a2a;
+  --color-accent-50: #2a1218;
+  --color-accent-600: #dc4c66;
+  --color-accent-700: #ec7a90;
+  --color-on-accent: #09090b;
 
-  --color-paper: #0a0a0a;
-  --color-paper-raised: #151515;
+  --color-ink-900: #efeeea;
+  --color-ink-700: #cfcdc6;
+  --color-ink-500: #9b9993;
+  --color-ink-300: #6b6a65;
+  --color-ink-100: #2c2b28;
+  --color-ink-50: #1d1c1a;
+
+  --color-paper: #0f0f0e;
+  --color-paper-raised: #171715;
 
   color-scheme: dark;
 }
 
-::selection {
-  background-color: var(--color-accent-600);
-  color: #ffffff;
+/* ── Z-INDEX SCALE ── only systemic layers get one. Do not invent others. */
+.z-nav { z-index: 50; }
+.z-overlay { z-index: 60; }
+.z-progress { z-index: 55; }
+.z-rails { z-index: 40; }
+.z-cursor { z-index: 58; }
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  h1, h2, h3, h4 { text-wrap: balance; }
+  p, li { text-wrap: pretty; }
+
+  /* Visible keyboard focus everywhere. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent-600);
+    outline-offset: 3px;
+  }
+  ::selection {
+    background-color: var(--color-accent-600);
+    color: #ffffff;
+  }
 }
+
+/* ── TYPE SCALE ─────────────────────────────────────────────────────────
+   Five roles, used everywhere, so headings read as one system. Large type
+   gets tight tracking and tight leading; small type gets room. */
+@layer components {
+  /* Headlines: condensed, uppercase, tight. Anton has one weight, so never fake-bold it. */
+  .type-display {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 1.4rem + 6.4vw, 7.5rem);
+    line-height: 0.92;
+    letter-spacing: 0.002em;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-synthesis: none;
+  }
+  /* Long titles (posts, projects, products): same voice, a size down. */
+  .type-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 1.4rem + 3.8vw, 5.25rem);
+    line-height: 0.95;
+    letter-spacing: 0.003em;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-synthesis: none;
+  }
+  .type-h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 1.3rem + 3.3vw, 4.5rem);
+    line-height: 0.95;
+    letter-spacing: 0.004em;
+    font-weight: 400;
+    text-transform: uppercase;
+    font-synthesis: none;
+  }
+  .type-h3 {
+    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+  }
+  .type-lead {
+    font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.25rem);
+    line-height: 1.6;
+    color: var(--color-ink-700);
+  }
+  /* Small labels: dates, categories, counts. Small uppercase, spaced out. */
+  .type-meta {
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--color-ink-500);
+    font-variant-numeric: tabular-nums;
+  }
+  .font-display { font-synthesis: none; }
+
+  /* Page container: wide, with fluid side padding. */
+  .container-page {
+    width: 100%;
+    max-width: 1360px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+  /* Macro whitespace between sections. */
+  .section-y {
+    padding-block: clamp(4.5rem, 9vw, 8.5rem);
+  }
+
+  /* Text link with an underline that draws in. */
+  .link-draw {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 100% 1px;
+    transition: background-size 400ms var(--ease-smooth), color 200ms;
+  }
+  .link-draw:hover {
+    color: var(--color-accent-600);
+    background-size: 100% 2px;
+  }
+
+  .skip-link {
+    position: fixed;
+    left: 1rem;
+    top: 1rem;
+    z-index: 70;
+    transform: translateY(-200%);
+    background: var(--color-ink-900);
+    color: var(--color-paper);
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    transition: transform 200ms var(--ease-smooth);
+  }
+  .skip-link:focus { transform: none; }
+}
+
+/* ── MOTION ─────────────────────────────────────────────────────────────
+   Content is visible by default (works with no JavaScript, and above the
+   fold never flashes). Reveal.tsx only hides elements that start BELOW the
+   viewport, then eases them in. Only transform + opacity are animated. */
+.rv {
+  transition:
+    opacity 900ms var(--ease-smooth),
+    transform 900ms var(--ease-smooth);
+  transition-delay: calc(var(--rv-i, 0) * 80ms);
+}
+.rv[data-rv="hidden"] {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Reading progress bar (blog posts). Driven by the browser's own scroll timeline, so it costs
+   no JavaScript and no re-renders. Browsers without scroll timelines simply don't show it. */
+.reading-progress {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--color-accent-600);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+@supports (animation-timeline: scroll()) {
+  .reading-progress {
+    animation: reading-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+  @keyframes reading-progress {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+}
+
+/* Site-wide animation (see ScrollAnimator.tsx). Elements waiting below the fold are invisible;
+   when they arrive they rise in. The keyframes only say where to START, so each element ends
+   on its own normal styles (e.g. a logo at 70% opacity stays at 70%). */
+[data-rv="hidden"] { opacity: 0; }
+[data-rv="in"] {
+  animation: rv-in 800ms var(--ease-smooth) backwards;
+  animation-delay: calc(var(--rv-i, 0) * 70ms);
+}
+[data-rv-i="1"] { --rv-i: 1; } [data-rv-i="2"] { --rv-i: 2; } [data-rv-i="3"] { --rv-i: 3; } [data-rv-i="4"] { --rv-i: 4; }
+[data-rv-i="5"] { --rv-i: 5; } [data-rv-i="6"] { --rv-i: 6; } [data-rv-i="7"] { --rv-i: 7; } [data-rv-i="8"] { --rv-i: 8; }
+@keyframes rv-in {
+  from { opacity: 0; transform: translateY(18px); }
+}
+/* The hero's entrance: pure CSS, so it plays on first paint with no JavaScript at all. */
+.hero-enter > * { animation: rv-in 900ms var(--ease-smooth) backwards; }
+.hero-enter > *:nth-child(2) { animation-delay: 80ms; }
+.hero-enter > *:nth-child(3) { animation-delay: 160ms; }
+.hero-enter > *:nth-child(4) { animation-delay: 240ms; }
+.hero-enter > *:nth-child(5) { animation-delay: 320ms; }
+.hero-enter > *:nth-child(n+6) { animation-delay: 400ms; }
+.hero-photo { animation: hero-photo-in 1100ms var(--ease-smooth) 150ms backwards; }
+@keyframes hero-photo-in {
+  from { opacity: 0; transform: translateY(32px); }
+}
+
+/* The frame: two hairline rails at the edges of the content, on every page. */
+.frame-rails {
+  position: fixed;
+  inset: 0;
+  margin-inline: auto;
+  max-width: 1360px;
+  border-inline: 1px solid var(--color-ink-100);
+  pointer-events: none;
+  display: none;
+}
+@media (min-width: 768px) { .frame-rails { display: block; } }
+
+/* Headlines sharpen in, left to right: a soft mask sweeps across while the blur clears.
+   An even (not fast-start) curve, so the sweep reads letter by letter like the reference. */
+@property --sweep { syntax: '<percentage>'; inherits: false; initial-value: 130%; }
+[data-rv="in"][data-rv-h], .hero-enter h1 {
+  -webkit-mask-image: linear-gradient(90deg, #000 var(--sweep), rgb(0 0 0 / 0.06) calc(var(--sweep) + 28%));
+  mask-image: linear-gradient(90deg, #000 var(--sweep), rgb(0 0 0 / 0.06) calc(var(--sweep) + 28%));
+}
+[data-rv="in"][data-rv-h] {
+  animation: head-in 1700ms cubic-bezier(0.45, 0.05, 0.25, 1) backwards;
+  animation-delay: calc(var(--rv-i, 0) * 70ms);
+}
+.hero-enter h1 { animation: head-in 1800ms cubic-bezier(0.45, 0.05, 0.25, 1) 100ms backwards; }
+@keyframes head-in {
+  from { --sweep: -28%; filter: blur(14px); opacity: 0.3; }
+}
+
+/* Letter-by-letter headlines (SplitText.tsx): each letter goes from faint and blurred to solid,
+   one after another, so a two-line headline finishes line one before line two. */
+.split-w { display: inline-block; white-space: nowrap; }
+.ch { display: inline-block; }
+[data-rv="in"] .ch {
+  animation: ch-in 650ms cubic-bezier(0.3, 0, 0.2, 1) backwards;
+  animation-delay: calc(var(--ci, 0) * 22ms);
+}
+@keyframes ch-in {
+  from { opacity: 0.1; filter: blur(8px); }
+}
+
+/* Blur lens over the hero headline (BlurLens.tsx). */
+.blur-lens-wrap { position: relative; }
+.blur-lens {
+  position: absolute; left: 0; top: 0;
+  width: 200px; height: 200px; margin: -100px 0 0 -100px;
+  border-radius: 9999px;
+  -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px);
+  -webkit-mask-image: radial-gradient(circle, #000 30%, transparent 70%); mask-image: radial-gradient(circle, #000 30%, transparent 70%);
+  pointer-events: none; opacity: 0; transition: opacity 300ms;
+  will-change: transform;
+}
+.blur-lens[data-show] { opacity: 1; }
+
+/* The circle that follows the cursor over cards (CursorBadge.tsx). */
+.cursor-badge { position: fixed; left: 0; top: 0; pointer-events: none; will-change: transform; }
+.cursor-badge > span {
+  display: grid; place-items: center;
+  width: 96px; height: 96px; margin: -48px 0 0 -48px;
+  border-radius: 9999px;
+  background: var(--color-ink-900); color: var(--color-paper);
+  font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  transform: scale(0); opacity: 0;
+  transition: transform 450ms var(--ease-smooth), opacity 300ms;
+}
+.cursor-badge[data-show] > span { transform: scale(1); opacity: 1; }
 
 @keyframes marquee {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
 }
-
 .animate-marquee {
   display: flex;
   width: max-content;
-  animation: marquee 28s linear infinite;
+  animation: marquee 60s linear infinite;
+}
+.animate-marquee:hover { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rv, .rv[data-rv="hidden"], [data-rv="hidden"] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  [data-rv="in"], .hero-enter > *, .hero-photo, .hero-enter h1 { animation: none; }
+  [data-rv="in"][data-rv-h], .hero-enter h1 { -webkit-mask-image: none; mask-image: none; }
+  [data-rv="in"] .ch { animation: none; }
+  .animate-marquee {
+    animation: none;
+    flex-wrap: wrap;
+    width: auto;
+  }
+  /* the duplicate copy that makes the loop seamless is pointless when nothing moves */
+  .animate-marquee [aria-hidden="true"] { display: none; }
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
 @media print {
   body * {
     visibility: hidden;

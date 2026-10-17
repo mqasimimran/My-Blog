@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 
+import { siteConfig } from '@/site.config'
 export default function Links() {
   return (
     <div className="min-h-screen bg-paper">
@@ -16,24 +17,24 @@ export default function Links() {
             className="object-cover" 
          />
       </div>
-      <h1 className="text-2xl font-bold text-ink-900 mb-2 tracking-tight">Muhammad Qasim Imran</h1>
+      <h1 className="text-2xl font-bold text-ink-900 mb-2 tracking-tight">{siteConfig.name}</h1>
       <p className="text-ink-500 mb-10 text-center font-medium">
-        Software Engineer & Graphic Designer
+        {siteConfig.jobTitle}
       </p>
 
       {/* Links Section */}
       <div className="w-full flex flex-col gap-4">
         <a 
-          href="https://youtube.com/@qasimdevelops" 
+          href={siteConfig.social.youtube} 
           target="_blank" 
           rel="noopener noreferrer" 
           className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"
         >
-          YouTube: qasimdevelops
+          YouTube: {siteConfig.social.youtubeHandle}
         </a>
         
         <a 
-          href="https://muhammadqasimimran1.myportfolio.com/" 
+          href={siteConfig.social.portfolio} 
           target="_blank" 
           rel="noopener noreferrer" 
           className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"
@@ -42,7 +43,7 @@ export default function Links() {
         </a>
         
         <a 
-          href="https://instagram.com/muhammadqasimimrann" 
+          href={siteConfig.social.instagramPersonal} 
           target="_blank" 
           rel="noopener noreferrer" 
           className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"

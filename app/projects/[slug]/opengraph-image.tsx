@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og'
 import { createClient } from '@supabase/supabase-js'
 
+import { siteConfig } from '@/site.config'
 export const runtime = 'edge'
 export const alt = 'Project'
 export const size = { width: 1200, height: 630 }
@@ -11,14 +12,18 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-export default async function Image({ params }: { params: { slug: string } }) {
+// Next.js 16 made `params` a Promise. Reading it synchronously (the old way)
+// silently produced `undefined`, so every post/project share-card fell back to
+// the generic site title instead of the post's own title.
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const { data: project } = await supabase
     .from('projects')
     .select('title, category, tech_stack')
-    .eq('slug', params.slug)
+    .eq('slug', slug)
     .single()
 
-  const title = project?.title || 'Muhammad Qasim Imran'
+  const title = project?.title || siteConfig.name
   const category = project?.category || 'Project'
   const stack = project?.tech_stack || ''
 
@@ -37,14 +42,14 @@ export default async function Image({ params }: { params: { slug: string } }) {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ width: 56, height: 6, background: '#aa002a', marginBottom: 32, display: 'flex' }} />
+          <div style={{ width: 56, height: 6, background: siteConfig.brand.accent, marginBottom: 32, display: 'flex' }} />
           <div
             style={{
               fontSize: 20,
               fontWeight: 700,
               letterSpacing: 4,
               textTransform: 'uppercase',
-              color: '#aa002a',
+              color: siteConfig.brand.accent,
               marginBottom: 24,
               display: 'flex',
             }}
@@ -69,7 +74,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
           )}
         </div>
         <div style={{ fontSize: 22, color: '#6b6b6b', display: 'flex' }}>
-          Muhammad Qasim Imran — Portfolio
+          {siteConfig.name} | Portfolio
         </div>
       </div>
     ),

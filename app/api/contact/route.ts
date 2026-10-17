@@ -3,6 +3,8 @@ import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { escapeHtml, oneLine, EMAIL_RE } from '@/lib/escapeHtml'
 
 
+import { sendEmail } from '@/lib/mail'
+import { siteConfig } from '@/site.config'
 const MAX_SUBMISSIONS = 5
 const WINDOW_MINUTES = 60
 
@@ -67,35 +69,24 @@ export async function POST(request: NextRequest) {
 
     // Best-effort email notification — failure here doesn't fail the request,
     // since the message is already safely saved either way.
-    const apiKey = process.env.RESEND_API_KEY
     const toEmail = process.env.NOTIFY_TO_EMAIL
-    if (apiKey && toEmail) {
-      try {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: 'Portfolio Contact Form <onboarding@resend.dev>',
-            to: [toEmail],
-            reply_to: email,
-            subject: `New message: ${oneLine(subject) || 'No subject'}`,
-            html: `
+    if (toEmail) {
+      const mail = await sendEmail({
+        from: siteConfig.mail.contactFormFrom,
+        to: [toEmail],
+        replyTo: email,
+        subject: `New message: ${oneLine(subject) || 'No subject'}`,
+        html: `
               <div style="font-family: sans-serif; max-width: 500px;">
-                <h2 style="color: #aa002a;">New contact form message</h2>
+                <h2 style="color: ${siteConfig.brand.accent};">New contact form message</h2>
                 <p><strong>From:</strong> ${escapeHtml(name)} (${escapeHtml(email)})</p>
                 <p><strong>Subject:</strong> ${escapeHtml(subject) || '—'}</p>
                 <p><strong>Message:</strong></p>
                 <p style="white-space: pre-line; background: #f9fafb; padding: 16px; border-radius: 8px;">${escapeHtml(message)}</p>
               </div>
             `,
-          }),
-        })
-      } catch (emailError) {
-        console.error('Email notification failed (message was still saved):', emailError)
-      }
+      })
+      if (!mail.ok) console.error('Email notification failed (message was still saved):', mail.error)
     }
 
     return NextResponse.json({ success: true })

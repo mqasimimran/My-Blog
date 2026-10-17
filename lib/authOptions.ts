@@ -7,6 +7,7 @@ import { verifyTotp } from '@/lib/totp'
 import { logSecurityEvent } from '@/lib/audit'
 import { claimTotpStep } from '@/lib/totpReplay'
 
+import { siteConfig } from '@/site.config'
 // Hashing both sides to a fixed-length digest first lets us use
 // timingSafeEqual regardless of the two strings' actual lengths.
 function safeCompare(a: string, b: string): boolean {
@@ -67,7 +68,7 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const adminUsername = (process.env.ADMIN_USERNAME || 'qasim').toLowerCase()
+        const adminUsername = (process.env.ADMIN_USERNAME || siteConfig.admin.username).toLowerCase()
         const givenUser = (credentials?.username || '').toLowerCase()
         const givenPass = credentials?.password || ''
 
@@ -113,8 +114,8 @@ export const authOptions: NextAuthOptions = {
         if (!ok) return null
         return {
           id: '1',
-          name: process.env.ADMIN_NAME || 'Qasim',
-          email: process.env.ADMIN_EMAIL || 'qasimshibli12@gmail.com',
+          name: process.env.ADMIN_NAME || siteConfig.admin.displayName,
+          email: process.env.ADMIN_EMAIL || siteConfig.admin.email,
         }
       }
     })

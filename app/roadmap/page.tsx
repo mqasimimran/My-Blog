@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import EmptyState from '@/app/components/EmptyState'
+import SplitText from '@/app/components/ui/SplitText'
 
 type RoadmapItem = {
   id: string
@@ -36,21 +37,15 @@ export default function RoadmapPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-paper font-sans">
-      <section className="bg-gradient-to-br from-ink-100 to-paper py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-ink-900 mb-6">
-            Roadmap
-          </h1>
-          <p className="text-ink-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
-            What's planned, what's underway, and what's already shipped — an honest look at what's next.
-          </p>
-        </div>
-      </section>
+    <main>
+      <header className="container-page pb-12 pt-12 md:pb-16 md:pt-20">
+        <h1 className="type-display text-ink-900"><SplitText text={"Roadmap"} /></h1>
+        <p className="type-lead mt-6 max-w-[52ch]">What&rsquo;s planned, what&rsquo;s underway, and what&rsquo;s already shipped. An honest look at what&rsquo;s next.</p>
+      </header>
 
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="container-page pb-24">
         {isLoading ? (
-          <div className="text-center py-20 text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</div>
+          <div className="text-center py-20 text-ink-300 text-xs font-mono">Loading...</div>
         ) : items.length === 0 ? (
           <EmptyState icon="sparkle" title="Nothing on the roadmap yet" description="Check back soon." />
         ) : (
@@ -63,7 +58,7 @@ export default function RoadmapPage() {
                     <span className={`w-2 h-2 rounded-full ${
                       col.key === 'shipped' ? 'bg-green-500' : col.key === 'in_progress' ? 'bg-accent-600' : 'bg-ink-100'
                     }`} />
-                    <h2 className="text-xs font-bold uppercase tracking-widest text-ink-900">
+                    <h2 className="text-xs font-medium text-ink-900">
                       {col.label} ({colItems.length})
                     </h2>
                   </div>

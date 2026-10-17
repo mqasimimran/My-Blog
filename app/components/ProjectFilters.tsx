@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { ArrowUpRight } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
+import SplitText from '@/app/components/ui/SplitText'
+import { ButtonLink } from '@/app/components/ui/Button'
+import { SkeletonBlock } from '@/app/components/Skeleton'
 
 type Project = {
   id: string
@@ -16,6 +20,16 @@ type Project = {
   feature_image: string | null
   preview_video_url: string | null
 }
+
+// `key` is compared (upper-case) with the category stored in the database. `label` is what visitors read.
+const CATEGORIES = [
+  { key: 'ALL', label: 'All' },
+  { key: 'AI & ML', label: 'AI & ML' },
+  { key: 'GAME DEV', label: 'Game dev' },
+  { key: 'SOFTWARE ENG', label: 'Software eng' },
+  { key: 'WEB APPS', label: 'Web apps' },
+  { key: 'DESIGN', label: 'Design' },
+]
 
 export default function ProjectFilters() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -38,59 +52,57 @@ export default function ProjectFilters() {
     fetchFeaturedProjects()
   }, [])
 
-  const categories = ['ALL', 'AI & ML', 'GAME DEV', 'SOFTWARE ENG', 'WEB APPS', 'DESIGN']
-
-  const filteredProjects = activeCategory === 'ALL' 
-    ? projects 
-    : projects.filter(project => project.category.toUpperCase() === activeCategory)
+  const filtered =
+    activeCategory === 'ALL' ? projects : projects.filter((p) => p.category.toUpperCase() === activeCategory)
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-paper">
-      
-      {/* Header & Filter Flex Layout */}
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-8">
-        <div className="max-w-lg">
-          <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-3">
-            Featured Work
-          </h2>
-          <p className="text-sm text-ink-500 leading-relaxed">
-            Select a category below to explore my projects across software engineering, machine learning, and game development.
-          </p>
+    <section className="container-page section-y">
+      <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+        {/* Pinned while the work stacks up beside it */}
+        <div className="lg:col-span-4">
+          <div className="lg:sticky lg:top-24">
+            <h2 className="type-h2 text-ink-900"><SplitText text="Featured work" /></h2>
+            <p className="type-lead mt-4 max-w-[40ch]">Select a category to explore my projects across software engineering, machine learning, and game development.</p>
+            <div role="group" aria-label="Filter projects by category" className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
+              {CATEGORIES.map((category) => {
+                const isActive = activeCategory === category.key
+                return (
+                  <button
+                    key={category.key}
+                    onClick={() => setActiveCategory(category.key)}
+                    aria-pressed={isActive}
+                    className={`border-b-2 pb-1.5 text-sm font-medium tracking-tight transition-colors duration-300 ${
+                      isActive ? 'border-accent-600 text-ink-900' : 'border-transparent text-ink-500 hover:text-ink-900'
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="mt-10">
+              <ButtonLink href="/projects" variant="text">See all projects</ButtonLink>
+            </div>
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {categories.map((category, index) => {
-            const isActive = activeCategory === category
-            return (
-              <button
-                key={index}
-                onClick={() => setActiveCategory(category)}
-                className={`text-[10px] font-bold tracking-[0.15em] uppercase px-4 py-2 rounded-none transition-colors ${
-                  isActive 
-                    ? 'bg-accent-600 text-white shadow-sm' 
-                    : 'bg-transparent text-ink-500 hover:text-ink-900'
-                }`}
-              >
-                {category}
-              </button>
-            )
-          })}
+        <div className="lg:col-span-8">
+          {isLoading ? (
+            <SkeletonBlock className="aspect-[16/10] w-full" />
+          ) : filtered.length === 0 ? (
+            <p className="text-base text-ink-500">No projects in this category yet.</p>
+          ) : (
+            // Each card sticks just under the navbar, so the next one slides up over it.
+            <ul>
+              {filtered.map((project) => (
+                <li data-no-animate key={project.id} className="sticky top-[72px] bg-paper pb-12">
+                  <ProjectCard project={project} />
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
-
-      {/* 3-Column Card Grid */}
-      {isLoading ? (
-        <div className="text-center py-20 text-ink-300 text-xs font-mono uppercase tracking-widest">
-          Loading featured work...
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
-      )}
-      
     </section>
   )
 }
@@ -100,74 +112,46 @@ function ProjectCard({ project }: { project: Project }) {
   const hasThumbnail = project.preview_video_url || project.feature_image
 
   return (
-    <div
-      className="bg-paper border border-ink-100 rounded-none overflow-hidden flex flex-col shadow-sm hover:shadow-md transition-shadow"
+    <Link
+      href={project.live_url || `/projects/${project.slug}`}
+      data-cursor="View"
+      className="group block"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      {hasThumbnail && (
-        <div className="relative w-full h-40 bg-ink-100 overflow-hidden">
-          {project.preview_video_url ? (
+      <div className="relative aspect-[16/10] w-full overflow-hidden border border-ink-100 bg-ink-50">
+        {hasThumbnail ? (
+          project.preview_video_url ? (
             <>
               {project.feature_image && (
-                <img
-                  src={project.feature_image}
-                  alt={project.title}
-                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${isHovering ? 'opacity-0' : 'opacity-100'}`}
-                />
+                <img src={project.feature_image} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
               )}
-              {isHovering && (
-                <video
-                  src={project.preview_video_url}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="absolute inset-0 w-full h-full object-cover"
-                />
-              )}
+              {isHovering && <video src={project.preview_video_url} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />}
             </>
           ) : (
-            <img
-              src={project.feature_image!}
-              alt={project.title}
-              className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 ${isHovering ? 'scale-105' : 'scale-100'}`}
-            />
-          )}
-        </div>
-      )}
-
-      <div className="p-8 flex flex-col flex-1">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] font-bold tracking-widest uppercase text-accent-600">
-            {project.category}
-          </span>
-          {project.status && (
-            <span className="text-[9px] font-bold tracking-widest uppercase text-amber-600 bg-amber-50 px-2 py-1 rounded-none">
-              {project.status}
-            </span>
-          )}
-        </div>
-
-        <h3 className="text-xl font-medium text-ink-900 mb-1">
-          {project.title}
-        </h3>
-
-        <p className="text-[11px] text-ink-300 font-mono mb-5 tracking-wide">
-          {project.tech_stack}
-        </p>
-
-        <p className="text-sm text-ink-700 leading-relaxed mb-8 flex-grow">
-          {project.description}
-        </p>
-
-        <Link
-          href={project.live_url || `/projects/${project.slug}`}
-          className="text-[10px] font-bold uppercase tracking-widest text-ink-900 hover:text-accent-600 transition-colors mt-auto flex items-center gap-1"
-        >
-          {project.category === 'Game Dev' ? 'Play Demo' : 'View Details'} ↗
-        </Link>
+            <img src={project.feature_image!} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+          )
+        ) : (
+          <div className="absolute inset-0 grid place-items-center text-ink-300" aria-hidden>
+            <span className="type-display">{project.title.charAt(0)}</span>
+          </div>
+        )}
       </div>
-    </div>
+
+      <div className="mt-5 flex flex-wrap items-start justify-between gap-x-8 gap-y-2">
+        <div>
+          <h3 className="type-h3 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{project.title}</h3>
+          <p className="type-meta mt-2 flex flex-wrap gap-x-3">
+            <span>{project.category}</span>
+            {project.status && <span>{project.status}</span>}
+          </p>
+        </div>
+        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-900 transition-colors duration-300 group-hover:text-accent-600">
+          {project.category === 'Game Dev' ? 'Play demo' : 'View details'}
+          <ArrowUpRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 ease-[var(--ease-smooth)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </span>
+      </div>
+      <p className="mt-3 line-clamp-2 max-w-[60ch] text-[15px] leading-relaxed text-ink-700">{project.description}</p>
+    </Link>
   )
 }

@@ -1,8 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { createClient } from '@supabase/supabase-js'
 
+import { SITE_URL_SLASH as SITE_URL } from '@/site.config'
 // Keep this in sync with SITE_URL in app/layout.tsx
-const SITE_URL = 'https://www.muhammadqasimimran.me/'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

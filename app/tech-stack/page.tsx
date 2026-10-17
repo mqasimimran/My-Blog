@@ -1,10 +1,8 @@
 'use client'
+import SplitText from '@/app/components/ui/SplitText'
 
-import { useState } from 'react'
 
 export default function TechStackPage() {
-  const [activeTooltip, setActiveTooltip] = useState<number | null>(null)
-
   const techCategories = [
     {
       category: "Hardware & Performance Workstation",
@@ -69,62 +67,32 @@ export default function TechStackPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-paper">
-    <div className="max-w-5xl mx-auto px-6 py-16 md:py-20">
-      <div className="mb-12">
-        <h1 className="text-4xl font-light tracking-widest text-ink-900 uppercase mb-2">Tech Stack & Hardware</h1>
-        <p className="text-ink-500 text-sm sm:text-base">
-          Hover over any hardware component or software tool to see how it powers my development and creative workflows.
-        </p>
-      </div>
+    <main className="pb-24">
+      <header className="container-page pb-12 pt-12 md:pb-16 md:pt-20">
+        <h1 className="type-display max-w-[16ch] text-ink-900"><SplitText text={"Tech Stack & Hardware"} /></h1>
+        <p className="type-lead mt-6 max-w-[52ch]">The hardware and software behind my development and creative work, and what each one is actually used for.</p>
+      </header>
 
-      <div className="space-y-16">
-        {techCategories.map((group, groupIdx) => (
-          <div key={groupIdx}>
-            <h2 className="text-xs font-bold tracking-[0.2em] uppercase text-ink-900 mb-6 border-b border-ink-100 pb-3">
-              {group.category}
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {group.items.map((tool, itemIdx) => {
-                const uniqueKey = groupIdx * 100 + itemIdx
-                const isHovered = activeTooltip === uniqueKey
-
-                return (
-                  <div
-                    key={itemIdx}
-                    onMouseEnter={() => setActiveTooltip(uniqueKey)}
-                    onMouseLeave={() => setActiveTooltip(null)}
-                    className="relative bg-paper border border-ink-100 p-6 rounded-none shadow-sm hover:border-accent-600 transition-all cursor-pointer group flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="text-base font-medium text-ink-900 group-hover:text-accent-600 transition-colors">
-                          {tool.name}
-                        </h3>
-                        <span className="text-[10px] font-mono tracking-wider uppercase bg-ink-100 group-hover:bg-accent-600 group-hover:text-white px-2 py-1 rounded-none transition-colors">
-                          {tool.role}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Interactive Tooltip Reveal Area */}
-                    <div className="mt-4 pt-4 border-t border-ink-100">
-                      <p className="text-xs text-ink-700 leading-relaxed">
-                        <span className="font-semibold text-ink-900">Workflow Usage: </span>
-                        {tool.usage}
-                      </p>
-                    </div>
-
-                  
-                  </div>
-                )
-              })}
+      <div className="container-page">
+        {techCategories.map((group) => (
+          <section key={group.category} className="grid gap-8 border-t border-ink-100 py-14 md:grid-cols-12 md:gap-10 md:py-16">
+            <div className="md:col-span-4">
+              <h2 className="type-h3 max-w-[18ch] text-ink-900 md:sticky md:top-28">{group.category}</h2>
             </div>
-          </div>
+            <ul className="divide-y divide-ink-100 md:col-span-8">
+              {group.items.map((tool) => (
+                <li key={tool.name} className="py-6 first:pt-0 last:pb-0">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+                    <h3 className="text-lg font-medium tracking-tight text-ink-900">{tool.name}</h3>
+                    <span className="type-meta">{tool.role}</span>
+                  </div>
+                  <p className="mt-3 max-w-[62ch] text-[15px] leading-relaxed text-ink-700">{tool.usage}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
         ))}
       </div>
-    </div>
-    </div>
+    </main>
   )
 }

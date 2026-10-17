@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { DownloadSimple, Package } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
+import PageHeader from '@/app/components/ui/PageHeader'
+import FilterTabs from '@/app/components/ui/FilterTabs'
+import EmptyState from '@/app/components/EmptyState'
+import { SkeletonBlock } from '@/app/components/Skeleton'
 
 type Product = {
   id: string
@@ -15,10 +20,17 @@ type Product = {
   images: string[] | null
 }
 
+type Filter = 'All' | 'Digital' | 'Physical'
+const FILTERS: { key: Filter; label: string }[] = [
+  { key: 'All', label: 'All' },
+  { key: 'Digital', label: 'Digital' },
+  { key: 'Physical', label: 'Physical' },
+]
+
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [activeFilter, setActiveFilter] = useState<'All' | 'Digital' | 'Physical'>('All')
+  const [activeFilter, setActiveFilter] = useState<Filter>('All')
 
   useEffect(() => {
     async function fetchProducts() {
@@ -35,75 +47,66 @@ export default function ShopPage() {
     fetchProducts()
   }, [])
 
-  const filtered = activeFilter === 'All'
-    ? products
-    : products.filter((p) => p.type.toLowerCase() === activeFilter.toLowerCase())
+  const filtered = activeFilter === 'All' ? products : products.filter((p) => p.type.toLowerCase() === activeFilter.toLowerCase())
 
   return (
-    <main className="min-h-screen bg-paper font-sans">
-      <section className="bg-gradient-to-br from-ink-100 to-paper py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-ink-900 mb-6">
-            Store
-          </h1>
-          <p className="text-ink-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
-            Templates, design resources, and a few physical pieces — browse what's available below.
-          </p>
-        </div>
-      </section>
+    <main className="pb-24">
+      <PageHeader title="Store" description="Templates, design resources, and a few physical pieces. Browse what's available below." />
 
-      <section className="max-w-7xl mx-auto px-6 py-20">
-        <div className="flex justify-center gap-2 mb-12">
-          {(['All', 'Digital', 'Physical'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveFilter(tab)}
-              className={`text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-colors ${
-                activeFilter === tab ? 'bg-accent-600 text-white' : 'bg-ink-100 text-ink-500 hover:bg-ink-100'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+      <section className="container-page">
+        <FilterTabs label="Filter products by type" options={FILTERS} value={activeFilter} onChange={setActiveFilter} />
 
-        {isLoading ? (
-          <div className="text-center py-20 text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-ink-300 text-sm">
-            {products.length === 0 ? "Nothing in the store yet — check back soon." : "Nothing in this category yet."}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((product) => (
-              <Link
-                key={product.id}
-                href={`/shop/${product.slug}`}
-                className="group border border-ink-100 rounded-none overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-paper"
-              >
-                <div className="h-56 bg-ink-100 flex items-center justify-center overflow-hidden">
-                  {product.images?.[0] ? (
-                    <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  ) : (
-                    <span className="text-4xl">{product.type === 'digital' ? '📦' : '🛍️'}</span>
-                  )}
+        <div className="mt-12">
+          {isLoading ? (
+            <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="space-y-4">
+                  <SkeletonBlock className="aspect-square w-full" />
+                  <SkeletonBlock className="h-3 w-24" />
+                  <SkeletonBlock className="h-5 w-2/3" />
                 </div>
-                <div className="p-6 flex flex-col flex-1">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-1">
-                    {product.type}{product.category ? ` · ${product.category}` : ''}
-                  </span>
-                  <h2 className="text-base font-medium text-ink-900 mb-2">{product.name}</h2>
-                  <div className="mt-auto flex items-center gap-2">
-                    <span className="text-sm font-bold text-ink-900">${Number(product.price).toFixed(2)}</span>
-                    {product.compare_at_price && (
-                      <span className="text-xs text-ink-300 line-through">${Number(product.compare_at_price).toFixed(2)}</span>
+              ))}
+            </div>
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              icon="inbox"
+              title={products.length === 0 ? 'Nothing in the store yet' : 'Nothing in this category yet'}
+              description={products.length === 0 ? 'Check back soon.' : 'Try another category.'}
+            />
+          ) : (
+            <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+              {filtered.map((product) => (
+                <Link key={product.id} href={`/shop/${product.slug}`} data-cursor="View" className="group block">
+                  {/* Square frame + object-contain: the WHOLE design is always visible, never cropped. */}
+                  <div className="grid aspect-square place-items-center overflow-hidden bg-ink-50">
+                    {product.images?.[0] ? (
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
+                      />
+                    ) : product.type === 'digital' ? (
+                      <DownloadSimple size={48} weight="light" aria-hidden className="text-ink-300" />
+                    ) : (
+                      <Package size={48} weight="light" aria-hidden className="text-ink-300" />
                     )}
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+                  <p className="type-meta mt-5 flex gap-x-4 capitalize">
+                    <span>{product.type}</span>
+                    {product.category && <span>{product.category}</span>}
+                  </p>
+                  <h2 className="mt-2 text-lg font-medium tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{product.name}</h2>
+                  <p className="mt-2 flex items-baseline gap-3 font-mono tabular-nums">
+                    <span className="text-base text-ink-900">${Number(product.price).toFixed(2)}</span>
+                    {product.compare_at_price && (
+                      <span className="text-sm text-ink-500 line-through">${Number(product.compare_at_price).toFixed(2)}</span>
+                    )}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </main>
   )

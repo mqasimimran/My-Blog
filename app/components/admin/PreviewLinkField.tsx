@@ -21,13 +21,13 @@ export default function PreviewLinkField({ path, token }: { path: string; token:
 
   return (
     <div>
-      <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
+      <label className="block text-xs font-medium text-ink-500 mb-2">
         Shareable Preview Link <span className="text-ink-300 font-normal normal-case">(works even while unpublished)</span>
       </label>
       <div className="flex gap-2">
         <input type="text" readOnly value={url} onFocus={(e) => e.target.select()} className="w-full p-3 border border-ink-100 rounded-none text-xs text-ink-700 font-mono bg-paper" />
-        <button type="button" onClick={copy} className="shrink-0 px-4 py-2 bg-gray-900 text-white text-xs font-bold uppercase tracking-wider rounded-none hover:bg-accent-600 transition-colors">
-          {copied ? 'Copied ✓' : 'Copy'}
+        <button type="button" onClick={copy} className="shrink-0 px-4 py-2 bg-gray-900 text-white text-xs font-medium rounded-none hover:bg-accent-600 transition-colors">
+          {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
     </div>

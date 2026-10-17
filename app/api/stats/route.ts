@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+import { siteConfig } from '@/site.config'
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -24,7 +25,7 @@ export async function GET() {
   const totalReactions = (reactions.data || []).reduce((sum, a) => sum + (a.reaction_count || 0), 0)
 
   return NextResponse.json({
-    site: 'Muhammad Qasim Imran — Portfolio',
+    site: `${siteConfig.name} — Portfolio`,
     generated_at: new Date().toISOString(),
     stats: {
       projects: projects.count || 0,
@@ -36,8 +37,8 @@ export async function GET() {
     },
     links: {
       website: 'https://my-blog-beta-red.vercel.app',
-      github: 'https://github.com/mqasimimran',
-      linkedin: 'https://linkedin.com/in/muhammadqasimimran',
+      github: siteConfig.social.github,
+      linkedin: siteConfig.social.linkedin,
     },
   }, {
     headers: {

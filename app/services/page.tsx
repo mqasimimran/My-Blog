@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import Image from '@/components/SafeImage'
 import { supabase } from '@/lib/supabase'
 import AvailabilityBadge from '@/app/components/AvailabilityBadge'
-import MagneticButton from '@/app/components/MagneticButton'
-import { SkeletonCardGrid } from '@/app/components/Skeleton'
+import { SkeletonBlogList } from '@/app/components/Skeleton'
+import { ButtonLink } from '@/app/components/ui/Button'
+import EmptyState from '@/app/components/EmptyState'
 import QuoteCalculator from '@/app/components/QuoteCalculator'
+import { ArrowUpRight, Check, Sparkle } from '@phosphor-icons/react'
+import SplitText from '@/app/components/ui/SplitText'
 
 type ServicePackage = {
   id: string
@@ -30,22 +33,22 @@ type Service = {
 const PROCESS = [
   {
     step: '01',
-    title: 'Discovery Call',
+    title: 'Discovery call',
     description: "A short conversation to understand what you're trying to build and whether it's a good fit.",
   },
   {
     step: '02',
-    title: 'Proposal & Timeline',
-    description: 'A clear scope, timeline, and quote — no surprises once work starts.',
+    title: 'Proposal and timeline',
+    description: 'A clear scope, timeline, and quote. No surprises once work starts.',
   },
   {
     step: '03',
-    title: 'Design & Build',
+    title: 'Design and build',
     description: "Regular check-ins as the work progresses, so you're never waiting in the dark for a big reveal.",
   },
   {
     step: '04',
-    title: 'Delivery & Support',
+    title: 'Delivery and support',
     description: 'Final handoff plus a short support window to fix anything that comes up after launch.',
   },
 ]
@@ -76,158 +79,106 @@ export default function ServicesPage() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-paper font-sans">
+    <main>
+      <header className="container-page pb-12 pt-12 md:pb-16 md:pt-20">
+        <AvailabilityBadge />
+        <h1 className="type-display mt-6 text-ink-900"><SplitText text={"Services"} /></h1>
+        <p className="type-lead mt-6 max-w-[52ch]">
+          I take on a limited number of freelance projects across development and design. Pick the service that matches what you need, or reach out if you&rsquo;re not sure.
+        </p>
+      </header>
 
-      {/* Header */}
-      <section className="bg-gradient-to-br from-ink-100 to-paper py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="flex justify-center mb-6">
-            <AvailabilityBadge />
-          </div>
-          <h1 className="text-4xl md:text-6xl font-light tracking-wide uppercase text-ink-900 mb-6">
-            Services
-          </h1>
-          <p className="text-ink-500 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
-            I take on a limited number of freelance projects across development and design.
-            Pick the service that matches what you need, or reach out if you're not sure.
-          </p>
-        </div>
-      </section>
-
-      {/* Gig Cards */}
-      <section className="max-w-7xl mx-auto px-6 py-20">
+      {/* Services: one full-width row each */}
+      <section className="container-page pb-20 md:pb-28">
         {isLoading ? (
-          <SkeletonCardGrid count={6} columns={3} />
+          <SkeletonBlogList count={2} />
         ) : services.length === 0 ? (
-          <div className="text-center py-20 text-ink-300 text-sm">
-            No services listed yet.
-          </div>
+          <EmptyState icon="inbox" title="No services listed yet" description="Get in touch and tell me what you need." />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ul className="border-b border-ink-100">
             {services.map((service) => {
               const packagePrices = (service.service_packages || [])
                 .map((p) => parsePrice(p.price))
                 .filter((n): n is number => n !== null)
-              const startingAt = packagePrices.length > 0
-                ? `Starting at $${Math.min(...packagePrices)}`
-                : service.starting_price
-
+              const startingAt = packagePrices.length > 0 ? `Starting at $${Math.min(...packagePrices)}` : service.starting_price
               const hasPackages = (service.service_packages || []).length > 0
-              const includesList = service.includes
-                ? service.includes.split('\n').map((line) => line.trim()).filter(Boolean)
-                : []
+              const includesList = service.includes ? service.includes.split('\n').map((line) => line.trim()).filter(Boolean) : []
+              const href = hasPackages && service.slug ? `/services/${service.slug}` : '/contact'
 
-              const cardInner = (
-                <>
-                  <div className="relative h-40 bg-ink-100 flex items-center justify-center overflow-hidden">
-                    {service.cover_image ? (
-                      <Image src={service.cover_image} alt={service.name} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
-                    ) : (
-                      <span className="text-5xl">{service.icon || '✦'}</span>
-                    )}
-                  </div>
-                  <div className="p-6 flex flex-col flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      {!service.cover_image && service.icon && <span className="text-xl">{service.icon}</span>}
-                      <h2 className="text-xl font-medium text-ink-900">{service.name}</h2>
-                    </div>
-                    {service.tagline && (
-                      <p className="text-accent-600 text-xs font-bold tracking-[0.1em] uppercase mb-3">
-                        {service.tagline}
-                      </p>
-                    )}
-                    {service.description && (
-                      <p className="text-sm text-ink-700 leading-relaxed mb-4 line-clamp-3">
-                        {service.description}
-                      </p>
-                    )}
-                    {!hasPackages && includesList.length > 0 && (
-                      <ul className="space-y-1.5 mb-4">
-                        {includesList.slice(0, 4).map((item) => (
-                          <li key={item} className="flex items-start gap-2 text-xs text-ink-500">
-                            <span className="text-accent-600 mt-0.5">→</span>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    <div className="mt-auto pt-4 border-t border-ink-100 flex items-center justify-between">
-                      {startingAt && (
-                        <span className="text-xs font-bold uppercase tracking-widest text-ink-900">{startingAt}</span>
+              return (
+                <li key={service.id} className="border-t border-ink-100">
+                  <Link href={href} data-cursor="View" className="group grid gap-8 py-10 md:grid-cols-12 md:gap-12 md:py-14">
+                    <div className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-ink-50 md:col-span-5">
+                      {service.cover_image ? (
+                        <Image src={service.cover_image} alt={service.name} fill sizes="(max-width: 768px) 100vw, 40vw" className="object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+                      ) : service.icon ? (
+                        <span className="text-5xl">{service.icon}</span>
+                      ) : (
+                        <Sparkle size={48} weight="light" aria-hidden className="text-ink-300" />
                       )}
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600">
-                        {hasPackages ? 'View Packages →' : 'Get In Touch →'}
-                      </span>
                     </div>
-                  </div>
-                </>
-              )
 
-              return hasPackages && service.slug ? (
-                <Link
-                  key={service.id}
-                  href={`/services/${service.slug}`}
-                  className="group border border-ink-100 rounded-none overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-paper"
-                >
-                  {cardInner}
-                </Link>
-              ) : (
-                <Link
-                  key={service.id}
-                  href="/contact"
-                  className="group border border-ink-100 rounded-none overflow-hidden flex flex-col hover:shadow-lg transition-shadow bg-paper"
-                >
-                  {cardInner}
-                </Link>
+                    <div className="flex flex-col md:col-span-7">
+                      <h2 className="type-h2 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{service.name}</h2>
+                      {service.tagline && <p className="mt-3 text-base font-medium text-accent-600">{service.tagline}</p>}
+                      {service.description && <p className="mt-5 max-w-[56ch] text-base leading-relaxed text-ink-700">{service.description}</p>}
+                      {!hasPackages && includesList.length > 0 && (
+                        <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+                          {includesList.slice(0, 6).map((item) => (
+                            <li key={item} className="flex items-start gap-2.5 text-[15px] text-ink-700">
+                              <Check size={16} weight="bold" aria-hidden className="mt-1 shrink-0 text-accent-600" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3 md:mt-auto md:pt-8">
+                        {startingAt && <span className="font-mono text-sm tabular-nums text-ink-900">{startingAt}</span>}
+                        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-900 transition-colors duration-300 group-hover:text-accent-600">
+                          {hasPackages ? 'View packages' : 'Get in touch'}
+                          <ArrowUpRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 ease-[var(--ease-smooth)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                </li>
               )
             })}
-          </div>
+          </ul>
         )}
       </section>
 
       {/* Process */}
-      <section className="bg-paper border-t border-ink-100 py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-12 text-center">
-            How It Works
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {PROCESS.map((item) => (
-              <div key={item.step}>
-                <div className="text-4xl font-light text-ink-100 mb-3">{item.step}</div>
-                <h3 className="text-lg font-medium text-ink-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-ink-500 leading-relaxed">{item.description}</p>
-              </div>
+      <section className="bg-ink-50">
+        <div className="container-page section-y">
+          <h2 className="type-h2 text-ink-900"><SplitText text={"How it works"} /></h2>
+          <ol className="mt-14 grid grid-cols-1 gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {PROCESS.map((item, i) => (
+              <li key={item.step} className="border-t-2 border-ink-900 pt-6">
+                <p className="type-meta">Step {i + 1}</p>
+                <h3 className="type-h3 mt-3 text-ink-900">{item.title}</h3>
+                <p className="mt-3 text-[15px] leading-relaxed text-ink-700">{item.description}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </section>
 
-      {/* Instant Quote Calculator */}
+      {/* Instant quote calculator */}
       <QuoteCalculator />
 
-      {/* CTA */}
-      <section className="bg-gray-900 text-white py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl md:text-5xl font-light tracking-wide uppercase">
-            Have A Project In Mind?
-          </h2>
-          <p className="text-gray-400 text-sm md:text-base leading-relaxed max-w-xl mx-auto">
-            Tell me a bit about what you need and I'll get back to you with a quote and timeline.
-          </p>
-          <div className="pt-4">
-            <MagneticButton>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 bg-accent-600 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded-none hover:bg-white hover:text-gray-900 transition-colors"
-              >
-                Request A Quote <span>↗</span>
-              </Link>
-            </MagneticButton>
+      {/* Call to action */}
+      <section className="border-t border-ink-100">
+        <div className="container-page section-y grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-7">
+            <h2 className="type-h2 text-ink-900"><SplitText text={"Have a project in mind?"} /></h2>
+            <p className="type-lead mt-5 max-w-[48ch]">Tell me a bit about what you need and I&rsquo;ll get back to you with a quote and timeline.</p>
+          </div>
+          <div className="lg:col-span-5 lg:justify-self-end">
+            <ButtonLink href="/contact">Request a quote</ButtonLink>
           </div>
         </div>
       </section>
-
     </main>
   )
 }

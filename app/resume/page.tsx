@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { siteConfig } from '@/site.config'
+import { ArrowUpRight, DownloadSimple, X } from '@phosphor-icons/react'
+import SplitText from '@/app/components/ui/SplitText'
 
 // Define the exact shape of your data to satisfy TypeScript
 interface ResumeItem {
@@ -61,153 +64,121 @@ export default function Resume() {
 
   if (loading) return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">Loading Resume...</div>
 
+  // One resume section: its name on the left, the entries on the right.
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <section className="grid gap-8 border-t border-ink-100 py-14 md:grid-cols-12 md:gap-10 md:py-16">
+      <h2 className="type-h3 text-ink-900 md:col-span-3">{title}</h2>
+      <div className="md:col-span-9">{children}</div>
+    </section>
+  )
+
   return (
-    <div className="min-h-screen bg-paper">
-    <div className="max-w-4xl mx-auto px-6 py-20 relative">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+    <main className="pb-24">
+      <header className="container-page flex flex-col gap-8 pb-12 pt-12 md:flex-row md:items-end md:justify-between md:pb-16 md:pt-20">
         <div>
-          <h1 className="text-4xl font-light tracking-widest text-ink-900 uppercase mb-2">Resume</h1>
-          <p className="text-ink-500">Computer Science undergraduate, developer, and technical creator.</p>
+          <h1 className="type-display text-ink-900"><SplitText text={"Resume"} /></h1>
+          <p className="type-lead mt-6 max-w-[48ch]">Computer Science undergraduate, developer, and technical creator.</p>
         </div>
-        
         <a
           href="/resume.pdf"
-          download="Muhammad_Qasim_Imran_Resume.pdf"
-          className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-bold uppercase tracking-[0.15em] px-5 py-3 rounded-none hover:bg-accent-600 transition-colors shadow-sm"
+          download={`${siteConfig.name.replace(/\s+/g, '_')}_Resume.pdf`}
+          className="group inline-flex h-12 shrink-0 items-center gap-2 self-start bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px md:self-auto"
         >
-          <span>Download CV</span>
-          <span>↓</span>
+          Download CV
+          <DownloadSimple size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:translate-y-0.5" />
         </a>
-      </div>
+      </header>
 
-      <section className="mb-16">
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
-          Experience & Leadership
-        </h2>
-        <div className="relative border-l border-ink-100 ml-4 space-y-12">
-          {data.experiences.map((item) => (
-            <div key={item.id} className="relative pl-8 group">
-              <div className="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-ink-100 group-hover:bg-accent-600 transition-colors ring-4 ring-white" />
-              <span className="inline-block text-xs font-mono text-ink-300 tracking-wider uppercase mb-1">{item.period}</span>
-              <h3 className="text-lg font-medium text-ink-900">{item.role}</h3>
-              <p className="text-sm font-semibold text-accent-600 mb-2">{item.company}</p>
-              <p className="text-sm text-ink-700 leading-relaxed">{item.description}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <div id="resume-print-area" className="container-page">
+        <Section title="Experience and leadership">
+          <ol className="divide-y divide-ink-100">
+            {data.experiences.map((item) => (
+              <li key={item.id} className="py-8 first:pt-0 last:pb-0">
+                <p className="type-meta">{item.period}</p>
+                <h3 className="mt-2 text-xl font-medium tracking-tight text-ink-900">{item.role}</h3>
+                <p className="mt-1 text-[15px] font-medium text-accent-600">{item.company}</p>
+                <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed text-ink-700">{item.description}</p>
+              </li>
+            ))}
+          </ol>
+        </Section>
 
-      <section className="mb-16">
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
-          Key Projects
-        </h2>
-        <div className="space-y-10">
-          {data.projects.map((item) => (
-            <div key={item.id} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-xs font-medium text-accent-600 tracking-wider uppercase md:pt-1">{item.tech}</div>
-              <div className="md:col-span-3">
-                <h3 className="text-lg font-medium text-ink-900">{item.title}</h3>
-                <p className="text-ink-700 text-sm leading-relaxed mt-1">{item.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+        <Section title="Key projects">
+          <ul className="divide-y divide-ink-100">
+            {data.projects.map((item) => (
+              <li key={item.id} className="py-8 first:pt-0 last:pb-0">
+                <h3 className="text-xl font-medium tracking-tight text-ink-900">{item.title}</h3>
+                <p className="type-meta mt-2">{item.tech}</p>
+                <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed text-ink-700">{item.description}</p>
+              </li>
+            ))}
+          </ul>
+        </Section>
 
-      <section className="mb-16">
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
-          Education
-        </h2>
-        <div className="space-y-10">
-          {data.education.map((item) => (
-            <div key={item.id} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="text-xs font-medium text-ink-300 tracking-wider uppercase md:pt-1">{item.period}</div>
-              <div className="md:col-span-3">
-                <h3 className="text-lg font-medium text-ink-900">{item.degree}</h3>
-                <p className="text-sm text-ink-500 mb-2">{item.institution}</p>
-                <p className="text-ink-700 text-sm leading-relaxed">{item.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+        <Section title="Education">
+          <ul className="divide-y divide-ink-100">
+            {data.education.map((item) => (
+              <li key={item.id} className="py-8 first:pt-0 last:pb-0">
+                <p className="type-meta">{item.period}</p>
+                <h3 className="mt-2 text-xl font-medium tracking-tight text-ink-900">{item.degree}</h3>
+                <p className="mt-1 text-[15px] text-ink-500">{item.institution}</p>
+                {item.description && <p className="mt-3 max-w-[64ch] text-[15px] leading-relaxed text-ink-700">{item.description}</p>}
+              </li>
+            ))}
+          </ul>
+        </Section>
 
-      <section>
-        <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-ink-900 mb-8 border-b border-ink-100 pb-4">
-          Licenses & Certifications
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {data.certifications.map((cert) => {
-            const hasVerifyLink = !!cert.verify_url
-            const hasImage = !!cert.image_url
-            const cardClass = `bg-paper border border-ink-100 p-4 rounded-none shadow-sm hover:border-accent-600 transition-all flex flex-col justify-between group ${
-              hasVerifyLink || hasImage ? 'cursor-pointer' : ''
-            }`
-            const cardContent = (
-              <>
-                <div>
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-sm font-medium text-ink-900 group-hover:text-accent-600 transition-colors">{cert.title}</h3>
+        <Section title="Licenses and certifications">
+          <ul className="border-b border-ink-100">
+            {data.certifications.map((cert) => {
+              const hasVerifyLink = !!cert.verify_url
+              const hasImage = !!cert.image_url
+              const rowClass = 'group flex w-full items-start justify-between gap-6 border-t border-ink-100 py-5 text-left'
+              const row = (
+                <>
+                  <span className="min-w-0">
+                    <span className="block text-base font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{cert.title}</span>
+                    <span className="mt-1 block text-[15px] text-ink-500">{cert.issuer}</span>
+                  </span>
+                  <span className="flex shrink-0 flex-col items-end gap-2 text-right">
+                    {cert.date && <span className="type-meta">Issued {cert.date}</span>}
                     {(hasVerifyLink || hasImage) && (
-                      <span className="text-xs text-ink-300 group-hover:text-accent-600 transition-colors ml-2 font-mono">
-                        {hasVerifyLink ? 'Verify ↗' : 'View ↗'}
+                      <span className="inline-flex items-center gap-1 text-sm font-medium text-ink-700 transition-colors duration-300 group-hover:text-accent-600">
+                        {hasVerifyLink ? 'Verify' : 'View'}
+                        <ArrowUpRight size={14} weight="bold" aria-hidden />
                       </span>
                     )}
-                  </div>
-                  <p className="text-xs text-ink-500 mt-1">{cert.issuer}</p>
-                </div>
-                <div className="text-[10px] tracking-wider uppercase text-ink-300 mt-4">Issued {cert.date}</div>
-              </>
-            )
-
-            if (hasVerifyLink) {
-              return (
-                <a key={cert.id} href={cert.verify_url} target="_blank" rel="noopener noreferrer" className={cardClass}>
-                  {cardContent}
-                </a>
+                  </span>
+                </>
               )
-            }
-
-            if (hasImage) {
               return (
-                <div
-                  key={cert.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setSelectedImage(cert.image_url || null)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault()
-                      setSelectedImage(cert.image_url || null)
-                    }
-                  }}
-                  className={cardClass}
-                >
-                  {cardContent}
-                </div>
+                <li key={cert.id}>
+                  {hasVerifyLink ? (
+                    <a href={cert.verify_url} target="_blank" rel="noopener noreferrer" className={rowClass}>{row}</a>
+                  ) : hasImage ? (
+                    <button type="button" onClick={() => setSelectedImage(cert.image_url || null)} className={rowClass}>{row}</button>
+                  ) : (
+                    <div className={rowClass}>{row}</div>
+                  )}
+                </li>
               )
-            }
-
-            return (
-              <div key={cert.id} className={cardClass}>
-                {cardContent}
-              </div>
-            )
-          })}
-        </div>
-      </section>
+            })}
+          </ul>
+        </Section>
+      </div>
 
       {selectedImage && (
-        <div onClick={() => setSelectedImage(null)} className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="relative max-w-4xl w-full bg-paper p-2 rounded-none shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <button onClick={() => setSelectedImage(null)} className="absolute -top-10 right-0 text-white text-xl font-bold hover:text-accent-600 transition-colors">✕ Close</button>
-            <div className="bg-ink-100 rounded-none overflow-hidden flex items-center justify-center min-h-[300px] relative">
-              <img src={selectedImage} alt="Credential" className="max-h-[80vh] w-auto object-contain mx-auto rounded-none" />
+        <div role="dialog" aria-modal="true" aria-label="Certificate" onClick={() => setSelectedImage(null)} className="fixed inset-0 z-overlay flex items-center justify-center bg-zinc-950/90 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
+            <button autoFocus onClick={() => setSelectedImage(null)} aria-label="Close" className="absolute -top-12 right-0 grid h-10 w-10 place-items-center text-white transition-colors duration-200 hover:text-accent-600">
+              <X size={24} aria-hidden />
+            </button>
+            <div className="flex min-h-[300px] items-center justify-center bg-paper-raised p-2">
+              <img src={selectedImage} alt="Certificate" className="mx-auto max-h-[80vh] w-auto object-contain" />
             </div>
           </div>
         </div>
       )}
-    </div>
-    </div>
+    </main>
   )
 }

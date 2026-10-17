@@ -118,7 +118,7 @@ export default function CommandPalette() {
                 }`}
               >
                 <span className="text-sm text-ink-900">{item.title}</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600">{item.type}</span>
+                <span className="text-xs font-medium text-accent-600">{item.type}</span>
               </button>
             ))
           )}

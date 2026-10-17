@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { SkeletonMasonryGrid } from '@/app/components/Skeleton'
+import SectionHeader from '@/app/components/ui/SectionHeader'
+import { ButtonLink } from '@/app/components/ui/Button'
 
 type DesignItem = {
   id: string
@@ -33,60 +35,44 @@ export default function FeaturedDesigns() {
     fetchFeaturedDesigns()
   }, [])
 
-  // Nothing marked as featured yet — don't show an empty section on the homepage
+  // Nothing marked as featured yet: don't show an empty section on the homepage
   if (!isLoading && designs.length === 0) return null
 
   return (
-    <section className="max-w-7xl mx-auto px-6 py-20 font-sans bg-paper border-t border-ink-100">
+    <section className="border-t border-ink-100">
+      <div className="container-page section-y">
+        <SectionHeader
+          title="Featured design"
+          meta="(Selected pieces)"
+          description="A few pieces from the visual design side: brand identities, UI/UX, and promotional work."
+          action={<ButtonLink href="/design" variant="text">View full gallery</ButtonLink>}
+        />
 
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-8">
-        <div className="max-w-lg">
-          <h2 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-3">
-            Featured Design
-          </h2>
-          <p className="text-sm text-ink-500 leading-relaxed">
-            A few pieces from the visual design side — brand identities, UI/UX, and promotional work.
-          </p>
+        <div className="mt-14">
+          {isLoading ? (
+            <SkeletonMasonryGrid count={4} />
+          ) : (
+            <div className={`columns-1 gap-6 sm:columns-2 ${designs.length <= 2 ? 'lg:columns-2' : designs.length === 3 ? 'lg:columns-3' : 'lg:columns-4'}`}>
+              {designs.map((item) => (
+                <Link href={`/design?item=${item.id}`} key={item.id} data-cursor="View" className="group mb-10 block break-inside-avoid">
+                  <div className="overflow-hidden bg-ink-50">
+                    {item.images?.[0] && (
+                      <img
+                        src={item.images[0]}
+                        alt={item.title}
+                        loading="lazy"
+                        className="h-auto w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
+                      />
+                    )}
+                  </div>
+                  <h3 className="mt-3 text-sm font-medium tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{item.title}</h3>
+                  <p className="type-meta mt-0.5">{item.category}</p>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
-        <Link
-          href="/design"
-          className="text-[10px] font-bold tracking-widest uppercase text-ink-900 hover:text-accent-600 transition-colors flex items-center gap-1 shrink-0"
-        >
-          View Full Gallery ↗
-        </Link>
       </div>
-
-      {isLoading ? (
-        <SkeletonMasonryGrid count={4} />
-      ) : (
-        <div className="columns-1 sm:columns-2 lg:columns-4 gap-6 space-y-6">
-          {designs.map((item) => (
-            <Link
-              href={`/design?item=${item.id}`}
-              key={item.id}
-              className="group break-inside-avoid relative block rounded-none overflow-hidden bg-ink-100 shadow-sm hover:shadow-xl transition-shadow"
-            >
-              {item.images?.[0] && (
-                <img
-                  src={item.images[0]}
-                  alt={item.title}
-                  loading="lazy"
-                  className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700 ease-out"
-                />
-              )}
-              <div className="absolute inset-0 bg-gray-900/0 group-hover:bg-gray-900/70 transition-colors duration-300 flex flex-col justify-end p-5 opacity-0 group-hover:opacity-100">
-                <span className="text-[10px] font-mono tracking-widest uppercase text-accent-600 mb-1">
-                  {item.category}
-                </span>
-                <h3 className="text-white text-sm font-medium tracking-wide">
-                  {item.title}
-                </h3>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
-
     </section>
   )
 }

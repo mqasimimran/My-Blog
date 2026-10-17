@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { siteConfig } from '@/site.config'
 
 export default function ResumeDownloadBuilder() {
  const [data, setData] = useState<{
@@ -18,13 +19,8 @@ export default function ResumeDownloadBuilder() {
   const [selectedIds, setSelectedIds] = useState<{ [key: string]: boolean }>({})
   const [loading, setLoading] = useState(true)
 
-  const socialLinks = {
-    linkedin: "https://linkedin.com/in/muhammad-qasim-imran",
-    github: "https://github.com/qasimdevelops",
-    portfolio: "https://my-blog-beta-red.vercel.app/",
-    email: "qasimshibli12@gmail.com",
-    phone: "92-324-9453952"
-  }
+  // Contact details live in site.config.ts (siteConfig.resume)
+  const socialLinks = siteConfig.resume
 
   useEffect(() => {
     async function fetchAllData() {

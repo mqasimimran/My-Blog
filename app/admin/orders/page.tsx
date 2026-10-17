@@ -6,13 +6,7 @@ import Link from 'next/link'
 import AdminNav from '@/app/admin/AdminNav'
 import { logActivity } from '@/lib/logActivity'
 import { adminApi } from '@/lib/adminApi'
-
-const METHOD_LABELS: Record<string, string> = {
-  jazzcash: 'JazzCash',
-  easypaisa: 'EasyPaisa',
-  bank_transfer: 'Bank Transfer',
-  payoneer: 'Payoneer',
-}
+import { labelFor } from '@/lib/paymentMethods'
 
 type Order = {
   id: string
@@ -50,7 +44,7 @@ export default function AdminOrdersPage() {
   }, [status])
 
   async function verifyAndRelease(order: Order) {
-    const methodLabel = METHOD_LABELS[order.payment_method] || order.payment_method
+    const methodLabel = labelFor(order.payment_method)
     const amountDisplay = order.currency_local === 'PKR' && order.amount_local
       ? `Rs ${Number(order.amount_local).toLocaleString('en-PK')}`
       : `$${order.product_price}`
@@ -67,7 +61,9 @@ export default function AdminOrdersPage() {
       if (res.ok) {
         setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'paid' } : o))
         logActivity({ action: 'order_paid', entityType: 'order', entityLabel: order.order_number })
-        if (data.emailSent) {
+        if (data.alreadyPaid) {
+          alert('This order was already marked paid — nothing was sent again.')
+        } else if (data.emailSent) {
           alert(`✓ Order marked paid, and the download link was emailed to ${order.customer_email}.`)
         } else {
           alert(
@@ -88,7 +84,7 @@ export default function AdminOrdersPage() {
   }
 
   async function rejectOrder(order: Order) {
-    const methodLabel = METHOD_LABELS[order.payment_method] || order.payment_method
+    const methodLabel = labelFor(order.payment_method)
     if (!confirm(`Mark this order as rejected? Use this if you can't find this transaction via ${methodLabel}.`)) return
     try {
       await adminApi.update('orders', order.id, { status: 'rejected' })
@@ -167,7 +163,7 @@ export default function AdminOrdersPage() {
                     </div>
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-ink-300 mb-1">Payment</p>
-                      <p className="text-ink-900">{METHOD_LABELS[order.payment_method] || order.payment_method}</p>
+                      <p className="text-ink-900">{labelFor(order.payment_method)}</p>
                       <p className="text-ink-500 text-xs font-mono">TID: {order.customer_transaction_id}</p>
                     </div>
                   </div>

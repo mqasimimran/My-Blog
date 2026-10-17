@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { SkeletonTextCardGrid } from '@/app/components/Skeleton'
 import EmptyState from '@/app/components/EmptyState'
+import SplitText from '@/app/components/ui/SplitText'
 
 type Result = {
   id: string
@@ -72,17 +73,20 @@ function SearchResults() {
   const tabs: Array<'All' | Result['type']> = ['All', 'Project', 'Blog', 'Design', 'Service']
 
   return (
-    <main className="min-h-screen bg-paper font-sans pt-24 pb-24 px-6">
-      <div className="max-w-4xl mx-auto">
+    <main className="pb-24 pt-12 md:pt-20">
+      <div className="container-page">
+        <h1 className="type-display text-ink-900"><SplitText text={"Search"} /></h1>
 
-        <form onSubmit={handleSearchSubmit} className="mb-10">
+        <form onSubmit={handleSearchSubmit} role="search" className="mb-12 mt-10">
+          <label htmlFor="site-search" className="sr-only">Search the site</label>
           <input
+            id="site-search"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search projects, blog posts, design work, services..."
+            placeholder="Projects, posts, design work, services"
             autoFocus
-            className="w-full text-2xl md:text-3xl font-light border-b-2 border-ink-100 focus:border-accent-600 outline-none py-3 transition-colors"
+            className="w-full border-b-2 border-ink-900 bg-transparent py-3 text-2xl font-semibold tracking-[-0.03em] text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-300 focus:border-accent-600 md:text-4xl"
           />
         </form>
 
@@ -94,7 +98,7 @@ function SearchResults() {
                 <button
                   key={tab}
                   onClick={() => setActiveType(tab)}
-                  className={`text-[11px] font-bold uppercase tracking-widest px-4 py-2 rounded-full transition-colors ${
+                  className={`text-xs font-medium px-4 py-2 rounded-full transition-colors ${
                     activeType === tab ? 'bg-accent-600 text-white' : 'bg-ink-100 text-ink-500 hover:bg-ink-100'
                   }`}
                 >
@@ -108,7 +112,7 @@ function SearchResults() {
         {isLoading ? (
           <SkeletonTextCardGrid count={6} columns={2} />
         ) : !q ? (
-          <EmptyState icon="search" title="Search the whole site" description="Projects, blog posts, design work, and services — all in one place." />
+          <EmptyState icon="search" title="Search the whole site" description="Projects, blog posts, design work, and services, all in one place." />
         ) : filtered.length === 0 ? (
           <EmptyState icon="search" title={`No results for "${query}"`} description="Try a different word, or browse from the main nav instead." />
         ) : (
@@ -119,7 +123,7 @@ function SearchResults() {
                 href={result.url}
                 className="border border-ink-100 rounded-none p-6 hover:border-accent-600/40 hover:shadow-sm transition-all block"
               >
-                <span className="text-[10px] font-bold uppercase tracking-widest text-accent-600 mb-2 block">
+                <span className="text-xs font-medium text-accent-600 mb-2 block">
                   {result.type}
                 </span>
                 <h2 className="text-base font-medium text-ink-900 mb-1 leading-snug">{result.title}</h2>
@@ -139,7 +143,7 @@ export default function SearchPage() {
   return (
     <Suspense fallback={
       <main className="min-h-screen bg-paper flex items-center justify-center">
-        <p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p>
+        <p className="text-ink-300 text-xs font-mono">Loading...</p>
       </main>
     }>
       <SearchResults />

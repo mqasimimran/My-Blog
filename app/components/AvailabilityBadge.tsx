@@ -22,13 +22,14 @@ export default function AvailabilityBadge() {
 
   if (isLoading || !available) return null
 
+  // The dot is a real status signal (availability), not decoration, so it is the one place green appears.
   return (
-    <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full">
-      <span className="relative flex h-2 w-2">
-        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+    <p className="inline-flex items-center gap-2.5 text-sm font-medium text-ink-700">
+      <span className="relative flex h-2 w-2" aria-hidden>
+        <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-60 motion-safe:animate-ping" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
       </span>
       {message}
-    </div>
+    </p>
   )
 }

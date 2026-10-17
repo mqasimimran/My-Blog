@@ -2,24 +2,42 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { List, MagnifyingGlass, X } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 import DarkModeToggle from '@/app/components/DarkModeToggle'
+import { siteConfig } from '@/site.config'
 
 type SearchItem = { title: string; type: string; url: string }
+
+// Labels and order are part of the site's structure. Do not rename without a reason.
+const NAV = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'My Journey' },
+  { href: '/shop', label: 'Shop' },
+  { href: '/design', label: 'Design' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/tech-stack', label: 'Tech Stack' },
+  { href: '/resume', label: 'Resume' },
+  { href: '/services', label: 'Services' },
+  { href: '/contact', label: 'Contact' },
+]
 
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [searchableItems, setSearchableItems] = useState<SearchItem[]>([])
+  const searchRef = useRef<HTMLInputElement>(null)
 
-  const isActive = (path: string) => pathname === path
+  // "/blog/some-post" still highlights Blog; "/" only matches the home page itself.
+  const isActive = (path: string) => (path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(path + '/'))
 
   // Pull live titles from Supabase so search never goes stale when new
-  // content is published — fetched once when the search box is first opened.
+  // content is published. Fetched once, when the search box is first opened.
   useEffect(() => {
     if (!isSearchOpen || searchableItems.length > 0) return
 
@@ -37,7 +55,6 @@ export default function Navbar() {
         ...(designsRes.data || []).map((d) => ({ title: d.title, type: 'Design', url: `/design?item=${d.id}` })),
         ...(servicesRes.data || []).map((s) => ({ title: s.name, type: 'Service', url: s.slug ? `/services/${s.slug}` : '/services' })),
       ]
-
       setSearchableItems(items)
     }
 
@@ -46,125 +63,181 @@ export default function Navbar() {
 
   const filteredSuggestions = useMemo(() => {
     if (!searchQuery.trim()) return []
-    return searchableItems.filter(item => 
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    ).slice(0, 6)
+    return searchableItems.filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 6)
   }, [searchQuery, searchableItems])
+
+  const closeAll = () => {
+    setIsSearchOpen(false)
+    setSearchQuery('')
+    setIsMenuOpen(false)
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`)
-      setIsSearchOpen(false)
-      setSearchQuery('')
-      setIsMobileMenuOpen(false)
+      closeAll()
     }
   }
 
   const handleSelectSuggestion = (url: string) => {
     router.push(url)
-    setIsSearchOpen(false)
-    setSearchQuery('')
-    setIsMobileMenuOpen(false)
+    closeAll()
   }
 
+  // Close menus when the page changes, and on Escape.
+  useEffect(() => {
+    setIsMenuOpen(false)
+    setIsSearchOpen(false)
+  }, [pathname])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeAll()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // Stop the page behind the full-screen menu from scrolling.
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isMenuOpen])
+
+  useEffect(() => {
+    if (isSearchOpen) searchRef.current?.focus()
+  }, [isSearchOpen])
+
+  const links = NAV.filter((n) => n.href !== '/contact')
+
   return (
-    <header className="px-6 md:px-8 py-6 bg-paper border-b border-ink-100 sticky top-0 z-50">
-      <nav className="max-w-[1400px] mx-auto flex items-center justify-between">
-        
-        {/* Mobile Hamburger Button */}
-        <div className="flex items-center lg:hidden">
-          <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="text-gray-700 hover:text-accent-600 focus:outline-none p-1"
-            aria-label="Toggle Menu"
+    <>
+      <header className="fixed inset-x-0 top-0 z-nav">
+        {/* A row of boxed cells, like a printed grid. Contact is the solid cell at the end. */}
+        <nav aria-label="Main" className="relative mx-auto flex h-12 max-w-[1360px] items-stretch border-b border-ink-100 bg-paper/90 backdrop-blur-xl md:border-x">
+          <Link href="/" className="flex items-center px-4 font-display text-lg uppercase leading-none tracking-wide text-ink-900 xl:hidden">
+            {siteConfig.firstName}
+          </Link>
+
+          <ul className="hidden flex-1 items-stretch divide-x divide-ink-100 xl:flex">
+            {links.map((item) => (
+              <li key={item.href} className="flex-1">
+                <Link
+                  href={item.href}
+                  aria-current={isActive(item.href) ? 'page' : undefined}
+                  className={`flex h-full items-center justify-center whitespace-nowrap px-2 text-[11.5px] font-medium uppercase tracking-[0.08em] transition-colors duration-200 ${
+                    isActive(item.href) ? 'bg-ink-50 text-ink-900' : 'text-ink-500 hover:bg-ink-50 hover:text-ink-900'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
+          <div className="ml-auto flex items-stretch divide-x divide-ink-100 border-l border-ink-100 xl:ml-0">
+            <button
+              onClick={() => setIsSearchOpen((v) => !v)}
+              aria-label={isSearchOpen ? 'Close search' : 'Open search'}
+              aria-expanded={isSearchOpen}
+              className="grid w-12 place-items-center text-ink-700 transition-colors duration-200 hover:bg-ink-50 hover:text-ink-900"
+            >
+              <MagnifyingGlass size={18} weight="regular" aria-hidden />
+            </button>
+            <div className="grid w-12 place-items-center">
+              <DarkModeToggle />
+            </div>
+            <button
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open menu"
+              aria-expanded={isMenuOpen}
+              className="grid w-12 place-items-center text-ink-900 transition-colors duration-200 hover:bg-ink-50 xl:hidden"
+            >
+              <List size={20} weight="regular" aria-hidden />
+            </button>
+          </div>
+
+          <Link
+            href="/contact"
+            aria-current={isActive('/contact') ? 'page' : undefined}
+            className="hidden w-[170px] items-center justify-center bg-ink-900 text-[11.5px] font-medium uppercase tracking-[0.08em] text-paper transition-colors duration-300 hover:bg-accent-600 hover:text-on-accent xl:flex"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isMobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
-        </div>
+            Contact
+          </Link>
 
-        <div className="w-6 hidden lg:block"></div>
-
-        {/* Desktop Navigation Links */}
-        <div className="hidden lg:flex items-center gap-10 text-[11px] font-bold tracking-[0.15em] uppercase">
-          <Link href="/" className={`${isActive('/') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Home</Link>
-          <Link href="/about" className={`${isActive('/about') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>My Journey</Link>
-          <Link href="/shop" className={`${isActive('/shop') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Shop</Link>
-          <Link href="/design" className={`${isActive('/design') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Design</Link>
-          <Link href="/blog" className={`${isActive('/blog') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Blog</Link>
-          <Link href="/projects" className={`${isActive('/projects') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Projects</Link>
-
-          <Link href="/tech-stack" className={`${isActive('/tech-stack') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Tech Stack</Link>
-          <Link href="/resume" className={`${isActive('/resume') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Resume</Link>
-          <Link href="/services" className={`${isActive('/services') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Services</Link>
-                    <Link href="/contact" className={`${isActive('/contact') ? 'text-accent-600' : 'text-gray-500 hover:text-accent-600'} transition-colors`}>Contact</Link>
-        </div>
-
-        {/* Right side search bar with autocomplete dropdown */}
-        <div className="flex items-center gap-4 text-gray-600 relative ml-auto lg:ml-0">
-          {isSearchOpen ? (
-            <div className="relative">
-              <form onSubmit={handleSearch} className="flex items-center border-b border-gray-300 pb-1 mr-2">
-                <input 
-                  type="text" 
-                  autoFocus
-                  placeholder="Search..." 
+          {/* Search panel, anchored under the bar */}
+          {isSearchOpen && (
+            <div className="absolute inset-x-0 top-full border-x border-b border-ink-100 bg-paper-raised">
+              <form onSubmit={handleSearch} role="search" className="flex items-center gap-3 border-b border-ink-100 px-4">
+                <MagnifyingGlass size={18} aria-hidden className="shrink-0 text-ink-500" />
+                <input
+                  ref={searchRef}
+                  type="text"
+                  aria-label="Search the site"
+                  placeholder="Search projects, posts, design, services"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent text-xs outline-none w-36 sm:w-48 md:w-64 placeholder-gray-400"
+                  className="h-14 w-full bg-transparent text-base text-ink-900 outline-none placeholder:text-ink-500"
                 />
-                <button type="button" onClick={() => { setIsSearchOpen(false); setSearchQuery(''); }} className="ml-2 text-gray-400 hover:text-accent-600">✕</button>
+                <button type="button" onClick={closeAll} aria-label="Close search" className="grid h-9 w-9 shrink-0 place-items-center text-ink-500 hover:text-ink-900">
+                  <X size={18} aria-hidden />
+                </button>
               </form>
-
               {filteredSuggestions.length > 0 && (
-                <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-paper border border-ink-100 rounded-none shadow-lg py-2 z-50">
-                  {filteredSuggestions.map((item, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSelectSuggestion(item.url)}
-                      className="w-full text-left px-4 py-2 hover:bg-ink-100/40 transition-colors flex flex-col"
-                    >
-                      <span className="text-xs font-medium text-ink-900 truncate">{item.title}</span>
-                      <span className="text-[10px] tracking-wider uppercase text-ink-500">{item.type}</span>
-                    </button>
+                <ul className="py-2">
+                  {filteredSuggestions.map((item) => (
+                    <li key={item.url}>
+                      <button
+                        onClick={() => handleSelectSuggestion(item.url)}
+                        className="flex w-full items-baseline justify-between gap-6 px-4 py-3 text-left transition-colors duration-200 hover:bg-ink-50"
+                      >
+                        <span className="truncate text-sm font-medium text-ink-900">{item.title}</span>
+                        <span className="type-meta shrink-0">{item.type}</span>
+                      </button>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
-          ) : (
-            <button onClick={() => setIsSearchOpen(true)} className="hover:text-accent-600 transition-colors p-1" aria-label="Open Search">
-              <svg className="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
           )}
-          <DarkModeToggle />
-        </div>
+        </nav>
+      </header>
 
-      </nav>
-
-      {/* Mobile Dropdown Menu Drawer */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden absolute top-full left-0 w-full bg-paper border-b border-ink-100 shadow-lg py-6 px-8 flex flex-col gap-4 text-xs font-bold tracking-[0.15em] uppercase z-40">
-          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Home</Link>
-          <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/about') ? 'text-accent-600' : 'text-gray-600'} py-1`}>My Journey</Link>
-          <Link href="/shop" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/shop') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Shop</Link>
-          <Link href="/design" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/design') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Design</Link>
-          <Link href="/blog" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/blog') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Blog</Link>
-          <Link href="/projects" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/projects') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Projects</Link>
-         
-          <Link href="/tech-stack" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/tech-stack') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Tech Stack</Link>
-          <Link href="/resume" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/resume') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Resume</Link>
-          <Link href="/services" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/services') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Services</Link>
-           <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className={`${isActive('/contact') ? 'text-accent-600' : 'text-gray-600'} py-1`}>Contact</Link>
+      {/* Full-screen menu (below 1280px) */}
+      <div
+        className={`fixed inset-0 z-overlay flex flex-col bg-paper transition-[opacity,visibility] duration-500 ease-[var(--ease-smooth)] xl:hidden ${
+          isMenuOpen ? 'visible opacity-100' : 'invisible opacity-0'
+        }`}
+        aria-hidden={!isMenuOpen}
+      >
+        <div className="flex h-12 shrink-0 items-stretch justify-between border-b border-ink-100">
+          <span className="flex items-center px-4 font-display text-lg uppercase leading-none tracking-wide text-ink-900">{siteConfig.firstName}</span>
+          <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu" className="grid w-12 place-items-center border-l border-ink-100 text-ink-900 hover:bg-ink-50">
+            <X size={22} weight="regular" aria-hidden />
+          </button>
         </div>
-      )}
-    </header>
+        <ul className="flex flex-1 flex-col justify-center overflow-y-auto px-5 pb-12 md:px-8">
+          {NAV.map((item, i) => (
+            <li key={item.href} className="overflow-hidden border-b border-ink-100">
+              <Link
+                href={item.href}
+                tabIndex={isMenuOpen ? 0 : -1}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+                onClick={() => setIsMenuOpen(false)}
+                style={{ transitionDelay: isMenuOpen ? `${120 + i * 45}ms` : '0ms' }}
+                className={`block py-2 font-display text-[clamp(2.25rem,10vw,4rem)] uppercase leading-[0.95] transition-[transform,opacity,color] duration-700 ease-[var(--ease-smooth)] ${
+                  isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+                } ${isActive(item.href) ? 'text-accent-600' : 'text-ink-900 hover:text-accent-600'}`}
+              >
+                {item.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   )
 }

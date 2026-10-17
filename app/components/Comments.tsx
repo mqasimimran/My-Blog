@@ -51,7 +51,7 @@ export default function Comments() {
 
   return (
     <div className="max-w-2xl mx-auto mt-16 pt-10 border-t border-ink-100">
-      <p className="text-[10px] font-bold tracking-[0.2em] uppercase text-ink-300 mb-6">Discussion</p>
+      <p className="text-xs font-medium text-ink-300 mb-6">Discussion</p>
       <div ref={ref} />
     </div>
   )

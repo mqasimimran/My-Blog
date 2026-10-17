@@ -3,7 +3,10 @@
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import CalendlyEmbed from '@/app/components/CalendlyEmbed'
+import { ArrowUpRight, GithubLogo, LinkedinLogo } from '@phosphor-icons/react'
 
+import { siteConfig } from '@/site.config'
+import SplitText from '@/app/components/ui/SplitText'
 function ContactForm() {
   const searchParams = useSearchParams()
   const prefillSubject = searchParams.get('subject') || ''
@@ -36,7 +39,7 @@ function ContactForm() {
       const data = await res.json()
 
       if (res.ok) {
-        setSubmitStatus({ type: 'success', message: 'Message sent successfully! I will get back to you soon.' })
+        setSubmitStatus({ type: 'success', message: 'Message sent. I will get back to you soon.' })
         form.reset()
       } else {
         setSubmitStatus({ type: 'error', message: data.error || 'Something went wrong.' })
@@ -49,174 +52,103 @@ function ContactForm() {
     }
   }
 
-  return (
-    <main className="min-h-screen bg-paper flex flex-col items-center py-20 px-6 font-sans gap-16">
-      <div className="w-full max-w-5xl bg-paper rounded-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden flex flex-col md:flex-row">
-        
-        {/* Left Side: Contact Information */}
-        <div className="w-full md:w-5/12 bg-gray-900 text-white p-10 lg:p-12 flex flex-col justify-between">
-          <div>
-            <h1 className="text-3xl lg:text-4xl font-light tracking-wide uppercase mb-4">
-              Get In Touch
-            </h1>
-            <p className="text-gray-400 text-sm leading-relaxed mb-10">
-              Whether you are a recruiter looking for a software engineer, a founder needing full-stack architecture, or a collaborator for a 3D game project, I'd love to hear from you.
-            </p>
-            
-            <div className="space-y-6">
-              <div>
-                <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-1">Email</span>
-                <a href="mailto:m.qasimimran01@gmail.com" className="text-sm hover:text-accent-600 transition-colors">
-                  m.qasimimran01@gmail.com
-                </a>
-              </div>
-              <div>
-                <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-1">Location</span>
-                <span className="text-sm">Lahore, Pakistan</span>
-              </div>
-            </div>
-          </div>
+  const fieldClass =
+    'w-full border border-ink-500 bg-paper-raised px-4 text-base text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-500 focus:border-accent-600'
+  const labelClass = 'mb-2 block text-sm font-medium text-ink-900'
 
-          <div className="mt-12">
-            <span className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3">Connect</span>
-            <div className="flex gap-6 text-xs font-bold tracking-widest uppercase">
-              <a href="https://linkedin.com/in/muhammadqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">
-                LinkedIn
-              </a>
-              <a href="https://github.com/mqasimimran" target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">
-                GitHub
-              </a>
+  return (
+    <main className="pb-24">
+      <div className="container-page grid gap-16 pt-12 md:pt-20 lg:grid-cols-12 lg:gap-12">
+        {/* Details */}
+        <div className="lg:col-span-5">
+          <h1 className="type-display text-ink-900"><SplitText text={"Get in touch"} /></h1>
+          <p className="type-lead mt-6 max-w-[40ch]">{siteConfig.contact.intro}</p>
+
+          <dl className="mt-12 space-y-6">
+            <div>
+              <dt className="type-meta">Email</dt>
+              <dd className="mt-1.5">
+                <a href={`mailto:${siteConfig.email}`} className="link-draw text-lg font-medium text-ink-900">{siteConfig.email}</a>
+              </dd>
             </div>
-          </div>
+            <div>
+              <dt className="type-meta">Location</dt>
+              <dd className="mt-1.5 text-lg text-ink-900">{siteConfig.location}</dd>
+            </div>
+            <div>
+              <dt className="type-meta">Elsewhere</dt>
+              <dd className="mt-2.5 flex flex-wrap gap-x-6 gap-y-2">
+                <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[15px] text-ink-900 transition-colors duration-200 hover:text-accent-600">
+                  <LinkedinLogo size={18} aria-hidden /> LinkedIn
+                </a>
+                <a href={siteConfig.social.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[15px] text-ink-900 transition-colors duration-200 hover:text-accent-600">
+                  <GithubLogo size={18} aria-hidden /> GitHub
+                </a>
+              </dd>
+            </div>
+          </dl>
         </div>
 
-        {/* Right Side: Form */}
-        <div className="w-full md:w-7/12 p-10 lg:p-12">
-          <form onSubmit={handleSubmit} suppressHydrationWarning className="h-full flex flex-col justify-center space-y-8">
-
-            {/* Honeypot field — hidden from real visitors via CSS, not just "display:none"
+        {/* Form */}
+        <div className="lg:col-span-7 lg:col-start-6 lg:pl-12 xl:col-span-6 xl:col-start-7 xl:pl-0">
+          <form onSubmit={handleSubmit} suppressHydrationWarning className="space-y-6 border border-ink-100 bg-paper-raised p-6 md:p-10">
+            {/* Honeypot field: hidden from real visitors via CSS, not just "display:none"
                 (some bots skip display:none fields), but genuinely off-screen and
                 unreachable by tab order so a human never notices or fills it in. */}
             <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
               <label htmlFor="website">Leave this field empty</label>
               <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {/* Name Input */}
-              <div className="relative">
-                <input 
-                  type="text" 
-                  id="name" 
-                  name="name"
-                  placeholder=" " 
-                  required
-                  suppressHydrationWarning
-                  className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors"
-                />
-                <label 
-                  htmlFor="name" 
-                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
-                >
-                  Full Name
-                </label>
-              </div>
 
-              {/* Email Input */}
-              <div className="relative">
-                <input 
-                  type="email" 
-                  id="email" 
-                  name="email"
-                  placeholder=" " 
-                  required
-                  suppressHydrationWarning
-                  className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors"
-                />
-                <label 
-                  htmlFor="email" 
-                  className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
-                >
-                  Email Address
-                </label>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="name" className={labelClass}>Full name</label>
+                <input type="text" id="name" name="name" required autoComplete="name" suppressHydrationWarning className={`h-12 ${fieldClass}`} />
+              </div>
+              <div>
+                <label htmlFor="email" className={labelClass}>Email address</label>
+                <input type="email" id="email" name="email" required autoComplete="email" suppressHydrationWarning className={`h-12 ${fieldClass}`} />
               </div>
             </div>
 
-            {/* Subject Input */}
-            <div className="relative mt-8">
-              <input 
-                type="text" 
-                id="subject" 
-                name="subject"
-                placeholder=" " 
-                required
-                defaultValue={prefillSubject}
-                suppressHydrationWarning
-                className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors"
-              />
-              <label 
-                htmlFor="subject" 
-                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
-              >
-                Subject / Inquiry Type
-              </label>
+            <div>
+              <label htmlFor="subject" className={labelClass}>Subject</label>
+              <input type="text" id="subject" name="subject" required defaultValue={prefillSubject} suppressHydrationWarning className={`h-12 ${fieldClass}`} />
             </div>
 
-            {/* Message Input */}
-            <div className="relative mt-8">
-              <textarea 
-                id="message" 
-                name="message"
-                placeholder=" " 
-                rows={4}
-                required
-                defaultValue={prefillMessage}
-                suppressHydrationWarning
-                className="peer w-full border-b border-ink-100 bg-transparent py-2 text-sm text-ink-900 focus:border-accent-600 focus:outline-none transition-colors resize-none"
-              ></textarea>
-              <label 
-                htmlFor="message" 
-                className="absolute left-0 top-2 -translate-y-5 text-[10px] font-bold tracking-widest text-ink-300 uppercase transition-all peer-placeholder-shown:translate-y-0 peer-placeholder-shown:text-xs peer-placeholder-shown:font-normal peer-focus:-translate-y-5 peer-focus:text-[10px] peer-focus:font-bold peer-focus:text-accent-600"
-              >
-                Your Message
-              </label>
+            <div>
+              <label htmlFor="message" className={labelClass}>Your message</label>
+              <textarea id="message" name="message" rows={6} required defaultValue={prefillMessage} suppressHydrationWarning className={`resize-y py-3 ${fieldClass}`} />
             </div>
 
-            {/* Submit Button & Status Message */}
-            <div className="pt-4 flex flex-col items-start gap-4">
-              <button 
-                type="submit" 
+            <div className="flex flex-col items-start gap-4 pt-2">
+              <button
+                type="submit"
                 disabled={isSubmitting}
-                className="bg-gray-900 text-white text-xs font-bold tracking-[0.2em] uppercase px-8 py-4 rounded-none hover:bg-accent-600 transition-colors flex items-center gap-2 disabled:opacity-70"
+                className="group inline-flex h-12 items-center gap-2 bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px disabled:opacity-60"
               >
-                {isSubmitting ? 'Sending...' : 'Send Message'} <span>↗</span>
+                {isSubmitting ? 'Sending...' : 'Send message'}
+                <ArrowUpRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </button>
 
-              {/* Success / Error Feedback */}
               {submitStatus.type && (
-                <p className={`text-xs font-medium tracking-wide ${
-                  submitStatus.type === 'success' ? 'text-green-600' : 'text-accent-600'
-                }`}>
+                <p role={submitStatus.type === 'error' ? 'alert' : 'status'} className={`text-sm font-medium ${submitStatus.type === 'success' ? 'text-success' : 'text-error'}`}>
                   {submitStatus.message}
                 </p>
               )}
             </div>
-            
           </form>
         </div>
-        
       </div>
 
       {/* Prefer to talk it through? */}
-      <div className="w-full max-w-5xl bg-paper rounded-none shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-10 lg:p-12">
-        <h2 className="text-2xl font-light tracking-wide uppercase text-ink-900 mb-2">
-          Prefer To Talk It Through?
-        </h2>
-        <p className="text-sm text-ink-500 mb-8 max-w-xl">
-          Book a short call directly — no back-and-forth over email required.
-        </p>
-        <CalendlyEmbed />
-      </div>
+      <section className="container-page mt-24 border-t border-ink-100 pt-16 md:mt-32 md:pt-20">
+        <h2 className="type-h2 text-ink-900"><SplitText text={"Prefer to talk it through?"} /></h2>
+        <p className="type-lead mt-4 max-w-[48ch]">Book a short call directly, no back-and-forth over email required.</p>
+        <div className="mt-10">
+          <CalendlyEmbed />
+        </div>
+      </section>
     </main>
   )
 }
@@ -224,8 +156,8 @@ function ContactForm() {
 export default function ContactPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-paper flex items-center justify-center">
-        <p className="text-ink-300 text-xs font-mono uppercase tracking-widest">Loading...</p>
+      <main className="container-page pb-24 pt-20">
+        <div className="h-14 w-72 bg-ink-50 motion-safe:animate-pulse" />
       </main>
     }>
       <ContactForm />

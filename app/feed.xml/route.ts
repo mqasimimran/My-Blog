@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 
-const SITE_URL = 'https://www.muhammadqasimimran.me/'
 
+import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -37,7 +37,7 @@ export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Muhammad Qasim Imran — Blog</title>
+    <title>${siteConfig.name} — Blog</title>
     <link>${SITE_URL}/blog</link>
     <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
     <description>Writing on engineering, design, productivity, and the journey behind the projects.</description>

@@ -20,7 +20,7 @@ export default function RichTextEditor({
       StarterKit,
       Image.configure({
         HTMLAttributes: {
-          class: 'rounded max-w-full my-8 shadow-sm cursor-pointer border hover:border-[#aa002a] transition-all',
+          class: 'rounded max-w-full my-8 shadow-sm cursor-pointer border hover:border-accent-600 transition-all',
         },
       })
     ],
@@ -45,7 +45,7 @@ export default function RichTextEditor({
           '[&_blockquote]:text-center [&_blockquote]:text-2xl [&_blockquote]:font-light [&_blockquote]:italic [&_blockquote]:text-gray-600 [&_blockquote]:my-10 [&_blockquote]:border-none [&_blockquote]:p-0',
           // New Code Block Styling
           '[&_pre]:bg-gray-900 [&_pre]:text-gray-100 [&_pre]:p-4 [&_pre]:rounded-lg [&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:font-mono [&_pre]:text-sm',
-          '[&_code]:font-mono [&_code]:bg-gray-100 [&_code]:text-[#aa002a] [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm',
+          '[&_code]:font-mono [&_code]:bg-gray-100 [&_code]:text-accent-600 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm',
           '[&_pre_code]:bg-transparent [&_pre_code]:text-inherit [&_pre_code]:p-0', // Override inline code style when inside a pre block
         ].join(' ')
       },
@@ -121,7 +121,7 @@ export default function RichTextEditor({
           <div className="w-px h-4 bg-gray-200 mx-2"></div>
           
           <label className="cursor-pointer px-3 py-1.5 text-xs font-bold rounded text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors flex items-center gap-1">
-            {isUploading ? 'Uploading...' : '🖼️ Image'}
+            {isUploading ? 'Uploading...' : 'Image'}
             <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
           </label>
         </div>
@@ -132,7 +132,7 @@ export default function RichTextEditor({
             onClick={removeSelectedImage}
             className="text-red-500 hover:text-red-700 text-[10px] font-bold tracking-widest uppercase transition-colors"
           >
-            ✕ Remove Image
+            Remove image
           </button>
         )}
       </div>
