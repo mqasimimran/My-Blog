@@ -1,6 +1,7 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
+import { optimizeImage } from '@/lib/imageOptimize'
 
 // Drop-in replacement for `supabase.storage` in admin pages.
 //
@@ -15,8 +16,11 @@ import { supabase } from '@/lib/supabase'
 export const adminStorage = {
   from(bucket: string) {
     return {
-      async upload(path: string, file: File | Blob) {
+      async upload(path: string, original: File | Blob) {
         try {
+          // Images are resized and compressed first (lib/imageOptimize.ts). The path stays the same,
+          // so code that builds the public URL from it keeps working.
+          const file = await optimizeImage(original)
           const res = await fetch('/api/admin/upload-url', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

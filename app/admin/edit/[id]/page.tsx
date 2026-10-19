@@ -6,6 +6,10 @@ import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 import RichTextEditor from '@/components/RichTextEditor'
+import { siteConfig } from '@/site.config'
+
+// ISO time -> the value a datetime-local input expects, in the visitor's own timezone.
+const toLocalInput = (iso: string) => new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
 
 export default function EditArticle({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
@@ -26,6 +30,7 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
   const [featureImage, setFeatureImage] = useState('')
   const [isPublished, setIsPublished] = useState(false)
   const [wasPublished, setWasPublished] = useState(false)
+  const [publishAt, setPublishAt] = useState('')
   const [articleSlug, setArticleSlug] = useState('')
 
   useEffect(() => {
@@ -41,6 +46,7 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
           setFeatureImage(data.feature_image || '')
           setIsPublished(data.published)
           setWasPublished(data.published)
+          setPublishAt(data.publish_at ? toLocalInput(data.publish_at) : '')
           setArticleSlug(data.slug || '')
         }
       } catch (err: any) {
@@ -86,12 +92,15 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
         content,
         read_time: readTime,
         feature_image: featureImage,
-        published: isPublished
+        published: isPublished,
+        publish_at: publishAt ? new Date(publishAt).toISOString() : null,
       })
       // Only notify on the draft → published transition — never on a
       // re-save of a post that was already live, which would otherwise
       // re-email every subscriber on every minor edit.
-      if (isPublished && !wasPublished) {
+      // Scheduled posts aren't emailed now: they're still hidden until their publish time.
+      const scheduled = !!publishAt && new Date(publishAt) > new Date()
+      if (isPublished && !wasPublished && !scheduled) {
         fetch('/api/newsletter/notify-subscribers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -111,7 +120,7 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
   return (
     <div className="min-h-screen bg-paper flex">
       <aside className="w-64 bg-paper text-ink-900 border-r border-ink-100 p-6 flex flex-col hidden md:flex">
-        <h2 className="text-xl font-light tracking-wide uppercase mb-10">Qasmic Admin</h2>
+        <h2 className="text-xl font-light tracking-wide uppercase mb-10">{siteConfig.firstName} Admin</h2>
         <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
           <Link href="/admin" className="text-left text-accent-600 transition-colors">← Back to Blogs</Link>
         </nav>
@@ -176,6 +185,12 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
           <div>
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Article Content</label>
             <RichTextEditor content={content} onChange={setContent} />
+          </div>
+
+          <div className="pt-6 border-t border-ink-100">
+            <label htmlFor="publish-at" className="block text-xs font-bold tracking-widest uppercase text-ink-700 mb-2">Publish at (optional)</label>
+            <input id="publish-at" type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} className="border border-ink-100 p-3 text-sm" />
+            <p className="mt-2 text-[11px] text-ink-500">Leave empty to go live as soon as it&rsquo;s published. With a time set, the post stays hidden until then (your local time). Scheduled posts aren&rsquo;t emailed to subscribers.</p>
           </div>
 
           <div className="flex items-center justify-between pt-6 border-t border-ink-100">

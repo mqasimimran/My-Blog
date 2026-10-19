@@ -15,7 +15,7 @@ const TOOLS = [
 
 export default function TechMarquee() {
   return (
-    <section aria-label="Tools and technologies" className="select-none overflow-hidden border-y border-ink-100 py-5">
+    <section aria-label="Tools and technologies" className="select-none overflow-hidden border-y border-ink-100 bg-paper py-5">
       <div className="animate-marquee items-center">
         {/* The list is rendered twice for a seamless loop; the copy is hidden from screen readers. */}
         {[0, 1].map((copy) => (

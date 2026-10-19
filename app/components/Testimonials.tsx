@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import useStackShrink from '@/app/components/ui/useStackShrink'
 import Image from '@/components/SafeImage'
 import { supabase } from '@/lib/supabase'
 import SectionHeader from '@/app/components/ui/SectionHeader'
@@ -53,6 +54,9 @@ export default function Testimonials() {
     fetchTestimonials()
   }, [])
 
+  const listRef = useRef<HTMLUListElement>(null)
+  useStackShrink(listRef, [testimonials.length, isLoading])
+
   // Nothing added yet: don't show an empty section on the homepage
   if (isLoading || testimonials.length === 0) return null
 
@@ -62,7 +66,7 @@ export default function Testimonials() {
         <SectionHeader title="What people say" meta={`(${testimonials.length} kind ${testimonials.length === 1 ? 'word' : 'words'})`} />
 
         {/* Each card sticks under the navbar; the next one slides up and covers it. */}
-        <ul className="mt-12">
+        <ul ref={listRef} className="mt-12">
           {testimonials.map((t) => (
             <li data-no-animate key={t.id} className="sticky top-[72px] bg-paper pb-6">
               <figure className="grid border border-ink-100 bg-paper md:min-h-[400px] md:grid-cols-12">

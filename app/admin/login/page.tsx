@@ -3,6 +3,7 @@
 import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { siteConfig } from '@/site.config'
 
 function LoginForm() {
   const [username, setUsername] = useState('')
@@ -40,7 +41,7 @@ function LoginForm() {
       <div className="max-w-md w-full bg-paper p-8 rounded-none shadow-sm border border-ink-100">
         
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-light tracking-wide uppercase text-ink-900">Admin</h1>
+          <h1 className="text-2xl font-light tracking-wide uppercase text-ink-900">{siteConfig.firstName} Admin</h1>
           <p className="text-xs text-ink-300 tracking-widest uppercase mt-1">Restricted Access</p>
         </div>
 

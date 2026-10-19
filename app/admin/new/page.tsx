@@ -10,6 +10,7 @@ import RichTextEditor from '@/components/RichTextEditor'
 export default function NewArticle() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [publishAt, setPublishAt] = useState('')
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   
   const [title, setTitle] = useState('')
@@ -61,7 +62,8 @@ export default function NewArticle() {
       content,
       read_time: readTime,
       feature_image: featureImage,
-      published: publishStatus
+      published: publishStatus,
+      publish_at: publishAt ? new Date(publishAt).toISOString() : null,
     }) } catch (e: any) { error = e }
 
     if (error) {
@@ -69,7 +71,8 @@ export default function NewArticle() {
       alert('Failed to save article.')
       setIsSubmitting(false)
     } else {
-      if (publishStatus) {
+      // Scheduled posts aren't emailed now: they're still hidden until their publish time.
+      if (publishStatus && !(publishAt && new Date(publishAt) > new Date())) {
         // Best-effort — don't block navigation on this
         fetch('/api/newsletter/notify-subscribers', {
           method: 'POST',
@@ -147,6 +150,12 @@ export default function NewArticle() {
           <div>
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Article Content</label>
             <RichTextEditor content={content} onChange={setContent} />
+          </div>
+
+          <div className="pt-6 border-t border-ink-100">
+            <label htmlFor="publish-at" className="block text-xs font-bold tracking-widest uppercase text-ink-700 mb-2">Publish at (optional)</label>
+            <input id="publish-at" type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} className="border border-ink-100 p-3 text-sm" />
+            <p className="mt-2 text-[11px] text-ink-500">Leave empty to go live straight away when you publish. With a time set, the post stays hidden until then (your local time) and isn&rsquo;t emailed to subscribers.</p>
           </div>
 
           <div className="flex items-center justify-end gap-4 pt-6 border-t border-ink-100">

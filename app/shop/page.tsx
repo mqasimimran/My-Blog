@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { DownloadSimple, Package } from '@phosphor-icons/react'
+import { ArrowRight, DownloadSimple, Package } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 import PageHeader from '@/app/components/ui/PageHeader'
 import FilterTabs from '@/app/components/ui/FilterTabs'
@@ -51,7 +51,12 @@ export default function ShopPage() {
 
   return (
     <main className="pb-24">
-      <PageHeader title="Store" description="Templates, design resources, and a few physical pieces. Browse what's available below." />
+      <PageHeader title="Store" description="Templates, design resources, and a few physical pieces. Browse what's available below.">
+        <Link href="/shop/order" className="group mt-8 inline-flex items-center gap-2 text-sm font-medium text-ink-900">
+          <span className="link-draw">Already ordered? Track your order</span>
+          <ArrowRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5" />
+        </Link>
+      </PageHeader>
 
       <section className="container-page">
         <FilterTabs label="Filter products by type" options={FILTERS} value={activeFilter} onChange={setActiveFilter} />
@@ -76,10 +81,10 @@ export default function ShopPage() {
           ) : (
             <div className="grid grid-cols-1 gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((product) => (
-                <Link key={product.id} href={`/shop/${product.slug}`} data-cursor="View" className="group block">
+                <Link key={product.id} href={`/shop/${product.slug}`} data-cursor="View" className="group flex h-full w-full flex-col border border-ink-100 bg-paper-raised transition-colors duration-300 hover:border-ink-900">
                   {/* Square frame; the image is pinned to it and fits inside, so the WHOLE design is always visible
                       (tall posters get plain space at the sides, wide ones above and below). */}
-                  <div className="relative grid aspect-square place-items-center overflow-hidden bg-ink-50">
+                  <div className="relative grid aspect-square place-items-center overflow-hidden border-b border-ink-100 bg-ink-50">
                     {product.images?.[0] ? (
                       <img
                         src={product.images[0]}
@@ -92,7 +97,8 @@ export default function ShopPage() {
                       <Package size={48} weight="light" aria-hidden className="text-ink-300" />
                     )}
                   </div>
-                  <p className="type-meta mt-5 flex gap-x-4 capitalize">
+                  <div className="p-5">
+                  <p className="type-meta flex gap-x-4 capitalize">
                     <span>{product.type}</span>
                     {product.category && <span>{product.category}</span>}
                   </p>
@@ -103,6 +109,7 @@ export default function ShopPage() {
                       <span className="text-sm text-ink-500 line-through">${Number(product.compare_at_price).toFixed(2)}</span>
                     )}
                   </p>
+                  </div>
                 </Link>
               ))}
             </div>

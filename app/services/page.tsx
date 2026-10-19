@@ -95,7 +95,7 @@ export default function ServicesPage() {
         ) : services.length === 0 ? (
           <EmptyState icon="inbox" title="No services listed yet" description="Get in touch and tell me what you need." />
         ) : (
-          <ul className="border-b border-ink-100">
+          <ul className="space-y-6">
             {services.map((service) => {
               const packagePrices = (service.service_packages || [])
                 .map((p) => parsePrice(p.price))
@@ -106,8 +106,8 @@ export default function ServicesPage() {
               const href = hasPackages && service.slug ? `/services/${service.slug}` : '/contact'
 
               return (
-                <li key={service.id} className="border-t border-ink-100">
-                  <Link href={href} data-cursor="View" className="group grid gap-8 py-10 md:grid-cols-12 md:gap-12 md:py-14">
+                <li key={service.id}>
+                  <Link href={href} data-cursor="View" className="group grid gap-8 border border-ink-100 bg-paper-raised p-5 transition-colors duration-300 hover:border-ink-900 md:grid-cols-12 md:gap-12 md:p-8">
                     <div className="relative grid aspect-[16/10] place-items-center overflow-hidden bg-ink-50 md:col-span-5">
                       {service.cover_image ? (
                         <Image src={service.cover_image} alt={service.name} fill sizes="(max-width: 768px) 100vw, 40vw" className="object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />

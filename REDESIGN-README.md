@@ -43,3 +43,16 @@ and `@phosphor-icons/react` (icons). The headline font (Anton) is a file in app/
 - Client logos scroll continuously.
 - Small notes beside section headings, e.g. "(Selected pieces)".
 - Your name, huge, across the footer (sized to fit any name).
+
+## Polish round
+
+- Stacked project and testimonial cards shrink and dim slightly as the next one slides over
+  (app/components/ui/useStackShrink.ts).
+- Page wipe: a solid panel sweeps up to reveal each page you click through to (app/template.tsx).
+  Not on the first visit, so the first screen still appears instantly.
+- Share images (LinkedIn, WhatsApp, X) in the studio style, one design for the site, posts and
+  projects (lib/ogCard.tsx). Uses app/fonts/anton-latin-400-normal.woff.
+- Boxed cards: blog, homepage blog, shop products, service rows and related cards are framed.
+- Admin: public navbar, footer and WhatsApp button no longer appear inside /admin. New sidebar,
+  condensed titles, square fields and ruled tables across every admin page. The admin title now
+  comes from site.config.ts (it said "Qasmic Admin").

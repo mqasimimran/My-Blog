@@ -60,46 +60,27 @@ export default function FeaturedBlogPosts() {
           {isLoading || !lead ? (
             <SkeletonEditorial />
           ) : (
-            <div className="grid grid-cols-1 gap-x-12 gap-y-14 lg:grid-cols-12">
-              {/* Lead article, large */}
-              <Link href={`/blog/${lead.slug}`} data-cursor="Read" className={`group ${rest.length ? 'lg:col-span-7' : 'grid gap-x-12 gap-y-6 lg:col-span-12 lg:grid-cols-12 lg:items-end'}`}>
-                {lead.feature_image && (
-                  // Covers are designed graphics, so they show whole at their own shape: never cropped.
-                  <div className={`w-full overflow-hidden bg-ink-50 ${rest.length ? '' : 'lg:col-span-8'}`}>
-                    <img
-                      src={lead.feature_image}
-                      alt={lead.title}
-                      className="h-auto w-full transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
-                    />
+            <div className={`grid grid-cols-1 gap-6 md:grid-cols-2 ${articles.length >= 3 ? 'lg:grid-cols-3' : ''}`}>
+              {articles.map((article) => (
+                <Link key={article.id} href={`/blog/${article.slug}`} data-cursor="Read" className="group flex h-full w-full flex-col border border-ink-100 bg-paper-raised transition-colors duration-300 hover:border-ink-900">
+                  {article.feature_image && (
+                    <div className="relative aspect-video overflow-hidden border-b border-ink-100 bg-ink-50">
+                        {/* 16:9 frame. A 16:9 cover (e.g. 1600x900) fills it exactly; any other shape still shows
+                            whole, with a soft blurred copy of itself filling the spare space. Never cropped. */}
+                        <img src={article.feature_image} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
+                        <img src={article.feature_image} alt={article.title} loading="lazy" className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+                      </div>
+                  )}
+                  <div className="flex flex-1 flex-col p-6">
+                    <p className="type-meta flex gap-x-4">
+                      <span>{article.category}</span>
+                      <span>{formatDate(article.created_at)}</span>
+                    </p>
+                    <h3 className="mt-3 text-xl font-semibold leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{article.title}</h3>
+                    {article.excerpt && <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-ink-700">{article.excerpt}</p>}
                   </div>
-                )}
-                <div className={rest.length ? '' : 'lg:col-span-4 lg:pb-2'}>
-                  <p className={`type-meta flex gap-x-4 ${rest.length ? 'mt-6' : ''}`}>
-                    <span>{lead.category}</span>
-                    <span>{formatDate(lead.created_at)}</span>
-                  </p>
-                  <h3 className="type-h3 mt-3 max-w-[28ch] text-ink-900 transition-colors duration-300 group-hover:text-accent-600 md:text-[1.75rem]">{lead.title}</h3>
-                  {lead.excerpt && <p className="mt-4 line-clamp-3 max-w-[58ch] text-[15px] leading-relaxed text-ink-700">{lead.excerpt}</p>}
-                </div>
-              </Link>
-
-              {/* The rest, as a quiet list */}
-              {rest.length > 0 && (
-                <ul className="flex flex-col lg:col-span-5 lg:self-start">
-                  {rest.map((article) => (
-                    <li key={article.id} className="border-t border-ink-100 first:border-t-0 first:pt-0 lg:first:border-t lg:pt-8 [&:not(:first-child)]:mt-8">
-                      <Link href={`/blog/${article.slug}`} data-cursor="Read" className="group block">
-                        <p className="type-meta flex gap-x-4">
-                          <span>{article.category}</span>
-                          <span>{formatDate(article.created_at)}</span>
-                        </p>
-                        <h3 className="type-h3 mt-3 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{article.title}</h3>
-                        {article.excerpt && <p className="mt-3 line-clamp-2 text-[15px] leading-relaxed text-ink-700">{article.excerpt}</p>}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                </Link>
+              ))}
             </div>
           )}
         </div>

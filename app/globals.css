@@ -73,7 +73,8 @@
 .z-nav { z-index: 50; }
 .z-overlay { z-index: 60; }
 .z-progress { z-index: 55; }
-.z-rails { z-index: 40; }
+.z-rails { z-index: 0; }
+#main { position: relative; z-index: 1; }
 .z-cursor { z-index: 58; }
 
 @layer base {
@@ -261,7 +262,9 @@
   from { opacity: 0; transform: translateY(32px); }
 }
 
-/* The frame: two hairline rails at the edges of the content, on every page. */
+/* The frame: two hairline rails at the edges of the content, on every page. They sit BEHIND the page
+   (#main is lifted above them), so they show on the plain background but never cut through solid
+   bands like the tools banner or the logo row. */
 .frame-rails {
   position: fixed;
   inset: 0;
@@ -327,6 +330,48 @@
 }
 .cursor-badge[data-show] > span { transform: scale(1); opacity: 1; }
 
+/* Page wipe between pages (template.tsx). */
+.page-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 65;
+  background: var(--color-ink-900);
+  pointer-events: none;
+  animation: page-wipe 800ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+@keyframes page-wipe {
+  from { transform: translateY(0); }
+  to { transform: translateY(-100%); }
+}
+
+/* ── ADMIN ── one set of rules gives every admin page the studio look (app/admin/layout.tsx). */
+.admin-shell h1 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.005em;
+  line-height: 0.95;
+  font-synthesis: none;
+}
+.admin-shell :is(input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]), select, textarea) {
+  border-radius: 0;
+  border-color: var(--color-ink-300);
+  background-color: var(--color-paper-raised);
+  color: var(--color-ink-900);
+}
+.admin-shell :is(input, select, textarea):focus { border-color: var(--color-accent-600); outline: none; }
+.admin-shell button, .admin-shell a { border-radius: 0; }
+.admin-shell table { border-collapse: collapse; }
+.admin-shell th {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-500);
+  border-bottom: 1px solid var(--color-ink-100);
+}
+.admin-shell td { border-bottom: 1px solid var(--color-ink-100); }
+
 @keyframes marquee {
   0% { transform: translateX(0%); }
   100% { transform: translateX(-50%); }
@@ -348,6 +393,7 @@
   [data-rv="in"], .hero-enter > *, .hero-photo, .hero-enter h1 { animation: none; }
   [data-rv="in"][data-rv-h], .hero-enter h1 { -webkit-mask-image: none; mask-image: none; }
   [data-rv="in"] .ch { animation: none; }
+  .page-wipe { display: none; }
   .animate-marquee {
     animation: none;
     flex-wrap: wrap;

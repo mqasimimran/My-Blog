@@ -44,10 +44,14 @@ export default function CursorBadge() {
     window.addEventListener('pointermove', onMove, { passive: true })
     window.addEventListener('scroll', onScroll, { passive: true })
     document.addEventListener('pointerleave', onLeave)
+    // Moving into a game or video frame takes focus away from the page, and the page can no longer
+    // see the mouse there, so hide the circle instead of leaving it stuck over the frame.
+    window.addEventListener('blur', onLeave)
     return () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('scroll', onScroll)
       document.removeEventListener('pointerleave', onLeave)
+      window.removeEventListener('blur', onLeave)
       cancelAnimationFrame(raf)
     }
   }, [])

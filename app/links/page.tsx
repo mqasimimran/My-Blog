@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { siteConfig } from '@/site.config'
 export default function Links() {
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen">
     <div className="max-w-md mx-auto px-6 py-20 flex flex-col items-center">
       
       {/* Profile Section */}

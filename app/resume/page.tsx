@@ -80,7 +80,7 @@ export default function Resume() {
           <p className="type-lead mt-6 max-w-[48ch]">Computer Science undergraduate, developer, and technical creator.</p>
         </div>
         <a
-          href="/resume.pdf"
+          href={siteConfig.resume.cvFile || '/api/cv'}
           download={`${siteConfig.name.replace(/\s+/g, '_')}_Resume.pdf`}
           className="group inline-flex h-12 shrink-0 items-center gap-2 self-start bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px md:self-auto"
         >

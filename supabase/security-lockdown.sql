@@ -36,7 +36,7 @@ begin
       'products','journey_entries','certifications','experiences','education',
       'projects_resume','roadmap_items','client_logos','site_settings',
       'messages','newsletter_subscribers','orders','rate_limit_log',
-      'login_attempts','activity_log','security_audit_log','admin_totp_used'
+      'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes'
     )
   loop
     execute format('drop policy %I on %I.%I', r.policyname, r.schemaname, r.tablename);
@@ -52,7 +52,7 @@ begin
     'products','journey_entries','certifications','experiences','education',
     'projects_resume','roadmap_items','client_logos','site_settings',
     'messages','newsletter_subscribers','orders','rate_limit_log',
-    'login_attempts','activity_log','security_audit_log','admin_totp_used'
+    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes'
   ] loop
     if to_regclass('public.' || t) is not null then
       execute format('alter table public.%I enable row level security', t);
@@ -81,7 +81,7 @@ begin
   -- service-role key (server-side API routes) can touch these.
   foreach t in array array[
     'messages','newsletter_subscribers','orders','rate_limit_log',
-    'login_attempts','activity_log','security_audit_log','admin_totp_used'
+    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes'
   ] loop
     if to_regclass('public.' || t) is not null then
       execute format('revoke all on public.%I from anon, authenticated', t);
@@ -94,7 +94,7 @@ do $$
 declare v record;
 begin
   for v in select * from (values
-    ('articles',         'published = true'),
+    ('articles',         'published = true and (publish_at is null or publish_at <= now())'),  -- scheduled posts stay hidden until their time
     ('projects',         'published = true'),
     ('designs',          'published = true'),
     ('services',         'active = true'),

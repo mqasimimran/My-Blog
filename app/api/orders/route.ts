@@ -6,6 +6,7 @@ import { generateOrderNumber } from '@/lib/orderNumber'
 
 
 import { sendEmail } from '@/lib/mail'
+import { computeDiscount, type DiscountKind } from '@/lib/discount'
 import { siteConfig } from '@/site.config'
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
@@ -70,6 +71,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'This item is out of stock.' }, { status: 409 })
     }
 
+    // Discount code: used up atomically by the database (see redeem_discount in supabase/schema.sql).
+    // The price is always worked out here on the server, never taken from the browser.
+    let price = Number(product.price)
+    let discountCode: string | null = null
+    let discountAmount = 0
+    const rawCode = typeof body.discountCode === 'string' ? body.discountCode.trim().toUpperCase() : ''
+    if (rawCode) {
+      if (rawCode.length > 40) return NextResponse.json({ error: "That discount code isn't valid." }, { status: 400 })
+      const { data: redeemed, error: redeemError } = await supabase.rpc('redeem_discount', { p_code: rawCode })
+      const row = Array.isArray(redeemed) ? redeemed[0] : redeemed
+      if (redeemError || !row) {
+        return NextResponse.json({ error: "That discount code isn't valid any more. Remove it and try again." }, { status: 400 })
+      }
+      const d = computeDiscount(price, row.kind as DiscountKind, Number(row.value))
+      price = d.total
+      discountAmount = d.amount
+      discountCode = rawCode
+    }
+
     const orderNumber = generateOrderNumber()
 
     // Capture the converted amount NOW, at purchase time — never trust a
@@ -77,14 +97,14 @@ export async function POST(request: NextRequest) {
     // day's rate when verifying, since that could drift from what the
     // buyer actually saw and sent.
     const isPkrMethod = getManualMethod(paymentMethod)?.pkr === true
-    let amountLocal = product.price
+    let amountLocal = price
     let currencyLocal = 'USD'
 
     if (isPkrMethod) {
       try {
         const rateRes = await fetch(`${request.nextUrl.origin}/api/exchange-rate`)
         const rateData = await rateRes.json()
-        amountLocal = Math.round(product.price * rateData.usdToPkr)
+        amountLocal = Math.round(price * rateData.usdToPkr)
         currencyLocal = 'PKR'
       } catch (rateError) {
         console.warn('Could not fetch exchange rate for order, storing USD amount instead:', rateError)
@@ -95,7 +115,9 @@ export async function POST(request: NextRequest) {
       order_number: orderNumber,
       product_id: productId,
       product_name: product.name,
-      product_price: product.price,
+      product_price: price,
+      discount_code: discountCode,
+      discount_amount: discountAmount,
       amount_local: amountLocal,
       currency_local: currencyLocal,
       customer_name: customerName,
@@ -124,7 +146,7 @@ export async function POST(request: NextRequest) {
               <div style="font-family: sans-serif; max-width: 500px;">
                 <h2 style="color: ${siteConfig.brand.accent};">New order awaiting verification</h2>
                 <p><strong>Order:</strong> ${orderNumber}</p>
-                <p><strong>Product:</strong> ${escapeHtml(product.name)} — $${escapeHtml(product.price)}</p>
+                <p><strong>Product:</strong> ${escapeHtml(product.name)} — $${escapeHtml(price)}${discountCode ? ` (code ${escapeHtml(discountCode)}, $${escapeHtml(discountAmount)} off)` : ''}</p>
                 <p><strong>Amount to verify:</strong> ${currencyLocal === 'PKR' ? `Rs ${amountLocal.toLocaleString('en-PK')}` : `$${amountLocal}`}</p>
                 <p><strong>Customer:</strong> ${escapeHtml(customerName)} (${escapeHtml(customerEmail)})</p>
                 <p><strong>Paid via:</strong> ${labelFor(paymentMethod)}</p>

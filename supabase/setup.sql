@@ -523,6 +523,53 @@ begin
   end if;
 end $$;
 
+-- ---- Features (Oct 2026): playable builds, scheduled posts, accent colour, testimonial invites ----
+alter table projects add column if not exists play_url text;          -- link to a playable WebGL build
+alter table articles add column if not exists publish_at timestamptz; -- null = live as soon as published
+alter table site_settings add column if not exists accent_color text; -- e.g. #b0233f; null = default
+
+-- Server-only settings. Row-level security with NO public policies: only the server can read it.
+create table if not exists private_settings (
+  id integer primary key default 1,
+  testimonial_invite_code text,
+  updated_at timestamptz not null default now(),
+  constraint private_settings_single_row check (id = 1)
+);
+insert into private_settings (id) values (1) on conflict (id) do nothing;
+
+-- ---- Discount codes (Oct 2026) ------------------------------------------------
+create table if not exists discount_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text not null unique,                     -- stored in capitals, e.g. WELCOME10
+  kind text not null default 'percent' check (kind in ('percent', 'amount')),
+  value numeric not null check (value > 0),      -- 10 = 10% off, or $10 off
+  active boolean not null default true,
+  expires_at timestamptz,                        -- null = never expires
+  max_uses integer,                              -- null = unlimited
+  used_count integer not null default 0,
+  created_at timestamptz not null default now(),
+  constraint discount_percent_max check (kind <> 'percent' or value <= 100)
+);
+alter table orders add column if not exists discount_code text;
+alter table orders add column if not exists discount_amount numeric not null default 0;
+
+-- Uses up one redemption of a code, atomically: the check and the count happen in a single statement,
+-- so two buyers can never both take the last use. Returns nothing if the code can't be used.
+create or replace function redeem_discount(p_code text)
+returns table (kind text, value numeric)
+language sql security definer set search_path = public as $$
+  update discount_codes d set used_count = d.used_count + 1
+  where d.code = upper(p_code) and d.active
+    and (d.expires_at is null or d.expires_at > now())
+    and (d.max_uses is null or d.used_count < d.max_uses)
+  returning d.kind, d.value;
+$$;
+revoke all on function redeem_discount(text) from public, anon, authenticated;
+grant execute on function redeem_discount(text) to service_role;
+
+-- Refresh Supabase's column cache so new columns are visible to the site immediately.
+notify pgrst, 'reload schema';
+
 
 -- =====================================================================
 -- PART 2: SECURITY LOCKDOWN
@@ -566,7 +613,7 @@ begin
       'products','journey_entries','certifications','experiences','education',
       'projects_resume','roadmap_items','client_logos','site_settings',
       'messages','newsletter_subscribers','orders','rate_limit_log',
-      'login_attempts','activity_log','security_audit_log','admin_totp_used'
+      'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes'
     )
   loop
     execute format('drop policy %I on %I.%I', r.policyname, r.schemaname, r.tablename);
@@ -582,7 +629,7 @@ begin
     'products','journey_entries','certifications','experiences','education',
     'projects_resume','roadmap_items','client_logos','site_settings',
     'messages','newsletter_subscribers','orders','rate_limit_log',
-    'login_attempts','activity_log','security_audit_log','admin_totp_used'
+    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes'
   ] loop
     if to_regclass('public.' || t) is not null then
       execute format('alter table public.%I enable row level security', t);
@@ -611,7 +658,7 @@ begin
   -- service-role key (server-side API routes) can touch these.
   foreach t in array array[
     'messages','newsletter_subscribers','orders','rate_limit_log',
-    'login_attempts','activity_log','security_audit_log','admin_totp_used'
+    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes'
   ] loop
     if to_regclass('public.' || t) is not null then
       execute format('revoke all on public.%I from anon, authenticated', t);
@@ -624,7 +671,7 @@ do $$
 declare v record;
 begin
   for v in select * from (values
-    ('articles',         'published = true'),
+    ('articles',         'published = true and (publish_at is null or publish_at <= now())'),  -- scheduled posts stay hidden until their time
     ('projects',         'published = true'),
     ('designs',          'published = true'),
     ('services',         'active = true'),

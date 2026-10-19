@@ -37,12 +37,12 @@ export default function AddExperience() {
           onChange={e => setFormData({...formData, period: e.target.value})}
         />
         <input 
-          type="text" placeholder="Role (e.g., Graphic Design Intern)" required
+          type="text" placeholder="Role (e.g., Product Designer)" required
           className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, role: e.target.value})}
         />
         <input 
-          type="text" placeholder="Company (e.g., Logitrix Solutions)" required
+          type="text" placeholder="Company (e.g., the company or organisation)" required
           className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, company: e.target.value})}
         />

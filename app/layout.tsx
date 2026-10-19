@@ -11,6 +11,9 @@ import CommandPalette from '@/app/components/CommandPalette'
 import WhatsAppButton from '@/app/components/WhatsAppButton'
 import SiteFooter from '@/app/components/SiteFooter'
 import ScrollAnimator from '@/app/components/ScrollAnimator'
+import PublicOnly from '@/app/components/PublicOnly'
+import AccentStyle from '@/app/components/AccentStyle'
+import AssistantWidget from '@/app/components/AssistantWidget'
 import CursorBadge from '@/app/components/CursorBadge'
 
 // Headline face (condensed). The font file lives in the project (app/fonts), so it needs no
@@ -124,26 +127,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* Sticky Reading Progress Bar for Blog Posts */}
           <ReadingProgress />
 
+          <AccentStyle />
           <a href="#main" className="skip-link">Skip to content</a>
 
-          <Navbar />
-          {/* Spacer: the nav floats (position: fixed), so this keeps pages starting below it */}
-          <div aria-hidden className="h-12" />
+          {/* Public navigation; the admin area has its own (app/admin/AdminNav.tsx) */}
+          <PublicOnly>
+            <Navbar />
+            {/* Spacer: the nav floats (position: fixed), so this keeps pages starting below it */}
+            <div aria-hidden className="h-12" />
+          </PublicOnly>
 
           <div id="main" tabIndex={-1} className="min-h-[100dvh] outline-none">
             {children}
           </div>
 
-          <SiteFooter />
+          <PublicOnly><SiteFooter /></PublicOnly>
           <ScrollAnimator />
-          <CursorBadge />
-          <div aria-hidden className="frame-rails z-rails" />
+          <PublicOnly><CursorBadge /></PublicOnly>
+          <PublicOnly><div aria-hidden className="frame-rails z-rails" /></PublicOnly>
         </>
 
         <Analytics />
         <ConsoleEasterEgg />
         <CommandPalette />
-        <WhatsAppButton />
+        <PublicOnly><WhatsAppButton /></PublicOnly>
+        <PublicOnly><AssistantWidget /></PublicOnly>
         
       </body>
     </html>

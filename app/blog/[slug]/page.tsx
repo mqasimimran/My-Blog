@@ -191,9 +191,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             <h2 className="type-h3 text-ink-900">More from {article.category}</h2>
             <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-3">
               {relatedArticles.map((related) => (
-                <Link key={related.slug} href={`/blog/${related.slug}`} className="group block">
+                <Link key={related.slug} href={`/blog/${related.slug}`} className="group flex h-full w-full flex-col border border-ink-100 bg-paper-raised transition-colors duration-300 hover:border-ink-900">
                   {related.feature_image && (
-                    <div className="relative aspect-[16/10] overflow-hidden bg-ink-50">
+                    <div className="relative aspect-video overflow-hidden bg-ink-50">
+                      <img src={related.feature_image} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
                       <Image
                         src={related.feature_image}
                         alt={related.title}
@@ -203,8 +204,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                       />
                     </div>
                   )}
-                  <p className="type-meta mt-4">{related.category}</p>
-                  <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{related.title}</h3>
+                  <div className="p-5">
+                    <p className="type-meta">{related.category}</p>
+                    <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{related.title}</h3>
+                  </div>
                 </Link>
               ))}
             </div>

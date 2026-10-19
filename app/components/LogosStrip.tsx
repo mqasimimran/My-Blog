@@ -37,7 +37,7 @@ export default function LogosStrip() {
   const row = logos.length >= 8 ? logos : Array.from({ length: Math.ceil(8 / logos.length) }, () => logos).flat()
 
   return (
-    <section className="border-b border-ink-100 py-10 md:py-12">
+    <section className="border-b border-ink-100 bg-paper py-10 md:py-12">
       <p className="text-center text-sm text-ink-500">Work seen at</p>
       <div className="mt-8 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
         <div className="animate-marquee items-center" style={{ animationDuration: `${row.length * 4}s` }}>

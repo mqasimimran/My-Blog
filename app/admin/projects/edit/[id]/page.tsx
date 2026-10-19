@@ -29,6 +29,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null)
   const [previewVideoFile, setPreviewVideoFile] = useState<File | null>(null)
   const [liveUrl, setLiveUrl] = useState('')
+  const [playUrl, setPlayUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [featured, setFeatured] = useState(false)
   const [published, setPublished] = useState(true)
@@ -61,6 +62,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         setExistingScreenshots(data.screenshots || [])
         setPreviewVideoUrl(data.preview_video_url || null)
         setLiveUrl(data.live_url || '')
+        setPlayUrl(data.play_url || '')
         setGithubUrl(data.github_url || '')
         setFeatured(data.featured)
         setPublished(data.published ?? true)
@@ -126,6 +128,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       screenshots: screenshotUrls,
       preview_video_url: finalPreviewVideoUrl,
       live_url: liveUrl,
+      play_url: playUrl || null,
       github_url: githubUrl,
       featured,
       published
@@ -285,6 +288,10 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               <div>
                 <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">GitHub / Repo URL</label>
                 <input type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Playable build URL (optional)</label>
+                <input type="url" value={playUrl} onChange={(e) => setPlayUrl(e.target.value)} placeholder="e.g. an itch.io embed link or /games/my-game/index.html" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
               </div>
             </div>
 

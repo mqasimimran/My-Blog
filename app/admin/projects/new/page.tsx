@@ -24,6 +24,7 @@ export default function NewProjectPage() {
   const [screenshotFiles, setScreenshotFiles] = useState<File[]>([])
   const [previewVideoFile, setPreviewVideoFile] = useState<File | null>(null)
   const [liveUrl, setLiveUrl] = useState('')
+  const [playUrl, setPlayUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [featured, setFeatured] = useState(false)
   const [published, setPublished] = useState(true)
@@ -100,6 +101,7 @@ export default function NewProjectPage() {
       screenshots: screenshotUrls,
       preview_video_url: previewVideoUrl,
       live_url: liveUrl,
+      play_url: playUrl || null,
       github_url: githubUrl,
       featured,
       published,
@@ -240,6 +242,10 @@ export default function NewProjectPage() {
               <div>
                 <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">GitHub / Repo URL</label>
                 <input type="url" value={githubUrl} onChange={(e) => setGithubUrl(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Playable build URL (optional)</label>
+                <input type="url" value={playUrl} onChange={(e) => setPlayUrl(e.target.value)} placeholder="e.g. an itch.io embed link or /games/my-game/index.html" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />
               </div>
             </div>
 

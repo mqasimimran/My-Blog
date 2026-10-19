@@ -5,6 +5,7 @@ import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
+import InvitePanel from './InvitePanel'
 
 type Testimonial = {
   id: string
@@ -83,6 +84,8 @@ export default function AdminTestimonialsPage() {
       <AdminNav />
 
       <main className="flex-1 p-10 overflow-y-auto">
+
+        <InvitePanel />
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <div>

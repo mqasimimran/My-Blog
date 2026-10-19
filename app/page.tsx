@@ -10,6 +10,7 @@ import AvailabilityBadge from '@/app/components/AvailabilityBadge'
 import NowWidget from '@/app/components/NowWidget'
 import HomeStats from '@/app/components/HomeStats'
 import BlurLens from '@/app/components/BlurLens'
+import LatestVideos from '@/app/components/LatestVideos'
 import RoleCycler from '@/app/components/RoleCycler'
 import Reveal from '@/app/components/Reveal'
 import MagneticButton from '@/app/components/MagneticButton'
@@ -20,7 +21,7 @@ import { siteConfig } from '@/site.config'
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex flex-col bg-paper">
+    <main className="min-h-screen flex flex-col">
       {/* Hero Section — note: the photo is anchored to THIS section's own
           height (absolute, bottom:0). The tech ticker below is a SEPARATE
           sibling <section>, not nested in here — nesting it would grow this
@@ -116,6 +117,7 @@ export default function HomePage() {
       <Reveal><ProjectFilters /></Reveal>
       <Reveal><FeaturedDesigns /></Reveal>
       <Reveal><FeaturedBlogPosts /></Reveal>
+      <LatestVideos />
       <Reveal><CertificationsWall /></Reveal>
       <Reveal><Testimonials /></Reveal>
       <Reveal><NewsletterSignup /></Reveal>

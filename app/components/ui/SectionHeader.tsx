@@ -7,22 +7,25 @@ export default function SectionHeader({
   description,
   action,
   meta,
+  stackMeta = false,
   className = '',
 }: {
   title: string
   description?: string
   action?: React.ReactNode
   meta?: string
+  /** Put the note under the description instead of opposite the title (use in narrow columns). */
+  stackMeta?: boolean
   className?: string
 }) {
   return (
-    <div className={`flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-10 ${className}`}>
+    <div className={`flex flex-col gap-4 ${stackMeta ? '' : 'md:flex-row md:items-end md:justify-between md:gap-10'} ${className}`}>
       <div className="max-w-2xl">
         <h2 className="type-h2 text-ink-900"><SplitText text={title} /></h2>
         {description && <p className="type-lead mt-4 max-w-[52ch]">{description}</p>}
         {action && <div className="mt-6">{action}</div>}
       </div>
-      {meta && <p className="shrink-0 text-sm text-ink-500 md:pb-1">{meta}</p>}
+      {meta && <p className={`shrink-0 text-sm text-ink-500 ${stackMeta ? '' : 'md:pb-1'}`}>{meta}</p>}
     </div>
   )
 }

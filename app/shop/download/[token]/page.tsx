@@ -76,12 +76,12 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
   }
 
   if (isLoading) {
-    return <main className="min-h-screen bg-paper flex items-center justify-center"><p className="text-ink-300 text-xs font-mono">Loading...</p></main>
+    return <main className="min-h-screen flex items-center justify-center"><p className="text-ink-300 text-xs font-mono">Loading...</p></main>
   }
 
   if (notFound || !order) {
     return (
-      <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center">
+      <main className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 text-center">
         <p className="text-ink-500">This download link isn't valid, or the order hasn't been verified yet.</p>
         <Link href="/contact" className="text-accent-600 text-xs font-medium">Contact support</Link>
       </main>
@@ -89,7 +89,7 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
   }
 
   return (
-    <main className="min-h-screen bg-paper flex flex-col items-center justify-center gap-6 px-6 text-center max-w-md mx-auto">
+    <main className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 text-center max-w-md mx-auto">
       <CheckCircle size={56} weight="light" aria-hidden className="text-success" />
       <h1 className="text-2xl font-light text-ink-900">Thanks, {order.customer_name}!</h1>
       <p className="text-ink-500 text-sm">Here's your download for <strong>{order.product_name}</strong>.</p>

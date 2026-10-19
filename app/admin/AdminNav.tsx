@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { href: '/admin/services', label: 'Services' },
   { href: '/admin/shop', label: 'Shop' },
   { href: '/admin/orders', label: 'Orders' },
+  { href: '/admin/discounts', label: 'Discount Codes' },
   { href: '/admin/journey', label: 'My Journey' },
   { href: '/admin/testimonials', label: 'Testimonials' },
   { href: '/admin/logos', label: 'Client Logos' },
@@ -36,59 +37,59 @@ export default function AdminNav() {
   }
 
   const linkClass = (href: string) =>
-    `${isActive(href) ? 'text-accent-600' : 'text-ink-500 hover:text-ink-900'} transition-colors`
+    `relative flex items-center border-b border-ink-100 px-5 py-3 text-[11.5px] font-medium uppercase tracking-[0.08em] transition-colors duration-200 ${
+      isActive(href) ? 'bg-ink-50 text-ink-900 before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-accent-600' : 'text-ink-500 hover:bg-ink-50 hover:text-ink-900'
+    }`
+
+  const items = (onClick?: () => void) => (
+    <>
+      {NAV_ITEMS.map((item) => (
+        <Link key={item.href} href={item.href} onClick={onClick} aria-current={isActive(item.href) ? 'page' : undefined} className={linkClass(item.href)}>
+          {item.label}
+        </Link>
+      ))}
+      <Link href={RESUME_ITEM.href} onClick={onClick} aria-current={isActive(RESUME_ITEM.href) ? 'page' : undefined} className={`${linkClass(RESUME_ITEM.href)} mt-4 border-t`}>
+        {RESUME_ITEM.label}
+      </Link>
+      <button
+        onClick={() => signOut({ callbackUrl: '/admin/login' })}
+        className="flex items-center border-b border-ink-100 px-5 py-3 text-left text-[11.5px] font-medium uppercase tracking-[0.08em] text-ink-500 transition-colors duration-200 hover:bg-ink-50 hover:text-error"
+      >
+        Log out
+      </button>
+    </>
+  )
 
   return (
     <>
-      {/* Desktop sidebar — now flips with the site's light/dark toggle instead of staying permanently dark */}
-      <aside className="w-64 bg-paper text-ink-900 border-r border-ink-100 p-6 flex-col hidden md:flex min-h-screen">
-        <h2 className="text-xl font-light tracking-wide uppercase mb-10">Admin</h2>
-        <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-          {NAV_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className={linkClass(item.href)}>
-              {item.label}
-            </Link>
-          ))}
-          <Link href={RESUME_ITEM.href} className={`${linkClass(RESUME_ITEM.href)} pt-2 border-t border-ink-100`}>
-            {RESUME_ITEM.label}
-          </Link>
-          <button
-            onClick={() => signOut({ callbackUrl: '/admin/login' })}
-            className="w-full text-left text-ink-500 hover:text-red-400 transition-colors pt-4 mt-2 border-t border-ink-100"
-          >
-            ← Log Out
-          </button>
-        </nav>
+      {/* Desktop sidebar: boxed rows, stays in view while the page scrolls */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-ink-100 bg-paper text-ink-900 md:flex">
+        <div className="border-b border-ink-100 px-5 py-6">
+          <p className="font-display text-4xl uppercase leading-none text-ink-900">Admin</p>
+          {session?.user?.name && <p className="type-meta mt-3">Signed in as {session.user.name}</p>}
+        </div>
+        <nav aria-label="Admin" className="flex flex-col pb-8">{items()}</nav>
+        <Link href="/" className="mt-auto flex items-center justify-center bg-ink-900 px-5 py-4 text-[11.5px] font-medium uppercase tracking-[0.08em] text-paper transition-colors duration-300 hover:bg-accent-600 hover:text-on-accent">
+          View site
+        </Link>
       </aside>
 
       {/* Mobile top bar + dropdown */}
-      <div className="md:hidden bg-paper text-ink-900 border-b border-ink-100 sticky top-0 z-30">
-        <div className="flex items-center justify-between px-5 py-4">
-          <h2 className="text-lg font-light tracking-wide uppercase">Admin</h2>
+      <div className="sticky top-0 z-30 border-b border-ink-100 bg-paper text-ink-900 md:hidden">
+        <div className="flex h-12 items-stretch justify-between">
+          <p className="flex items-center px-5 font-display text-xl uppercase leading-none">Admin</p>
           <button
             onClick={() => setMobileOpen((v) => !v)}
-            className="text-xs font-bold tracking-widest uppercase text-ink-500 border border-ink-100 rounded-none px-3 py-2"
+            aria-expanded={mobileOpen}
+            className="border-l border-ink-100 px-5 text-[11.5px] font-medium uppercase tracking-[0.08em] text-ink-700 hover:bg-ink-50"
             aria-label="Toggle admin menu"
           >
-            {mobileOpen ? 'Close ✕' : 'Menu ☰'}
+            {mobileOpen ? 'Close' : 'Menu'}
           </button>
         </div>
         {mobileOpen && (
-          <nav className="flex flex-col px-5 pb-5 gap-3 text-xs font-bold tracking-widest uppercase border-t border-ink-100 pt-4">
-            {NAV_ITEMS.map((item) => (
-              <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} className={linkClass(item.href)}>
-                {item.label}
-              </Link>
-            ))}
-            <Link href={RESUME_ITEM.href} onClick={() => setMobileOpen(false)} className={`${linkClass(RESUME_ITEM.href)} pt-3 border-t border-ink-100`}>
-              {RESUME_ITEM.label}
-            </Link>
-            <button
-              onClick={() => signOut({ callbackUrl: '/admin/login' })}
-              className="text-left text-ink-500 hover:text-red-400 transition-colors pt-3 border-t border-ink-100"
-            >
-              ← Log Out
-            </button>
+          <nav aria-label="Admin" className="flex flex-col border-t border-ink-100">
+            {items(() => setMobileOpen(false))}
           </nav>
         )}
       </div>

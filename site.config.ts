@@ -104,6 +104,9 @@ export const siteConfig = {
     get portfolio() { return `${siteConfig.url}/` },
     get email() { return siteConfig.email },
     phone: '92-324-9453952',
+    /** The "Download CV" button. Leave empty to generate the PDF live from your resume data
+     *  (always up to date). Or put your own PDF in /public and give its path, e.g. '/resume.pdf'. */
+    cvFile: '',
   },
 
   // ---- Payments -----------------------------------------------------------
@@ -136,6 +139,78 @@ export const siteConfig = {
   // ---- Admin sign-in defaults --------------------------------------------
   // Overridden by the ADMIN_USERNAME / ADMIN_NAME / ADMIN_EMAIL environment
   // variables. Passwords and 2FA are never stored here.
+  // ---- Latest videos (homepage) -------------------------------------------
+  videos: {
+    /** Your YouTube channel ID: starts with "UC", 24 characters. Find it in YouTube Studio ->
+     *  Settings -> Channel -> Advanced settings, or in your channel's URL. Empty = section hidden. */
+    youtubeChannelId: '',
+  },
+
+  // ---- Tech Stack page (/tech-stack) --------------------------------------
+  // Each group is a section; each item is one tool: name, what it is, and how you use it.
+  techStack: [
+    {
+      category: "Hardware & Performance Workstation",
+      items: [
+        {
+          name: "AMD Ryzen 5 7500F & RX 6750 XT",
+          role: "Primary Rig",
+          usage: "Handles heavy multi-threaded C# compilation, real-time lighting bakes in Unity 3D, and high-resolution graphic design workflows across Adobe Illustrator and Photoshop without frame drops."
+        },
+        {
+          name: "Jmary MC-PW12 Microphone",
+          role: "Audio Capture",
+          usage: "Used for recording clear audio narration and voiceovers for tutorials published on the QasimDevelops YouTube channel."
+        },
+        {
+          name: "Cyber Acoustics WC-3000 Webcam",
+          role: "Video & Streaming",
+          usage: "Powers video communication, live sessions, and collaborative virtual meetings."
+        }
+      ]
+    },
+    {
+      category: "Game Development & Software Engineering",
+      items: [
+        {
+          name: "Unity 3D & C#",
+          role: "Game Engine",
+          usage: "Engineered complex mechanics, custom inventory systems, and save/load logic for projects like 'Hospital of the Damned' and physics-driven simulations."
+        },
+        {
+          name: "Next.js & TypeScript",
+          role: "Web Architecture",
+          usage: "Powers this high-performance portfolio, ensuring fast server-side rendering, smooth MDX blog integration, and strict type safety."
+        },
+        {
+          name: "Python & TensorFlow",
+          role: "AI & Machine Learning",
+          usage: "Applied in building deep learning tools like the Brain Tumor MRI Classifier and backend logic for the bilingual AI Urdu Teaching Assistant."
+        },
+        {
+          name: "Node.js & Playwright",
+          role: "Automation",
+          usage: "Utilized for script-driven browser task execution, web scraping, and automated content distribution tools like the LinkedIn Automator."
+        }
+      ]
+    },
+    {
+      category: "Visual Design & Creative Branding",
+      items: [
+        {
+          name: "Adobe Illustrator & Photoshop",
+          role: "Vector & Raster Graphics",
+          usage: "Employed during graphic design leadership roles (such as for TEDxUMTLahore) to build crisp brand identities, promotional assets, and UI components."
+        },
+        {
+          name: "Figma",
+          role: "UI/UX Prototyping",
+          usage: "Used to blueprint modern application layouts, wireframes, and design systems for mobile and web apps like NovaPay."
+        }
+      ]
+    }
+  ],
+
   admin: {
     username: 'qasim',
     displayName: firstName,

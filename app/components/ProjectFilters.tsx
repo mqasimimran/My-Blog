@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import useStackShrink from '@/app/components/ui/useStackShrink'
 import Link from 'next/link'
 import { ArrowUpRight } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
@@ -54,6 +55,8 @@ export default function ProjectFilters() {
 
   const filtered =
     activeCategory === 'ALL' ? projects : projects.filter((p) => p.category.toUpperCase() === activeCategory)
+  const listRef = useRef<HTMLUListElement>(null)
+  useStackShrink(listRef, [filtered.length, isLoading])
 
   return (
     <section className="container-page section-y">
@@ -93,7 +96,7 @@ export default function ProjectFilters() {
             <p className="text-base text-ink-500">No projects in this category yet.</p>
           ) : (
             // Each card sticks just under the navbar, so the next one slides up over it.
-            <ul>
+            <ul ref={listRef}>
               {filtered.map((project) => (
                 <li data-no-animate key={project.id} className="sticky top-[72px] bg-paper pb-12">
                   <ProjectCard project={project} />
@@ -113,7 +116,8 @@ function ProjectCard({ project }: { project: Project }) {
 
   return (
     <Link
-      href={project.live_url || `/projects/${project.slug}`}
+      // Always the case study; the live demo is a button on that page.
+      href={`/projects/${project.slug}`}
       data-cursor="View"
       className="group block"
       onMouseEnter={() => setIsHovering(true)}
@@ -147,7 +151,7 @@ function ProjectCard({ project }: { project: Project }) {
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-900 transition-colors duration-300 group-hover:text-accent-600">
-          {project.category === 'Game Dev' ? 'Play demo' : 'View details'}
+          View project
           <ArrowUpRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 ease-[var(--ease-smooth)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </span>
       </div>

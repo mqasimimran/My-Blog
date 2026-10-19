@@ -8,6 +8,7 @@ import ShareButtons from '@/app/components/ShareButtons'
 import { ArrowLeft } from '@phosphor-icons/react'
 import { ButtonLink } from '@/app/components/ui/Button'
 import CountUp from '@/app/components/ui/CountUp'
+import GamePlayer from '@/app/components/GamePlayer'
 import { SkeletonBlock } from '@/app/components/Skeleton'
 import EmptyState from '@/app/components/EmptyState'
 
@@ -23,6 +24,7 @@ type Project = {
   feature_image: string | null
   live_url: string | null
   github_url: string | null
+  play_url?: string | null
   content: string | null
   problem: string | null
   approach: string | null
@@ -161,6 +163,15 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
         </figure>
       )}
 
+      {project.play_url && (
+        <section className="container-page mt-14 md:mt-20" aria-label="Play the game">
+          <h2 className="type-h2 text-ink-900"><SplitText text="Play it in your browser" /></h2>
+          <div className="mt-8">
+            <GamePlayer src={project.play_url} title={project.title} poster={project.feature_image} />
+          </div>
+        </section>
+      )}
+
       <div className="container-page">
         {/* Stats */}
         {project.stats && (
@@ -229,7 +240,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
             <h2 className="type-h3 text-ink-900">More {project.category} projects</h2>
             <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-3">
               {relatedProjects.map((related) => (
-                <Link key={related.slug} href={`/projects/${related.slug}`} className="group block">
+                <Link key={related.slug} href={`/projects/${related.slug}`} className="group flex h-full w-full flex-col border border-ink-100 bg-paper-raised transition-colors duration-300 hover:border-ink-900">
                   <div className="relative aspect-[4/3] overflow-hidden bg-ink-50">
                     {related.feature_image && (
                       <Image
@@ -241,8 +252,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                       />
                     )}
                   </div>
-                  <p className="type-meta mt-4">{related.category}</p>
-                  <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{related.title}</h3>
+                  <div className="p-5">
+                    <p className="type-meta">{related.category}</p>
+                    <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{related.title}</h3>
+                  </div>
                 </Link>
               ))}
             </div>

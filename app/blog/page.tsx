@@ -82,29 +82,25 @@ export default function BlogPage() {
           ) : filteredArticles.length === 0 ? (
             <EmptyState icon="search" title="No articles in this category yet" description="Try another category." />
           ) : (
-            <div className="flex flex-col">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredArticles.map((article) => (
-                <article key={article.id} className="border-t border-ink-100 py-10 first:border-t-0 first:pt-0 md:py-14">
-                  <Link href={`/blog/${article.slug}`} data-cursor="Read" className="group grid gap-x-12 gap-y-6 md:grid-cols-12 md:items-center">
+                <article key={article.id} className="flex">
+                  <Link href={`/blog/${article.slug}`} data-cursor="Read" className="group flex h-full w-full flex-col border border-ink-100 bg-paper-raised transition-colors duration-300 hover:border-ink-900">
                     {article.feature_image && (
-                      <div className="overflow-hidden bg-ink-50 md:col-span-5">
-                        <img
-                          src={article.feature_image}
-                          alt={article.title}
-                          loading="lazy"
-                          className="h-auto w-full transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
-                        />
+                      <div className="relative aspect-video overflow-hidden border-b border-ink-100 bg-ink-50">
+                        {/* 16:9 frame. A 16:9 cover (e.g. 1600x900) fills it exactly; any other shape still shows
+                            whole, with a soft blurred copy of itself filling the spare space. Never cropped. */}
+                        <img src={article.feature_image} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
+                        <img src={article.feature_image} alt={article.title} loading="lazy" className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
                       </div>
                     )}
-                    <div className={article.feature_image ? 'md:col-span-7' : 'md:col-span-9'}>
+                    <div className="flex flex-1 flex-col p-6">
                       <p className="type-meta flex gap-x-4">
                         <span>{article.category}</span>
                         <time dateTime={article.created_at}>{formatDate(article.created_at)}</time>
                       </p>
-                      <h2 className="type-h2 mt-3 max-w-[22ch] text-ink-900 transition-colors duration-300 group-hover:text-accent-600 md:text-[2.25rem]">{article.title}</h2>
-                      {article.excerpt && article.excerpt.trim() !== '' && (
-                        <p className="mt-4 max-w-[58ch] text-base leading-relaxed text-ink-700">{article.excerpt}</p>
-                      )}
+                      <h2 className="mt-3 text-xl font-semibold leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{article.title}</h2>
+                      {article.excerpt && article.excerpt.trim() !== '' && <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-ink-700">{article.excerpt}</p>}
                     </div>
                   </Link>
                 </article>

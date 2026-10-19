@@ -24,7 +24,7 @@ const SOCIAL = [
 // invert into a black block on a light page.
 export default function SiteFooter() {
   return (
-    <footer className="border-t border-ink-100 bg-paper">
+    <footer className="relative border-t border-ink-100">
       <div className="container-page grid gap-16 py-20 md:grid-cols-12 md:py-28">
         <div className="md:col-span-6">
           <p className="type-h2 max-w-[14ch] text-ink-900">Let&rsquo;s build something.</p>

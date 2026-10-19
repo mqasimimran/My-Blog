@@ -25,7 +25,8 @@ export default function ScrollAnimator() {
 
   useEffect(() => {
     const root = document.getElementById('main')
-    if (!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    // No scroll animation in the admin area: it's a work tool, not a showcase.
+    if (!root || pathname.startsWith('/admin') || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     // Only our own data-* markers are ever written. React ignores attributes it doesn't render,
     // so this can't clash with React finishing a page that loads a moment later (Suspense).

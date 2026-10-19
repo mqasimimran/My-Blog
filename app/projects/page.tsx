@@ -76,7 +76,7 @@ export default function AllProjectsPage() {
               {filteredProjects.map((project) => (
                 <li key={project.id} className="border-t border-ink-100">
                   <Link
-                    href={project.live_url || `/projects/${project.slug}`}
+                    href={`/projects/${project.slug}`}
                     data-cursor="View"
                     className="group grid gap-x-10 gap-y-3 py-8 md:grid-cols-12 md:py-10"
                   >
@@ -90,7 +90,7 @@ export default function AllProjectsPage() {
                     </div>
                     <div className="flex items-start justify-between gap-6 md:col-span-5">
                       <p className="max-w-[52ch] text-[15px] leading-relaxed text-ink-700">{project.description}</p>
-                      <span className="sr-only">{project.category === 'Game Dev' ? 'Play demo' : 'View details'}</span>
+                      <span className="sr-only">View project</span>
                       <ArrowUpRight
                         size={20}
                         aria-hidden

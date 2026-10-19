@@ -50,6 +50,15 @@ const nextConfig: NextConfig = {
       { source: '/admin/:path*', headers: noCache },
       { source: '/api/admin/:path*', headers: noCache },
       { source: '/api/auth/:path*', headers: noCache },
+      // Self-hosted game builds (public/games/...) may be shown in a frame, but only by this site:
+      // the project page embeds them. Everything else keeps "never in a frame". Later rules win.
+      {
+        source: '/games/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'Content-Security-Policy', value: "object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" },
+        ],
+      },
     ]
   },
 };

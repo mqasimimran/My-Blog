@@ -40,8 +40,8 @@ export default function CertificationsWall() {
     <section className="border-t border-ink-100">
       <div className="container-page section-y grid gap-12 lg:grid-cols-12 lg:gap-x-16">
         <div className="lg:col-span-4">
-          <div className="lg:sticky lg:top-32">
-            <SectionHeader title="Licenses and certifications" description="Verified credentials across software, design, and AI." meta="(Verified)" />
+          <div>
+            <SectionHeader title="Licenses and certifications" description="Verified credentials across software, design, and AI." meta="(Verified)" stackMeta />
           </div>
         </div>
 

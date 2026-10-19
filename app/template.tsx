@@ -1,17 +1,25 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
-// template.tsx re-mounts on every navigation (layout.tsx does not), which makes it the right
-// place to reset scroll to the top of each new page.
-//
-// It used to also fade every page in from opacity 0 using JavaScript, which meant the WHOLE
-// page was invisible until the browser had finished hydrating (slow first paint, and blank
-// for anyone without JavaScript). Pages now render visible immediately; the scroll-in
-// animation lives on individual sections (see Reveal.tsx).
+// template.tsx re-mounts on every navigation (layout.tsx does not), so it is where each new page
+// resets its scroll and plays the page wipe: a solid panel that sweeps up off the screen to reveal
+// the page you just clicked through to. It does not play on the first visit, so the first screen
+// appears instantly. Content is never hidden waiting for JavaScript.
+let firstLoad = true
+
 export default function Template({ children }: { children: React.ReactNode }) {
+  const [wipe] = useState(() => !firstLoad)
+
   useEffect(() => {
+    firstLoad = false
     window.scrollTo(0, 0)
   }, [])
-  return <>{children}</>
+
+  return (
+    <>
+      {wipe && <div aria-hidden className="page-wipe" />}
+      {children}
+    </>
+  )
 }

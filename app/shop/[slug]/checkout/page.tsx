@@ -43,6 +43,11 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
   const [transactionId, setTransactionId] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [orderNumber, setOrderNumber] = useState('')
+  const [discount, setDiscount] = useState<{ code: string; amount: number; total: number } | null>(null)
+  const [codeInput, setCodeInput] = useState('')
+  const [codeMsg, setCodeMsg] = useState('')
+  const [checkingCode, setCheckingCode] = useState(false)
   const [error, setError] = useState('')
   const [usdToPkr, setUsdToPkr] = useState<number | null>(null)
   const [rateSource, setRateSource] = useState<'live' | 'fallback' | null>(null)
@@ -86,6 +91,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          discountCode: discount?.code || undefined,
           productId: product.id,
           customerName: name,
           customerEmail: email,
@@ -95,6 +101,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
       })
       const data = await res.json()
       if (res.ok) {
+        setOrderNumber(typeof data.orderNumber === 'string' && data.orderNumber !== 'N/A' ? data.orderNumber : '')
         setSubmitted(true)
       } else {
         setError(data.error || 'Something went wrong.')
@@ -144,10 +151,37 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
           <p className="type-lead mt-5">
             I&rsquo;ll verify your payment and email your download link to <strong className="font-medium text-ink-900">{email}</strong> shortly, usually within a few hours.
           </p>
+          {orderNumber && (
+            <p className="mt-6 text-base text-ink-700">
+              Your order number is <strong className="font-mono font-medium text-ink-900">{orderNumber}</strong>.{' '}
+              <Link href={`/shop/order?order=${encodeURIComponent(orderNumber)}`} className="underline underline-offset-4 hover:text-accent-600">Track your order</Link> any time.
+            </p>
+          )}
           <Link href="/shop" className="link-draw mt-10 inline-block text-sm font-medium text-ink-900">Back to the shop</Link>
         </div>
       </main>
     )
+  }
+
+  // What the buyer pays: the discounted total once a code is applied.
+  const total = discount ? discount.total : Number(product.price)
+
+  async function applyCode(e: React.FormEvent) {
+    e.preventDefault()
+    if (!codeInput.trim() || !product) return
+    setCheckingCode(true)
+    setCodeMsg('')
+    try {
+      const res = await fetch('/api/discounts/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: codeInput, productId: product.id }) })
+      const data = await res.json()
+      if (res.ok) {
+        setDiscount(data)
+        setCodeInput('')
+      } else setCodeMsg(data.error || "That code isn't valid.")
+    } catch {
+      setCodeMsg('Could not check the code. Please try again.')
+    }
+    setCheckingCode(false)
   }
 
   const hasAccount = (method: PaymentMethod): boolean => {
@@ -169,8 +203,8 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
   const amountLine = (
     <>
       Send{' '}
-      {usdToPkr ? <strong className="font-medium text-ink-900">{formatPkr(Number(product.price))}</strong> : <strong className="font-medium text-ink-900">${Number(product.price).toFixed(2)}</strong>}
-      {usdToPkr && <span className="text-ink-500"> (about ${Number(product.price).toFixed(2)} USD)</span>} to:
+      {usdToPkr ? <strong className="font-medium text-ink-900">{formatPkr(total)}</strong> : <strong className="font-medium text-ink-900">${total.toFixed(2)}</strong>}
+      {usdToPkr && <span className="text-ink-500"> (about ${total.toFixed(2)} USD)</span>} to:
     </>
   )
   const rateNote = usdToPkr && (
@@ -241,7 +275,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
                 </div>
               ) : (
                 <div>
-                  <p>Send <strong className="font-medium text-ink-900">${Number(product.price).toFixed(2)} USD</strong> via Payoneer (Pay a Payoneer User) to:</p>
+                  <p>Send <strong className="font-medium text-ink-900">${total.toFixed(2)} USD</strong> via Payoneer (Pay a Payoneer User) to:</p>
                   <p className="mt-3 break-all font-mono text-xl text-ink-900">{accounts?.payoneer_email}</p>
                 </div>
               )}
@@ -292,11 +326,32 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
           <div className="border border-ink-100 bg-paper-raised p-6 lg:sticky lg:top-28">
             <p className="type-meta">Order summary</p>
             <p className="mt-4 text-lg font-medium tracking-tight text-ink-900">{product.name}</p>
+            <div className="mt-6 border-t border-ink-100 pt-5">
+              {discount ? (
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-ink-500"><span>Subtotal</span><span className="font-mono tabular-nums">${Number(product.price).toFixed(2)}</span></div>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-ink-700">
+                      Code <span className="font-mono text-ink-900">{discount.code}</span>
+                      <button type="button" onClick={() => setDiscount(null)} className="ml-2 text-xs text-ink-500 underline underline-offset-2 hover:text-ink-900">Remove</button>
+                    </span>
+                    <span className="font-mono tabular-nums text-success">-${discount.amount.toFixed(2)}</span>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={applyCode} className="flex gap-2">
+                  <label htmlFor="co-code" className="sr-only">Discount code</label>
+                  <input id="co-code" value={codeInput} onChange={(e) => setCodeInput(e.target.value)} placeholder="Discount code" autoComplete="off" className="h-10 min-w-0 flex-1 border border-ink-500 bg-paper-raised px-3 font-mono text-sm uppercase text-ink-900 outline-none placeholder:normal-case placeholder:text-ink-500 focus:border-accent-600" />
+                  <button type="submit" disabled={checkingCode} className="h-10 shrink-0 border border-ink-900 px-4 text-xs font-medium uppercase tracking-[0.08em] text-ink-900 transition-colors hover:bg-ink-900 hover:text-paper disabled:opacity-60">{checkingCode ? '...' : 'Apply'}</button>
+                </form>
+              )}
+              {codeMsg && <p role="alert" className="mt-2 text-xs text-error">{codeMsg}</p>}
+            </div>
             <div className="mt-6 flex items-baseline justify-between border-t border-ink-100 pt-5">
               <span className="text-sm text-ink-500">Total</span>
               <span className="text-right font-mono tabular-nums">
-                <span className="block text-xl text-ink-900">${Number(product.price).toFixed(2)}</span>
-                {usdToPkr && <span className="block text-sm text-ink-500">{formatPkr(Number(product.price))}</span>}
+                <span className="block text-xl text-ink-900">${total.toFixed(2)}</span>
+                {usdToPkr && <span className="block text-sm text-ink-500">{formatPkr(total)}</span>}
               </span>
             </div>
             {product.type === 'digital' && <p className="type-meta mt-5">Download link emailed after your payment is verified.</p>}

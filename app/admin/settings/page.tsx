@@ -8,11 +8,27 @@ import AdminNav from '@/app/admin/AdminNav'
 
 import { siteConfig } from '@/site.config'
 import { getManualMethod, MANUAL_METHODS } from '@/lib/paymentMethods'
+import { HEX, accentVars } from '@/lib/accent'
+// Live preview: apply the colour to this page straight away (the site follows after saving).
+function applyAccentPreview(hex: string) {
+  const root = document.documentElement
+  const vars = accentVars(hex, root.classList.contains('dark'))
+  for (const k of ['--color-accent-50', '--color-accent-600', '--color-accent-700', '--color-on-accent']) {
+    if (vars) root.style.setProperty(k, vars[k])
+    else root.style.removeProperty(k)
+  }
+}
+
 export default function AdminSettingsPage() {
   const { data: session, status } = useSession()
   const [availableForWork, setAvailableForWork] = useState(true)
   const [availabilityMessage, setAvailabilityMessage] = useState('')
   const [nowText, setNowText] = useState('')
+  const [accentColor, setAccentColor] = useState('')
+  const previewAccent = (value: string) => {
+    setAccentColor(value)
+    applyAccentPreview(value)
+  }
   const [jazzcashNumber, setJazzcashNumber] = useState('')
   const [jazzcashAccountName, setJazzcashAccountName] = useState('')
   const [easypaisaNumber, setEasypaisaNumber] = useState('')
@@ -37,6 +53,7 @@ export default function AdminSettingsPage() {
         setAvailableForWork(data.available_for_work)
         setAvailabilityMessage(data.availability_message || '')
         setNowText(data.now_text || '')
+        setAccentColor(data.accent_color || '')
         setJazzcashNumber(data.jazzcash_number || '')
         setJazzcashAccountName(data.jazzcash_account_name || '')
         setEasypaisaNumber(data.easypaisa_number || '')
@@ -60,6 +77,7 @@ export default function AdminSettingsPage() {
       available_for_work: availableForWork,
       availability_message: availabilityMessage,
       now_text: nowText,
+      accent_color: HEX.test(accentColor) ? accentColor : null,
       jazzcash_number: jazzcashNumber,
       jazzcash_account_name: jazzcashAccountName,
       easypaisa_number: easypaisaNumber,
@@ -165,6 +183,20 @@ export default function AdminSettingsPage() {
                 placeholder="e.g. Currently building a bilingual AI Urdu teaching assistant for my final year project."
                 className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm"
               />
+            </div>
+
+            <div className="pt-6 border-t border-ink-100">
+              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-3">Accent colour</p>
+              <p className="text-[11px] text-ink-500 mb-3">Your brand colour across the site. This page previews it live; after you save, the site updates within a minute.</p>
+              <div className="flex flex-wrap items-center gap-3">
+                <input type="color" aria-label="Pick the accent colour" value={HEX.test(accentColor) ? accentColor : siteConfig.brand.accent} onChange={(e) => previewAccent(e.target.value)} className="h-11 w-14 cursor-pointer border border-ink-100 bg-paper-raised p-1" />
+                <input type="text" aria-label="Accent colour as a hex code" value={accentColor} onChange={(e) => previewAccent(e.target.value)} placeholder={siteConfig.brand.accent} className="w-32 border border-ink-100 p-3 font-mono text-sm" />
+                <span className="grid h-11 place-items-center bg-accent-600 px-4 text-xs font-medium uppercase tracking-[0.08em] text-on-accent">Button</span>
+                <span className="text-sm font-medium text-accent-600">Link text</span>
+                {accentColor && (
+                  <button type="button" onClick={() => previewAccent('')} className="text-xs font-medium uppercase tracking-[0.08em] text-ink-500 hover:text-ink-900">Reset to default</button>
+                )}
+              </div>
             </div>
 
             <div className="pt-6 border-t border-ink-100">

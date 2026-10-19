@@ -142,7 +142,7 @@ function SearchResults() {
 export default function SearchPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-paper flex items-center justify-center">
+      <main className="min-h-screen flex items-center justify-center">
         <p className="text-ink-300 text-xs font-mono">Loading...</p>
       </main>
     }>

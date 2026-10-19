@@ -37,7 +37,7 @@ export default function AddEducation() {
           onChange={e => setFormData({...formData, degree: e.target.value})}
         />
         <input 
-          type="text" placeholder="Institution (e.g., UMT, Lahore)" required
+          type="text" placeholder="Institution (e.g., university name, city)" required
           className="w-full p-2 border rounded-none"
           onChange={e => setFormData({...formData, institution: e.target.value})}
         />

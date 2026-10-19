@@ -1,70 +1,11 @@
 'use client'
 import SplitText from '@/app/components/ui/SplitText'
+import { siteConfig } from '@/site.config'
 
 
 export default function TechStackPage() {
-  const techCategories = [
-    {
-      category: "Hardware & Performance Workstation",
-      items: [
-        {
-          name: "AMD Ryzen 5 7500F & RX 6750 XT",
-          role: "Primary Rig",
-          usage: "Handles heavy multi-threaded C# compilation, real-time lighting bakes in Unity 3D, and high-resolution graphic design workflows across Adobe Illustrator and Photoshop without frame drops."
-        },
-        {
-          name: "Jmary MC-PW12 Microphone",
-          role: "Audio Capture",
-          usage: "Used for recording clear audio narration and voiceovers for tutorials published on the QasimDevelops YouTube channel."
-        },
-        {
-          name: "Cyber Acoustics WC-3000 Webcam",
-          role: "Video & Streaming",
-          usage: "Powers video communication, live sessions, and collaborative virtual meetings."
-        }
-      ]
-    },
-    {
-      category: "Game Development & Software Engineering",
-      items: [
-        {
-          name: "Unity 3D & C#",
-          role: "Game Engine",
-          usage: "Engineered complex mechanics, custom inventory systems, and save/load logic for projects like 'Hospital of the Damned' and physics-driven simulations."
-        },
-        {
-          name: "Next.js & TypeScript",
-          role: "Web Architecture",
-          usage: "Powers this high-performance portfolio, ensuring fast server-side rendering, smooth MDX blog integration, and strict type safety."
-        },
-        {
-          name: "Python & TensorFlow",
-          role: "AI & Machine Learning",
-          usage: "Applied in building deep learning tools like the Brain Tumor MRI Classifier and backend logic for the bilingual AI Urdu Teaching Assistant."
-        },
-        {
-          name: "Node.js & Playwright",
-          role: "Automation",
-          usage: "Utilized for script-driven browser task execution, web scraping, and automated content distribution tools like the LinkedIn Automator."
-        }
-      ]
-    },
-    {
-      category: "Visual Design & Creative Branding",
-      items: [
-        {
-          name: "Adobe Illustrator & Photoshop",
-          role: "Vector & Raster Graphics",
-          usage: "Employed during graphic design leadership roles (such as for TEDxUMTLahore) to build crisp brand identities, promotional assets, and UI components."
-        },
-        {
-          name: "Figma",
-          role: "UI/UX Prototyping",
-          usage: "Used to blueprint modern application layouts, wireframes, and design systems for mobile and web apps like NovaPay."
-        }
-      ]
-    }
-  ]
+  // The list lives in site.config.ts -> techStack, so it's edited in one place.
+  const techCategories = siteConfig.techStack
 
   return (
     <main className="pb-24">

@@ -23,7 +23,7 @@ export default async function ProjectPreviewPage({ params }: { params: Promise<{
   }
 
   return (
-    <main className="min-h-screen bg-paper py-20 px-6 font-sans">
+    <main className="min-h-screen py-20 px-6 font-sans">
       <div className="max-w-4xl mx-auto">
         <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium text-center py-3 px-4 rounded-none mb-12">
           Draft preview: not published, not indexed, only visible via this link
