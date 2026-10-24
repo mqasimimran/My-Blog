@@ -1,6 +1,7 @@
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import { getT } from '@/lib/locale'
 
 export const metadata: Metadata = {
   title: 'Draft Preview',
@@ -8,6 +9,7 @@ export const metadata: Metadata = {
 }
 
 export default async function DesignPreviewPage({ params }: { params: Promise<{ token: string }> }) {
+  const { tx } = await getT()
   const { token } = await params
 
   const { data: design, error } = await supabase
@@ -24,7 +26,7 @@ export default async function DesignPreviewPage({ params }: { params: Promise<{ 
     <main className="min-h-screen py-20 px-6 font-sans">
       <div className="max-w-4xl mx-auto">
         <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium text-center py-3 px-4 rounded-none mb-12">
-          Draft preview: not published, not indexed, only visible via this link
+          {tx("Draft preview: not published, not indexed, only visible via this link")}
         </div>
 
         <header className="mb-10">

@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 import { siteConfig } from '@/site.config'
 import SplitText from '@/app/components/ui/SplitText'
+import { getT } from '@/lib/locale'
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'How this site collects, uses, and protects information, including contact messages, newsletter signups, analytics, comments, and advertising.',
@@ -10,9 +11,16 @@ export const metadata: Metadata = {
 
 const LAST_UPDATED = 'September 2026'
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const { locale } = await getT()
   return (
     <main>
+      {locale === 'ur' && (
+        <p lang="ur" dir="rtl" className="container-page mt-10 border-s-2 border-accent-600 bg-ink-50 p-4 text-[15px] text-ink-700">
+          {'\u06cc\u06c1 \u0631\u0627\u0632\u062f\u0627\u0631\u06cc \u06a9\u06cc \u067e\u0627\u0644\u06cc\u0633\u06cc \u0627\u0646\u06af\u0631\u06cc\u0632\u06cc \u0645\u06cc\u06ba \u06c1\u06d2\u06d4 \u06a9\u0648\u0626\u06cc \u0633\u0648\u0627\u0644 \u06c1\u0648 \u062a\u0648 \u0631\u0627\u0628\u0637\u06c1 \u06a9\u0631\u06cc\u06ba\u06d4'}
+        </p>
+      )}
+      <div dir="ltr" lang="en">
       <header className="container-page pb-10 pt-12 md:pb-14 md:pt-20">
         <h1 className="type-display text-ink-900"><SplitText text={"Privacy Policy"} /></h1>
         <p className="type-meta mt-5">Last updated {LAST_UPDATED}</p>
@@ -117,6 +125,7 @@ export default function PrivacyPage() {
         </div>
 
       </article>
+          </div>
     </main>
   )
 }

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { siteConfig } from '@/site.config'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Package = {
   id: string
@@ -23,6 +24,7 @@ function parsePrice(price: string): number | null {
 }
 
 export default function QuoteCalculator() {
+  const { tx } = useLocale()
   const [services, setServices] = useState<ServiceWithPackages[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selected, setSelected] = useState<Record<string, boolean>>({})
@@ -74,10 +76,10 @@ export default function QuoteCalculator() {
     <section className="max-w-4xl mx-auto px-6 py-20 font-sans">
       <div className="max-w-lg mb-10">
         <h2 className="text-3xl font-semibold text-ink-900 mb-3 tracking-[-0.035em]">
-          Build a Quote
+          {tx("Build a Quote")}
         </h2>
         <p className="text-sm text-ink-500 leading-relaxed">
-          Pick what you need and get a ballpark price instantly, no back-and-forth required to get started.
+          {tx("Pick what you need and get a ballpark price instantly, no back-and-forth required to get started.")}
         </p>
       </div>
 
@@ -114,12 +116,12 @@ export default function QuoteCalculator() {
 
       <div className="mt-10 pt-8 border-t border-ink-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div>
-          <p className="text-xs font-medium text-ink-300 mb-1">Estimated Starting Total</p>
+          <p className="text-xs font-medium text-ink-300 mb-1">{tx("Estimated Starting Total")}</p>
           <p className="text-3xl font-semibold text-ink-900 tracking-[-0.035em]">
             {hasSelection ? `$${total.toLocaleString()}` : '-'}
           </p>
           {hasSelection && (
-            <p className="text-xs text-ink-300 mt-1">Based on listed starting prices. The final quote may vary with scope.</p>
+            <p className="text-xs text-ink-300 mt-1">{tx("Based on listed starting prices. The final quote may vary with scope.")}</p>
           )}
         </div>
         <Link

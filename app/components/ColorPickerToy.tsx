@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import { siteConfig } from '@/site.config'
 import { Palette } from '@phosphor-icons/react'
+import { useLocale } from '@/app/components/LocaleProvider'
 const PALETTES = [
   { name: 'Maroon (current)', color: siteConfig.brand.accent },
   { name: 'Forest', color: '#1a5c3a' },
@@ -12,6 +13,7 @@ const PALETTES = [
 ]
 
 export default function ColorPickerToy() {
+  const { tx } = useLocale()
   const [isOpen, setIsOpen] = useState(false)
   const [selected, setSelected] = useState(PALETTES[0].color)
 
@@ -19,8 +21,8 @@ export default function ColorPickerToy() {
     <div className="fixed bottom-6 right-6 z-40 hidden md:block">
       {isOpen && (
         <div className="mb-3 bg-paper rounded-none shadow-xl border border-ink-100 p-5 w-64">
-          <p className="text-xs font-medium text-ink-300 mb-1">Just a toy</p>
-          <p className="text-xs text-ink-500 mb-4">Preview an alternate accent color. This doesn't change the real site, just this little card.</p>
+          <p className="text-xs font-medium text-ink-300 mb-1">{tx("Just a toy")}</p>
+          <p className="text-xs text-ink-500 mb-4">{tx("Preview an alternate accent color. This doesn't change the real site, just this little card.")}</p>
 
           <div className="flex gap-2 mb-4">
             {PALETTES.map((p) => (
@@ -39,14 +41,14 @@ export default function ColorPickerToy() {
               className="w-full text-white text-xs font-medium py-2.5 rounded-none transition-colors"
               style={{ backgroundColor: selected }}
             >
-              Sample Button
+              {tx("Sample Button")}
             </button>
             <div className="flex items-center gap-2 text-xs">
               <span className="font-medium px-2 py-1 rounded-full text-white" style={{ backgroundColor: selected }}>
-                Badge
+                {tx("Badge")}
               </span>
               <a href="#" onClick={(e) => e.preventDefault()} className="underline" style={{ color: selected }}>
-                A sample link
+                {tx("A sample link")}
               </a>
             </div>
           </div>
@@ -56,7 +58,7 @@ export default function ColorPickerToy() {
       <button
         onClick={() => setIsOpen((v) => !v)}
         className="w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-white text-lg bg-gray-900 hover:scale-105 transition-transform"
-        aria-label="Toggle color preview toy"
+        aria-label={tx("Toggle color preview toy")}
       >
         <Palette size={20} weight="regular" aria-hidden />
       </button>

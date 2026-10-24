@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import EmptyState from '@/app/components/EmptyState'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type RoadmapItem = {
   id: string
@@ -19,6 +20,7 @@ const COLUMNS: { key: RoadmapItem['status']; label: string }[] = [
 ]
 
 export default function RoadmapPage() {
+  const { tx } = useLocale()
   const [items, setItems] = useState<RoadmapItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -39,15 +41,15 @@ export default function RoadmapPage() {
   return (
     <main>
       <header className="container-page pb-12 pt-12 md:pb-16 md:pt-20">
-        <h1 className="type-display text-ink-900"><SplitText text={"Roadmap"} /></h1>
-        <p className="type-lead mt-6 max-w-[52ch]">What&rsquo;s planned, what&rsquo;s underway, and what&rsquo;s already shipped. An honest look at what&rsquo;s next.</p>
+        <h1 className="type-display text-ink-900"><SplitText text={tx("Roadmap")} /></h1>
+        <p className="type-lead mt-6 max-w-[52ch]">{tx("What’s planned, what’s underway, and what’s already shipped. An honest look at what’s next.")}</p>
       </header>
 
       <section className="container-page pb-24">
         {isLoading ? (
-          <div className="text-center py-20 text-ink-300 text-xs font-mono">Loading...</div>
+          <div className="text-center py-20 text-ink-300 text-xs font-mono">{tx("Loading...")}</div>
         ) : items.length === 0 ? (
-          <EmptyState icon="sparkle" title="Nothing on the roadmap yet" description="Check back soon." />
+          <EmptyState icon="sparkle" title={tx("Nothing on the roadmap yet")} description={tx("Check back soon.")} />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {COLUMNS.map((col) => {
@@ -59,12 +61,12 @@ export default function RoadmapPage() {
                       col.key === 'shipped' ? 'bg-green-500' : col.key === 'in_progress' ? 'bg-accent-600' : 'bg-ink-100'
                     }`} />
                     <h2 className="text-xs font-medium text-ink-900">
-                      {col.label} ({colItems.length})
+                      {tx(col.label)} ({colItems.length})
                     </h2>
                   </div>
                   <div className="space-y-4">
                     {colItems.length === 0 ? (
-                      <p className="text-xs text-ink-100 italic">Nothing here yet.</p>
+                      <p className="text-xs text-ink-100 italic">{tx("Nothing here yet.")}</p>
                     ) : (
                       colItems.map((item) => (
                         <div key={item.id} className="border border-ink-100 rounded-none p-5">

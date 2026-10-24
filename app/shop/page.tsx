@@ -8,6 +8,7 @@ import PageHeader from '@/app/components/ui/PageHeader'
 import FilterTabs from '@/app/components/ui/FilterTabs'
 import EmptyState from '@/app/components/EmptyState'
 import { SkeletonBlock } from '@/app/components/Skeleton'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Product = {
   id: string
@@ -20,14 +21,17 @@ type Product = {
   images: string[] | null
 }
 
-type Filter = 'All' | 'Digital' | 'Physical'
+type Filter = 'All' | 'Digital' | 'Physical' | 'Wallpapers'
 const FILTERS: { key: Filter; label: string }[] = [
   { key: 'All', label: 'All' },
   { key: 'Digital', label: 'Digital' },
   { key: 'Physical', label: 'Physical' },
+  { key: 'Wallpapers', label: 'Wallpapers' },
 ]
 
 export default function ShopPage() {
+  const { tx } = useLocale()
+  const { t } = useLocale()
   const [products, setProducts] = useState<Product[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeFilter, setActiveFilter] = useState<Filter>('All')
@@ -47,19 +51,20 @@ export default function ShopPage() {
     fetchProducts()
   }, [])
 
-  const filtered = activeFilter === 'All' ? products : products.filter((p) => p.type.toLowerCase() === activeFilter.toLowerCase())
+  // Bundles count as digital: they're delivered as downloads.
+  const filtered = activeFilter === 'All' ? products : products.filter((p) => (activeFilter === 'Wallpapers' ? p.type === 'wallpaper' : activeFilter === 'Digital' ? p.type !== 'physical' : p.type === 'physical'))
 
   return (
     <main className="pb-24">
-      <PageHeader title="Store" description="Templates, design resources, and a few physical pieces. Browse what's available below.">
+      <PageHeader title={t('shop.title')} description={t('shop.desc')}>
         <Link href="/shop/order" className="group mt-8 inline-flex items-center gap-2 text-sm font-medium text-ink-900">
-          <span className="link-draw">Already ordered? Track your order</span>
+          <span className="link-draw">{t('shop.track')}</span>
           <ArrowRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5" />
         </Link>
       </PageHeader>
 
       <section className="container-page">
-        <FilterTabs label="Filter products by type" options={FILTERS} value={activeFilter} onChange={setActiveFilter} />
+        <FilterTabs label={tx("Filter products by type")} options={FILTERS} value={activeFilter} onChange={setActiveFilter} />
 
         <div className="mt-12">
           {isLoading ? (
@@ -99,12 +104,12 @@ export default function ShopPage() {
                   </div>
                   <div className="p-5">
                   <p className="type-meta flex gap-x-4 capitalize">
-                    <span>{product.type}</span>
+                    <span>{tx(product.type)}</span>
                     {product.category && <span>{product.category}</span>}
                   </p>
                   <h2 className="mt-2 text-lg font-medium tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{product.name}</h2>
                   <p className="mt-2 flex items-baseline gap-3 font-mono tabular-nums">
-                    <span className="text-base text-ink-900">${Number(product.price).toFixed(2)}</span>
+                    <span className="text-base text-ink-900">{Number(product.price) === 0 ? tx("Free") : `$${Number(product.price).toFixed(2)}`}</span>
                     {product.compare_at_price && (
                       <span className="text-sm text-ink-500 line-through">${Number(product.compare_at_price).toFixed(2)}</span>
                     )}

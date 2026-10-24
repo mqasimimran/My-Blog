@@ -8,6 +8,7 @@ import PageHeader from '@/app/components/ui/PageHeader'
 import FilterTabs from '@/app/components/ui/FilterTabs'
 import EmptyState from '@/app/components/EmptyState'
 import { SkeletonTextCardGrid } from '@/app/components/Skeleton'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Project = {
   id: string
@@ -31,6 +32,8 @@ const CATEGORIES = [
 ]
 
 export default function AllProjectsPage() {
+  const { tx } = useLocale()
+  const { t } = useLocale()
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('ALL')
@@ -58,18 +61,18 @@ export default function AllProjectsPage() {
   return (
     <main className="pb-24">
       <PageHeader
-        title="Project archive"
-        description="A complete collection of my work across software engineering, machine learning, game development, and design."
+        title={t('projects.title')}
+        description={t('projects.desc')}
       />
 
       <section className="container-page">
-        <FilterTabs label="Filter projects by category" options={CATEGORIES} value={activeCategory} onChange={setActiveCategory} />
+        <FilterTabs label={tx("Filter projects by category")} options={CATEGORIES} value={activeCategory} onChange={setActiveCategory} />
 
         <div className="mt-12">
           {isLoading ? (
             <SkeletonTextCardGrid count={4} columns={2} />
           ) : filteredProjects.length === 0 ? (
-            <EmptyState icon="search" title="No projects in this category yet" description="Try another category." />
+            <EmptyState icon="search" title={tx("No projects in this category yet")} description={tx("Try another category.")} />
           ) : (
             // An index, not a wall of boxes: these entries have no images, so type and spacing do the work.
             <ul className="border-b border-ink-100">
@@ -82,7 +85,7 @@ export default function AllProjectsPage() {
                   >
                     <div className="type-meta flex flex-wrap items-start gap-x-3 gap-y-1 md:col-span-3 md:pt-1.5">
                       <span>{project.category}</span>
-                      {project.status && <span className="border border-ink-100 px-1.5 py-0.5">{project.status}</span>}
+                      {project.status && <span className="border border-ink-100 px-1.5 py-0.5">{tx(project.status)}</span>}
                     </div>
                     <div className="md:col-span-4">
                       <h2 className="type-h3 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{project.title}</h2>
@@ -90,7 +93,7 @@ export default function AllProjectsPage() {
                     </div>
                     <div className="flex items-start justify-between gap-6 md:col-span-5">
                       <p className="max-w-[52ch] text-[15px] leading-relaxed text-ink-700">{project.description}</p>
-                      <span className="sr-only">View project</span>
+                      <span className="sr-only">{tx("View project")}</span>
                       <ArrowUpRight
                         size={20}
                         aria-hidden

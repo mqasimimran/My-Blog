@@ -5,6 +5,7 @@ import useStackShrink from '@/app/components/ui/useStackShrink'
 import Image from '@/components/SafeImage'
 import { supabase } from '@/lib/supabase'
 import SectionHeader from '@/app/components/ui/SectionHeader'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Testimonial = {
   id: string
@@ -35,6 +36,7 @@ export function Person({ t }: { t: Testimonial }) {
 }
 
 export default function Testimonials() {
+  const { t } = useLocale()
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -63,7 +65,7 @@ export default function Testimonials() {
   return (
     <section className="border-t border-ink-100">
       <div className="container-page section-y">
-        <SectionHeader title="What people say" meta={`(${testimonials.length} kind ${testimonials.length === 1 ? 'word' : 'words'})`} />
+        <SectionHeader title={t('home.testimonials')} meta={`(${testimonials.length} ${testimonials.length === 1 ? t('home.testimonials.one') : t('home.testimonials.many')})`} />
 
         {/* Each card sticks under the navbar; the next one slides up and covers it. */}
         <ul ref={listRef} className="mt-12">

@@ -7,7 +7,9 @@ import { ArrowUpRight, GithubLogo, LinkedinLogo } from '@phosphor-icons/react'
 
 import { siteConfig } from '@/site.config'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
 function ContactForm() {
+  const { tx, locale } = useLocale()
   const searchParams = useSearchParams()
   const prefillSubject = searchParams.get('subject') || ''
   const prefillMessage = searchParams.get('message') || ''
@@ -61,22 +63,22 @@ function ContactForm() {
       <div className="container-page grid gap-16 pt-12 md:pt-20 lg:grid-cols-12 lg:gap-12">
         {/* Details */}
         <div className="lg:col-span-5">
-          <h1 className="type-display text-ink-900"><SplitText text={"Get in touch"} /></h1>
-          <p className="type-lead mt-6 max-w-[40ch]">{siteConfig.contact.intro}</p>
+          <h1 className="type-display text-ink-900"><SplitText text={tx("Get in touch")} /></h1>
+          <p className="type-lead mt-6 max-w-[40ch]">{locale === 'ur' && siteConfig.urdu.contactIntro ? siteConfig.urdu.contactIntro : siteConfig.contact.intro}</p>
 
           <dl className="mt-12 space-y-6">
             <div>
-              <dt className="type-meta">Email</dt>
+              <dt className="type-meta">{tx("Email")}</dt>
               <dd className="mt-1.5">
                 <a href={`mailto:${siteConfig.email}`} className="link-draw text-lg font-medium text-ink-900">{siteConfig.email}</a>
               </dd>
             </div>
             <div>
-              <dt className="type-meta">Location</dt>
+              <dt className="type-meta">{tx("Location")}</dt>
               <dd className="mt-1.5 text-lg text-ink-900">{siteConfig.location}</dd>
             </div>
             <div>
-              <dt className="type-meta">Elsewhere</dt>
+              <dt className="type-meta">{tx("Elsewhere")}</dt>
               <dd className="mt-2.5 flex flex-wrap gap-x-6 gap-y-2">
                 <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[15px] text-ink-900 transition-colors duration-200 hover:text-accent-600">
                   <LinkedinLogo size={18} aria-hidden /> LinkedIn
@@ -95,29 +97,29 @@ function ContactForm() {
             {/* Honeypot field: hidden from real visitors via CSS, not just "display:none"
                 (some bots skip display:none fields), but genuinely off-screen and
                 unreachable by tab order so a human never notices or fills it in. */}
-            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
-              <label htmlFor="website">Leave this field empty</label>
+            <div style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' }} aria-hidden="true">
+              <label htmlFor="website">{tx("Leave this field empty")}</label>
               <input type="text" id="website" name="website" tabIndex={-1} autoComplete="off" />
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
-                <label htmlFor="name" className={labelClass}>Full name</label>
+                <label htmlFor="name" className={labelClass}>{tx("Full name")}</label>
                 <input type="text" id="name" name="name" required autoComplete="name" suppressHydrationWarning className={`h-12 ${fieldClass}`} />
               </div>
               <div>
-                <label htmlFor="email" className={labelClass}>Email address</label>
+                <label htmlFor="email" className={labelClass}>{tx("Email address")}</label>
                 <input type="email" id="email" name="email" required autoComplete="email" suppressHydrationWarning className={`h-12 ${fieldClass}`} />
               </div>
             </div>
 
             <div>
-              <label htmlFor="subject" className={labelClass}>Subject</label>
+              <label htmlFor="subject" className={labelClass}>{tx("Subject")}</label>
               <input type="text" id="subject" name="subject" required defaultValue={prefillSubject} suppressHydrationWarning className={`h-12 ${fieldClass}`} />
             </div>
 
             <div>
-              <label htmlFor="message" className={labelClass}>Your message</label>
+              <label htmlFor="message" className={labelClass}>{tx("Your message")}</label>
               <textarea id="message" name="message" rows={6} required defaultValue={prefillMessage} suppressHydrationWarning className={`resize-y py-3 ${fieldClass}`} />
             </div>
 
@@ -127,7 +129,7 @@ function ContactForm() {
                 disabled={isSubmitting}
                 className="group inline-flex h-12 items-center gap-2 bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px disabled:opacity-60"
               >
-                {isSubmitting ? 'Sending...' : 'Send message'}
+                {isSubmitting ? tx('Sending...') : tx('Send message')}
                 <ArrowUpRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </button>
 
@@ -143,8 +145,8 @@ function ContactForm() {
 
       {/* Prefer to talk it through? */}
       <section className="container-page mt-24 border-t border-ink-100 pt-16 md:mt-32 md:pt-20">
-        <h2 className="type-h2 text-ink-900"><SplitText text={"Prefer to talk it through?"} /></h2>
-        <p className="type-lead mt-4 max-w-[48ch]">Book a short call directly, no back-and-forth over email required.</p>
+        <h2 className="type-h2 text-ink-900"><SplitText text={tx("Prefer to talk it through?")} /></h2>
+        <p className="type-lead mt-4 max-w-[48ch]">{tx("Book a short call directly, no back-and-forth over email required.")}</p>
         <div className="mt-10">
           <CalendlyEmbed />
         </div>

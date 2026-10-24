@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { siteConfig } from '@/site.config'
 import { ArrowUpRight, DownloadSimple, X } from '@phosphor-icons/react'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 // Define the exact shape of your data to satisfy TypeScript
 interface ResumeItem {
@@ -24,6 +25,7 @@ interface ResumeItem {
 }
 
 export default function Resume() {
+  const { tx } = useLocale()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   
   // Strongly type the state so TypeScript doesn't infer never[]
@@ -62,7 +64,7 @@ export default function Resume() {
     fetchResumeData()
   }, [])
 
-  if (loading) return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">Loading Resume...</div>
+  if (loading) return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">{tx("Loading Resume...")}</div>
 
   // One resume section: its name on the left, the entries on the right.
   const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -76,21 +78,21 @@ export default function Resume() {
     <main className="pb-24">
       <header className="container-page flex flex-col gap-8 pb-12 pt-12 md:flex-row md:items-end md:justify-between md:pb-16 md:pt-20">
         <div>
-          <h1 className="type-display text-ink-900"><SplitText text={"Resume"} /></h1>
-          <p className="type-lead mt-6 max-w-[48ch]">Computer Science undergraduate, developer, and technical creator.</p>
+          <h1 className="type-display text-ink-900"><SplitText text={tx("Resume")} /></h1>
+          <p className="type-lead mt-6 max-w-[48ch]">{tx("Computer Science undergraduate, developer, and technical creator.")}</p>
         </div>
         <a
           href={siteConfig.resume.cvFile || '/api/cv'}
           download={`${siteConfig.name.replace(/\s+/g, '_')}_Resume.pdf`}
           className="group inline-flex h-12 shrink-0 items-center gap-2 self-start bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color,transform] duration-300 ease-[var(--ease-smooth)] hover:bg-accent-600 hover:text-on-accent active:translate-y-px md:self-auto"
         >
-          Download CV
+          {tx("Download CV")}
           <DownloadSimple size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:translate-y-0.5" />
         </a>
       </header>
 
       <div id="resume-print-area" className="container-page">
-        <Section title="Experience and leadership">
+        <Section title={tx("Experience and leadership")}>
           <ol className="divide-y divide-ink-100">
             {data.experiences.map((item) => (
               <li key={item.id} className="py-8 first:pt-0 last:pb-0">
@@ -103,7 +105,7 @@ export default function Resume() {
           </ol>
         </Section>
 
-        <Section title="Key projects">
+        <Section title={tx("Key projects")}>
           <ul className="divide-y divide-ink-100">
             {data.projects.map((item) => (
               <li key={item.id} className="py-8 first:pt-0 last:pb-0">
@@ -115,7 +117,7 @@ export default function Resume() {
           </ul>
         </Section>
 
-        <Section title="Education">
+        <Section title={tx("Education")}>
           <ul className="divide-y divide-ink-100">
             {data.education.map((item) => (
               <li key={item.id} className="py-8 first:pt-0 last:pb-0">
@@ -128,7 +130,7 @@ export default function Resume() {
           </ul>
         </Section>
 
-        <Section title="Licenses and certifications">
+        <Section title={tx("Licenses and certifications")}>
           <ul className="border-b border-ink-100">
             {data.certifications.map((cert) => {
               const hasVerifyLink = !!cert.verify_url
@@ -168,13 +170,13 @@ export default function Resume() {
       </div>
 
       {selectedImage && (
-        <div role="dialog" aria-modal="true" aria-label="Certificate" onClick={() => setSelectedImage(null)} className="fixed inset-0 z-overlay flex items-center justify-center bg-zinc-950/90 p-4 backdrop-blur-sm">
+        <div role="dialog" aria-modal="true" aria-label={tx("Certificate")} onClick={() => setSelectedImage(null)} className="fixed inset-0 z-overlay flex items-center justify-center bg-zinc-950/90 p-4 backdrop-blur-sm">
           <div className="relative w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-            <button autoFocus onClick={() => setSelectedImage(null)} aria-label="Close" className="absolute -top-12 right-0 grid h-10 w-10 place-items-center text-white transition-colors duration-200 hover:text-accent-600">
+            <button autoFocus onClick={() => setSelectedImage(null)} aria-label={tx("Close")} className="absolute -top-12 right-0 grid h-10 w-10 place-items-center text-white transition-colors duration-200 hover:text-accent-600">
               <X size={24} aria-hidden />
             </button>
             <div className="flex min-h-[300px] items-center justify-center bg-paper-raised p-2">
-              <img src={selectedImage} alt="Certificate" className="mx-auto max-h-[80vh] w-auto object-contain" />
+              <img src={selectedImage} alt={tx("Certificate")} className="mx-auto max-h-[80vh] w-auto object-contain" />
             </div>
           </div>
         </div>

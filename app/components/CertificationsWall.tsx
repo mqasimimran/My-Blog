@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { ArrowUpRight } from '@phosphor-icons/react'
 import { supabase } from '@/lib/supabase'
 import SectionHeader from '@/app/components/ui/SectionHeader'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Certification = {
   id: string
@@ -15,6 +16,7 @@ type Certification = {
 }
 
 export default function CertificationsWall() {
+  const { t } = useLocale()
   const [certs, setCerts] = useState<Certification[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -41,7 +43,7 @@ export default function CertificationsWall() {
       <div className="container-page section-y grid gap-12 lg:grid-cols-12 lg:gap-x-16">
         <div className="lg:col-span-4">
           <div>
-            <SectionHeader title="Licenses and certifications" description="Verified credentials across software, design, and AI." meta="(Verified)" stackMeta />
+            <SectionHeader title={t('certs.title')} description={t('certs.desc')} meta={t('certs.meta')} stackMeta />
           </div>
         </div>
 

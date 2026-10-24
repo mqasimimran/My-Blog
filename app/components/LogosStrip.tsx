@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Image from '@/components/SafeImage'
 import { supabase } from '@/lib/supabase'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type ClientLogo = {
   id: string
@@ -13,6 +14,7 @@ type ClientLogo = {
 }
 
 export default function LogosStrip() {
+  const { t } = useLocale()
   const [logos, setLogos] = useState<ClientLogo[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -38,7 +40,7 @@ export default function LogosStrip() {
 
   return (
     <section className="border-b border-ink-100 bg-paper py-10 md:py-12">
-      <p className="text-center text-sm text-ink-500">Work seen at</p>
+      <p className="text-center text-sm text-ink-500">{t('home.workSeenAt')}</p>
       <div className="mt-8 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
         <div className="animate-marquee items-center" style={{ animationDuration: `${row.length * 4}s` }}>
           {[0, 1].map((copy) => (

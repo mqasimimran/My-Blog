@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
+import BundlePicker from '@/app/admin/shop/BundlePicker'
+import WallpaperFiles, { type WallpaperFile } from '@/app/admin/shop/WallpaperFiles'
 
 function slugify(text: string) {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -18,7 +20,10 @@ export default function NewProductPage() {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [slugTouched, setSlugTouched] = useState(false)
-  const [type, setType] = useState<'digital' | 'physical'>('digital')
+  const [type, setType] = useState<'digital' | 'physical' | 'bundle' | 'wallpaper'>('digital')
+  const [wallFiles, setWallFiles] = useState<WallpaperFile[]>([])
+  const [bundleItems, setBundleItems] = useState<string[]>([])
+  const [lsVariantId, setLsVariantId] = useState('')
   const [category, setCategory] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
@@ -38,6 +43,11 @@ export default function NewProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (type === 'wallpaper' && !wallFiles.some((f) => f.url)) { alert('Add at least one resolution with a file.'); return }
+    if (type === 'bundle' && bundleItems.length < 2) {
+      alert('Pick at least two products for the bundle.')
+      return
+    }
     setIsSubmitting(true)
 
     const uploadedImageUrls: string[] = []
@@ -85,7 +95,10 @@ export default function NewProductPage() {
       price: parseFloat(price) || 0,
       compare_at_price: compareAtPrice ? parseFloat(compareAtPrice) : null,
       images: uploadedImageUrls,
-      digital_file_url: digitalFileUrl,
+      digital_file_url: type === 'bundle' || type === 'wallpaper' ? null : digitalFileUrl,
+      bundle_items: type === 'bundle' ? bundleItems : null,
+      wallpaper_files: type === 'wallpaper' ? wallFiles.filter((f) => f.url) : null,
+      ls_variant_id: type !== 'physical' && lsVariantId ? lsVariantId : null,
       stock_quantity: type === 'physical' && stockQuantity ? parseInt(stockQuantity) : null,
       weight_grams: type === 'physical' && weightGrams ? parseInt(weightGrams) : null,
       active,
@@ -128,6 +141,8 @@ export default function NewProductPage() {
               <div className="flex gap-3">
                 <button type="button" onClick={() => setType('digital')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-none border ${type === 'digital' ? 'bg-accent-600 text-white border-accent-600' : 'border-ink-100 text-ink-500'}`}>Digital</button>
                 <button type="button" onClick={() => setType('physical')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-none border ${type === 'physical' ? 'bg-accent-600 text-white border-accent-600' : 'border-ink-100 text-ink-500'}`}>Physical</button>
+                <button type="button" onClick={() => setType('bundle')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-none border ${type === 'bundle' ? 'bg-accent-600 text-white border-accent-600' : 'border-ink-100 text-ink-500'}`}>Bundle</button>
+                <button type="button" onClick={() => setType('wallpaper')} className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest rounded-none border ${type === 'wallpaper' ? 'bg-accent-600 text-white border-accent-600' : 'border-ink-100 text-ink-500'}`}>Wallpaper</button>
               </div>
             </div>
 
@@ -168,7 +183,17 @@ export default function NewProductPage() {
               <input type="file" accept="image/*" multiple onChange={(e) => setImageFiles(e.target.files ? Array.from(e.target.files) : [])} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
 
-            {type === 'digital' ? (
+            {type !== 'physical' && (
+                <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Card payments: Lemon Squeezy variant ID (optional)</label>
+                <input type="text" value={lsVariantId} onChange={(e) => setLsVariantId(e.target.value.trim())} placeholder="e.g. 123456. Digital products only." className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm font-mono" />
+              </div>
+            )}
+            {type === 'wallpaper' ? (
+              <WallpaperFiles files={wallFiles} onChange={setWallFiles} />
+            ) : type === 'bundle' ? (
+              <BundlePicker selected={bundleItems} onChange={setBundleItems} />
+            ) : type === 'digital' ? (
               <div>
                 <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Digital File (optional for now)</label>
                 <input type="file" onChange={(e) => setDigitalFile(e.target.files?.[0] || null)} disabled={!!digitalLinkUrl.trim()} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer disabled:opacity-40" />

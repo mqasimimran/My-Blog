@@ -9,6 +9,7 @@ import FilterTabs from '@/app/components/ui/FilterTabs'
 import EmptyState from '@/app/components/EmptyState'
 import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type DesignItem = {
   id: string
@@ -19,6 +20,7 @@ type DesignItem = {
 }
 
 function DesignGalleryInner() {
+  const { tx } = useLocale()
   const searchParams = useSearchParams()
   const [designPortfolio, setDesignPortfolio] = useState<DesignItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -105,20 +107,20 @@ function DesignGalleryInner() {
   return (
     <main className="pb-24">
       <header className="container-page pb-12 pt-12 md:pb-16 md:pt-20">
-        <h1 className="type-display text-ink-900"><SplitText text={"Visual Design"} /></h1>
+        <h1 className="type-display text-ink-900"><SplitText text={tx("Visual Design")} /></h1>
         <p className="type-lead mt-6 max-w-[52ch]">
-          A curated showcase of brand identities, UI/UX architecture, and promotional graphics. Select a piece to see the full design set.
+          {tx("A curated showcase of brand identities, UI/UX architecture, and promotional graphics. Select a piece to see the full design set.")}
         </p>
       </header>
 
       <section className="container-page">
-        <FilterTabs label="Filter designs by category" options={categories.map((c) => ({ key: c, label: c }))} value={activeCategory} onChange={setActiveCategory} />
+        <FilterTabs label={tx("Filter designs by category")} options={categories.map((c) => ({ key: c, label: c }))} value={activeCategory} onChange={setActiveCategory} />
 
         <div className="mt-12">
           {isLoading ? (
             <SkeletonMasonryGrid count={9} />
           ) : filteredDesigns.length === 0 ? (
-            <EmptyState icon="image" title="No designs in this category yet" description="Try another category." />
+            <EmptyState icon="image" title={tx("No designs in this category yet")} description={tx("Try another category.")} />
           ) : (
             <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
               {filteredDesigns.map((item) => (
@@ -157,7 +159,7 @@ function DesignGalleryInner() {
           <div className="relative flex w-full max-w-5xl flex-col items-center" onClick={(e) => e.stopPropagation()}>
             <button
               autoFocus
-              aria-label="Close"
+              aria-label={tx("Close")}
               className="absolute -top-12 right-0 z-10 grid h-10 w-10 place-items-center text-white transition-colors duration-200 hover:text-accent-600"
               onClick={() => setSelectedItem(null)}
             >
@@ -166,7 +168,7 @@ function DesignGalleryInner() {
 
             <div className="relative flex w-full items-center justify-center">
               {selectedItem.images.length > 1 && (
-                <button onClick={handlePrev} aria-label="Previous image" className="absolute left-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-left-14">
+                <button onClick={handlePrev} aria-label={tx("Previous image")} className="absolute left-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-left-14">
                   <CaretLeft size={32} aria-hidden />
                 </button>
               )}
@@ -180,7 +182,7 @@ function DesignGalleryInner() {
               )}
 
               {selectedItem.images.length > 1 && (
-                <button onClick={handleNext} aria-label="Next image" className="absolute right-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-right-14">
+                <button onClick={handleNext} aria-label={tx("Next image")} className="absolute right-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-right-14">
                   <CaretRight size={32} aria-hidden />
                 </button>
               )}

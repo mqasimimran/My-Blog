@@ -13,6 +13,9 @@ import SiteFooter from '@/app/components/SiteFooter'
 import ScrollAnimator from '@/app/components/ScrollAnimator'
 import PublicOnly from '@/app/components/PublicOnly'
 import AccentStyle from '@/app/components/AccentStyle'
+import LocaleProvider from '@/app/components/LocaleProvider'
+import { getLocale } from '@/lib/locale'
+import { tr } from '@/lib/i18n'
 import AssistantWidget from '@/app/components/AssistantWidget'
 import CursorBadge from '@/app/components/CursorBadge'
 
@@ -26,6 +29,7 @@ const anton = localFont({
 import type { Metadata } from 'next'
 
 import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
+import RegisterServiceWorker from '@/app/components/RegisterServiceWorker'
 const SITE_DESCRIPTION = siteConfig.description
 
 export const metadata: Metadata = {
@@ -56,9 +60,10 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale()
   return (
-    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} ${anton.variable}`} suppressHydrationWarning>
+    <html lang={locale} dir={locale === 'ur' ? 'rtl' : 'ltr'} className={`${GeistSans.variable} ${GeistMono.variable} ${anton.variable}`} suppressHydrationWarning>
       <head>
         {/* Site-wide Person structured data — helps Google associate this
             site with you specifically (knowledge panel, rich results) */}
@@ -120,6 +125,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="bg-paper text-ink-900 font-sans antialiased"
         suppressHydrationWarning
       >
+        <LocaleProvider locale={locale}>
         
         {/* The login session provider lives in app/admin/layout.tsx: only the admin area uses it, so
             public pages never ask the server who is logged in. */}
@@ -128,7 +134,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ReadingProgress />
 
           <AccentStyle />
-          <a href="#main" className="skip-link">Skip to content</a>
+          <a href="#main" className="skip-link">{tr(locale, 'Skip to content')}</a>
 
           {/* Public navigation; the admin area has its own (app/admin/AdminNav.tsx) */}
           <PublicOnly>
@@ -152,7 +158,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CommandPalette />
         <PublicOnly><WhatsAppButton /></PublicOnly>
         <PublicOnly><AssistantWidget /></PublicOnly>
+        <RegisterServiceWorker />
         
+        </LocaleProvider>
       </body>
     </html>
   )

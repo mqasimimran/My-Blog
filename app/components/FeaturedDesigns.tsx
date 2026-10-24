@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { SkeletonMasonryGrid } from '@/app/components/Skeleton'
 import SectionHeader from '@/app/components/ui/SectionHeader'
 import { ButtonLink } from '@/app/components/ui/Button'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type DesignItem = {
   id: string
@@ -15,6 +16,8 @@ type DesignItem = {
 }
 
 export default function FeaturedDesigns() {
+  const { tx } = useLocale()
+  const { t } = useLocale()
   const [designs, setDesigns] = useState<DesignItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -42,10 +45,10 @@ export default function FeaturedDesigns() {
     <section className="border-t border-ink-100">
       <div className="container-page section-y">
         <SectionHeader
-          title="Featured design"
-          meta="(Selected pieces)"
-          description="A few pieces from the visual design side: brand identities, UI/UX, and promotional work."
-          action={<ButtonLink href="/design" variant="text">View full gallery</ButtonLink>}
+          title={t('home.design.title')}
+          meta={t('home.design.meta')}
+          description={t('home.design.desc')}
+          action={<ButtonLink href="/design" variant="text">{tx("View full gallery")}</ButtonLink>}
         />
 
         <div className="mt-14">

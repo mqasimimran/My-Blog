@@ -1,17 +1,20 @@
 'use client'
 import SplitText from '@/app/components/ui/SplitText'
 import { siteConfig } from '@/site.config'
+import { useLocale } from '@/app/components/LocaleProvider'
+import GitHubActivity from '@/app/components/GitHubActivity'
 
 
 export default function TechStackPage() {
+  const { tx } = useLocale()
   // The list lives in site.config.ts -> techStack, so it's edited in one place.
   const techCategories = siteConfig.techStack
 
   return (
     <main className="pb-24">
       <header className="container-page pb-12 pt-12 md:pb-16 md:pt-20">
-        <h1 className="type-display max-w-[16ch] text-ink-900"><SplitText text={"Tech Stack & Hardware"} /></h1>
-        <p className="type-lead mt-6 max-w-[52ch]">The hardware and software behind my development and creative work, and what each one is actually used for.</p>
+        <h1 className="type-display max-w-[16ch] text-ink-900"><SplitText text={tx("Tech Stack & Hardware")} /></h1>
+        <p className="type-lead mt-6 max-w-[52ch]">{tx("The hardware and software behind my development and creative work, and what each one is actually used for.")}</p>
       </header>
 
       <div className="container-page">
@@ -34,6 +37,7 @@ export default function TechStackPage() {
           </section>
         ))}
       </div>
+      <GitHubActivity />
     </main>
   )
 }

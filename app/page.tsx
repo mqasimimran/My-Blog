@@ -18,8 +18,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 import { siteConfig } from '@/site.config'
+import { getT } from '@/lib/locale'
 
-export default function HomePage() {
+export default async function HomePage() {
+  const { tx } = await getT()
+  const t = await getT()
+  const ur = t.locale === 'ur'
   return (
     <main className="min-h-screen flex flex-col">
       {/* Hero Section — note: the photo is anchored to THIS section's own
@@ -31,10 +35,10 @@ export default function HomePage() {
         {/* Desktop: frameless photo bleeding to the right edge, anchored to
             the bottom of the hero — relies on /profile.png having a
             transparent background for the "floating" cutout look. */}
-        <div className="hero-photo hidden lg:flex absolute top-0 bottom-0 right-[max(0px,calc((100vw-1360px)/2+1px))] items-end justify-end" style={{ width: '46%' }}>
+        <div className="hero-photo hidden lg:flex absolute top-0 bottom-0 end-[max(0px,calc((100vw-1360px)/2+1px))] items-end justify-end" style={{ width: '46%' }}>
           <Image
             src="/profile.png"
-            alt="Portrait"
+            alt={tx("Portrait")}
             width={806}
             height={1050}
             priority
@@ -48,17 +52,17 @@ export default function HomePage() {
 
             <div>
               <p className="text-ink-500 text-sm font-bold tracking-[0.2em] uppercase mb-3">
-                {siteConfig.hero.greeting}
+                {ur ? siteConfig.urdu.greeting : siteConfig.hero.greeting}
               </p>
               <BlurLens>
                 <h1 className="type-display text-ink-900 break-words">
-                I'm <RoleCycler />
+                {t('home.iam')} <RoleCycler />{ur && <> {t('home.iamEnd')}</>}
               </h1>
               </BlurLens>
             </div>
 
             <div className="text-ink-700 space-y-6 leading-relaxed max-w-lg text-sm sm:text-base">
-              {siteConfig.hero.bio.map((paragraph) => (
+              {(ur ? siteConfig.urdu.bio : siteConfig.hero.bio).map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>
@@ -68,21 +72,21 @@ export default function HomePage() {
                 href="/projects"
                 className="text-ink-900 border-accent-600 hover:text-accent-600 inline-block text-sm font-bold uppercase tracking-widest pb-1 transition-colors border-b-2"
               >
-                View My Work →
+                {t('home.viewWork')}
               </Link>
             </MagneticButton>
 
             {/* Social Links with Maroon Hover Accent */}
             <div className="text-ink-900 flex flex-wrap items-center gap-3 text-xs font-bold tracking-[0.2em] uppercase pt-4">
-              <a href={siteConfig.social.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">YouTube</a>
+              <a href={siteConfig.social.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("YouTube")}</a>
               <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">LinkedIn</a>
+              <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("LinkedIn")}</a>
               <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.instagramPersonal} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">IG: Personal</a>
+              <a href={siteConfig.social.instagramPersonal} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("IG: Personal")}</a>
               <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.instagramDev} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">IG: Dev</a>
+              <a href={siteConfig.social.instagramDev} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("IG: Dev")}</a>
               <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.portfolio} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">Portfolio</a>
+              <a href={siteConfig.social.portfolio} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("Portfolio")}</a>
             </div>
 
             {/* Mobile/tablet: photo falls back in-flow below the bio since
@@ -93,7 +97,7 @@ export default function HomePage() {
             <div className="lg:hidden pt-8 -mb-16 md:-mb-20 flex justify-center">
               <Image
                 src="/profile.png"
-                alt="Portrait"
+                alt={tx("Portrait")}
                 width={560}
                 height={729}
                 className="w-auto max-h-[360px] max-w-full object-contain"

@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import ExperienceTimeline from '@/app/components/ExperienceTimeline'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 export default function Resume() {
+  const { tx } = useLocale()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
 
   const projects = [
@@ -72,8 +74,8 @@ export default function Resume() {
     <div className="max-w-4xl mx-auto px-6 py-20 relative">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
         <div>
-          <h1 className="text-4xl font-semibold text-gray-900 mb-2 tracking-[-0.035em]">Resume</h1>
-          <p className="text-gray-500">Computer Science undergraduate, developer, and technical creator.</p>
+          <h1 className="text-4xl font-semibold text-gray-900 mb-2 tracking-[-0.035em]">{tx("Resume")}</h1>
+          <p className="text-gray-500">{tx("Computer Science undergraduate, developer, and technical creator.")}</p>
         </div>
         
         {/* Download CV Button */}
@@ -82,7 +84,7 @@ export default function Resume() {
           download="Muhammad_Qasim_Imran_Resume.pdf"
           className="inline-flex items-center gap-2 bg-gray-900 text-white text-xs font-medium px-5 py-3 rounded-none hover:bg-[#d9534f] transition-colors shadow-sm"
         >
-          <span>Download CV</span>
+          <span>{tx("Download CV")}</span>
           <span>↓</span>
         </a>
       </div>
@@ -95,7 +97,7 @@ export default function Resume() {
       {/* Projects Section */}
       <section className="mb-16">
         <h2 className="text-sm font-medium text-gray-900 mb-8 border-b border-gray-100 pb-4">
-          Key Projects
+          {tx("Key Projects")}
         </h2>
         <div className="space-y-10">
           {projects.map((item, index) => (
@@ -115,7 +117,7 @@ export default function Resume() {
       {/* Education Section */}
       <section className="mb-16">
         <h2 className="text-sm font-medium text-gray-900 mb-8 border-b border-gray-100 pb-4">
-          Education
+          {tx("Education")}
         </h2>
         <div className="space-y-10">
           {education.map((item, index) => (
@@ -136,7 +138,7 @@ export default function Resume() {
       {/* Certifications Section */}
       <section>
         <h2 className="text-sm font-medium text-gray-900 mb-8 border-b border-gray-100 pb-4">
-          Licenses & Certifications
+          {tx("Licenses & Certifications")}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {certifications.map((cert, index) => (
@@ -150,7 +152,7 @@ export default function Resume() {
                   <h3 className="text-sm font-medium text-gray-900 group-hover:text-[#d9534f] transition-colors">
                     {cert.title}
                   </h3>
-                  <span className="text-xs text-gray-400 group-hover:text-[#d9534f] transition-colors ml-2 font-mono">View ↗</span>
+                  <span className="text-xs text-gray-400 group-hover:text-[#d9534f] transition-colors ml-2 font-mono">{tx("View ↗")}</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">{cert.issuer}</p>
               </div>
@@ -173,12 +175,12 @@ export default function Resume() {
               onClick={() => setSelectedImage(null)}
               className="absolute -top-10 right-0 text-white text-xl font-bold hover:text-gray-300"
             >
-              Close
+              {tx("Close")}
             </button>
             <div className="bg-gray-100 rounded-none overflow-hidden flex items-center justify-center min-h-[300px] relative">
               <img 
                 src={selectedImage} 
-                alt="Certificate Credential" 
+                alt={tx("Certificate Credential")} 
                 className="max-h-[80vh] w-auto object-contain mx-auto rounded-none"
               />
             </div>

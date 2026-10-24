@@ -16,11 +16,12 @@ import { optimizeImage } from '@/lib/imageOptimize'
 export const adminStorage = {
   from(bucket: string) {
     return {
-      async upload(path: string, original: File | Blob) {
+      async upload(path: string, original: File | Blob, options?: { optimize?: boolean }) {
         try {
           // Images are resized and compressed first (lib/imageOptimize.ts). The path stays the same,
           // so code that builds the public URL from it keeps working.
-          const file = await optimizeImage(original)
+          // optimize: false keeps the file exactly as uploaded (e.g. full-resolution wallpapers).
+          const file = options?.optimize === false ? original : await optimizeImage(original)
           const res = await fetch('/api/admin/upload-url', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

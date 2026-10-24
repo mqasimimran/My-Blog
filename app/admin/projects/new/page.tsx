@@ -251,6 +251,7 @@ export default function NewProjectPage() {
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Project Cover Image</label>
+              <p className="mb-2 text-[11px] text-ink-500">Shown on project cards and the project page. Best at 1600 × 1000. Skip it and cards use the first screenshot.</p>
               <input type="file" accept="image/*" onChange={(e) => e.target.files && setFeatureImage(e.target.files[0])} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
 

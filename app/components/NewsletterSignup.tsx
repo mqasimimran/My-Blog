@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 export default function NewsletterSignup() {
+  const { tx } = useLocale()
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'duplicate'>('idle')
 
@@ -36,19 +38,19 @@ export default function NewsletterSignup() {
     <section className="border-t border-ink-100">
       <div className="container-page section-y grid gap-10 lg:grid-cols-12 lg:items-end">
         <div className="lg:col-span-6">
-          <h2 className="type-h3 text-ink-900 md:text-[1.75rem]">Get new posts by email</h2>
-          <p className="mt-3 max-w-[44ch] text-base leading-relaxed text-ink-700">No spam. Just an email when something new goes up.</p>
+          <h2 className="type-h3 text-ink-900 md:text-[1.75rem]">{tx("Get new posts by email")}</h2>
+          <p className="mt-3 max-w-[44ch] text-base leading-relaxed text-ink-700">{tx("No spam. Just an email when something new goes up.")}</p>
         </div>
 
         <div className="lg:col-span-5 lg:col-start-8">
           {status === 'success' ? (
-            <p role="status" className="text-base font-medium text-ink-900">You&rsquo;re in. Thanks for subscribing.</p>
+            <p role="status" className="text-base font-medium text-ink-900">{tx("You’re in. Thanks for subscribing.")}</p>
           ) : status === 'duplicate' ? (
-            <p role="status" className="text-base text-ink-700">That email is already subscribed.</p>
+            <p role="status" className="text-base text-ink-700">{tx("That email is already subscribed.")}</p>
           ) : (
             <form onSubmit={handleSubmit} noValidate={false}>
               <label htmlFor="newsletter-email" className="mb-2 block text-sm font-medium text-ink-900">
-                Email address
+                {tx("Email address")}
               </label>
               <div className="flex flex-col gap-3 sm:flex-row">
                 <input
@@ -58,7 +60,7 @@ export default function NewsletterSignup() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
+                  placeholder={tx("name@example.com")}
                   suppressHydrationWarning
                   className="h-12 w-full flex-1 border border-ink-500 bg-paper-raised px-4 text-base text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-500 focus:border-accent-600"
                 />
@@ -71,7 +73,7 @@ export default function NewsletterSignup() {
                 </button>
               </div>
               {status === 'error' && (
-                <p role="alert" className="mt-3 text-sm text-error">Something went wrong. Try again in a moment.</p>
+                <p role="alert" className="mt-3 text-sm text-error">{tx("Something went wrong. Try again in a moment.")}</p>
               )}
             </form>
           )}

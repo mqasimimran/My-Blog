@@ -5,13 +5,18 @@ import Image from '@/components/SafeImage'
 import type { Metadata } from 'next'
 import ShareButtons from '@/app/components/ShareButtons'
 import ReactionButton from '@/app/components/ReactionButton'
-import Comments from '@/app/components/Comments'
+import BlogComments from '@/app/components/BlogComments'
 import LeadMagnet from '@/app/components/LeadMagnet'
 import { ArrowLeft, ArrowRight } from '@phosphor-icons/react/dist/ssr'
 
 
 import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
 import SplitText from '@/app/components/ui/SplitText'
+import { getT } from '@/lib/locale'
+import { dateLocale } from '@/lib/i18n'
+import { addTermExplainers } from '@/lib/glossary'
+import PostQuiz from '@/app/components/PostQuiz'
+import ListenButton from '@/app/components/ListenButton'
 function calculateReadTime(html: string | null): string {
   if (!html) return '1 min read'
   const text = html.replace(/<[^>]+>/g, ' ')
@@ -39,6 +44,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { tx, locale } = await getT()
   const { slug } = await params
 
   const { data: article, error } = await supabase
@@ -60,7 +66,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     .order('created_at', { ascending: false })
     .limit(3)
 
-  const readTime = calculateReadTime(article.content)
+  // Urdu visitors get the Urdu version when one has been written; otherwise the English post.
+  const urdu = locale === 'ur' && !!article.title_ur && !!article.content_ur
+  const view = urdu
+    ? { title: article.title_ur as string, excerpt: (article.excerpt_ur as string | null) || article.excerpt, content: article.content_ur as string }
+    : { title: article.title, excerpt: article.excerpt, content: article.content }
+  const readTime = calculateReadTime(view.content)
 
   let seriesArticles: { title: string; slug: string; series_order: number }[] = []
   if (article.series_name) {
@@ -99,7 +110,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     },
   }
 
-  const published = new Date(article.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+  const published = new Date(article.created_at).toLocaleDateString(dateLocale(locale), { month: 'long', day: 'numeric', year: 'numeric' })
 
   return (
     <article className="pb-24 pt-10 md:pt-14">
@@ -107,7 +118,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
       <div className="container-page">
         <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 transition-colors duration-200 hover:text-ink-900">
-          <ArrowLeft size={16} aria-hidden /> Editorial
+          <ArrowLeft size={16} aria-hidden /> {tx("Editorial")}
         </Link>
 
         <header className="mx-auto mt-12 max-w-3xl md:mt-16">
@@ -118,11 +129,12 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           )}
           <p className="type-meta flex flex-wrap gap-x-5 gap-y-1">
             <span className="text-ink-900">{article.category}</span>
-            <span>{readTime}</span>
+            <span>{readTime.replace('min read', tx('min read'))}</span>
             <time dateTime={article.created_at}>{published}</time>
           </p>
-          <h1 className="type-title mt-5 text-ink-900"><SplitText text={article.title} /></h1>
-          {article.excerpt && <p className="type-lead mt-6">{article.excerpt}</p>}
+          <h1 className="type-title mt-5 text-ink-900"><SplitText text={view.title} /></h1>
+          {view.excerpt && <p className="type-lead mt-6">{view.excerpt}</p>}
+          <ListenButton />
         </header>
       </div>
 
@@ -135,14 +147,21 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       )}
 
       <div className="container-page">
+        {locale === 'ur' && !urdu && (
+          <p className="mx-auto mt-10 max-w-3xl border-s-2 border-accent-600 bg-ink-50 p-4 text-[15px] text-ink-700">{tx('This post is only available in English.')}</p>
+        )}
         <div
           className="prose prose-lg mx-auto mt-12 max-w-3xl md:mt-16 prose-headings:font-semibold prose-headings:tracking-[-0.025em] prose-headings:text-ink-900 prose-p:leading-[1.8] prose-p:text-ink-700 prose-li:text-ink-700 prose-strong:text-ink-900 prose-a:text-ink-900 prose-a:decoration-accent-600 prose-a:decoration-2 prose-a:underline-offset-4 hover:prose-a:text-accent-600 prose-blockquote:border-l-2 prose-blockquote:border-accent-600 prose-blockquote:pl-6 prose-blockquote:font-medium prose-blockquote:not-italic prose-blockquote:text-ink-900 prose-code:text-ink-900 prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-none prose-pre:bg-ink-900 prose-pre:text-paper prose-img:w-full prose-hr:border-ink-100 prose-figcaption:text-ink-500 prose-th:text-ink-900 prose-td:text-ink-700"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: urdu ? view.content : addTermExplainers(view.content) }}
+          id="post-body"
+          dir={urdu ? 'rtl' : 'ltr'}
+          lang={urdu ? 'ur' : 'en'}
         />
+        <PostQuiz text={article.quiz} />
 
         {/* Series navigation */}
         {article.series_name && seriesArticles.length > 1 && (
-          <nav aria-label="Series" className="mx-auto mt-16 max-w-3xl border-t border-ink-100 pt-10">
+          <nav aria-label={tx("Series")} className="mx-auto mt-16 max-w-3xl border-t border-ink-100 pt-10">
             <p className="type-meta mb-5">More in &ldquo;{article.series_name}&rdquo;</p>
             <ol className="space-y-1">
               {seriesArticles.map((a, i) => (
@@ -154,7 +173,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                   >
                     <span className="w-6 shrink-0 font-mono text-xs tabular-nums text-ink-500">{i + 1}</span>
                     {a.title}
-                    {a.slug === slug && <span className="type-meta">(you are here)</span>}
+                    {a.slug === slug && <span className="type-meta">{tx("(you are here)")}</span>}
                   </Link>
                 </li>
               ))}
@@ -215,7 +234,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         )}
 
         <div className="mx-auto max-w-3xl">
-          <Comments />
+          <BlogComments slug={slug} />
         </div>
       </div>
     </article>

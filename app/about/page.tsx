@@ -6,6 +6,7 @@ import EmptyState from '@/app/components/EmptyState'
 import { SkeletonBlogList } from '@/app/components/Skeleton'
 import { supabase } from '@/lib/supabase'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type JourneyEntry = {
   id: string
@@ -17,16 +18,18 @@ type JourneyEntry = {
 }
 
 function ImagePlaceholder() {
+  const { tx } = useLocale()
   return (
     <div className="w-full aspect-[4/3] border-2 border-dashed border-ink-100 bg-paper/70 rounded-none flex items-center justify-center p-6 text-center">
       <p className="text-xs text-ink-300 leading-relaxed">
-        No photo added yet
+        {tx("No photo added yet")}
       </p>
     </div>
   )
 }
 
 export default function AboutJourneyPage() {
+  const { tx } = useLocale()
   const [entries, setEntries] = useState<JourneyEntry[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -48,10 +51,10 @@ export default function AboutJourneyPage() {
   return (
     <main>
       <header className="container-page pb-12 pt-12 md:pb-20 md:pt-20">
-        <p className="text-sm font-medium text-ink-500">A journal</p>
-        <h1 className="type-display mt-4 text-ink-900"><SplitText text={"My Journey"} /></h1>
+        <p className="text-sm font-medium text-ink-500">{tx("A journal")}</p>
+        <h1 className="type-display mt-4 text-ink-900"><SplitText text={tx("My Journey")} /></h1>
         <p className="type-lead mt-6 max-w-[52ch]">
-          Not a resume. A running log of how a Computer Science student ended up also being a designer, a game developer, and whatever comes next.
+          {tx("Not a resume. A running log of how a Computer Science student ended up also being a designer, a game developer, and whatever comes next.")}
         </p>
       </header>
 
@@ -60,7 +63,7 @@ export default function AboutJourneyPage() {
         {isLoading ? (
           <SkeletonBlogList count={2} />
         ) : entries.length === 0 ? (
-          <EmptyState icon="sparkle" title="The journey hasn't been written yet" description="Check back soon." />
+          <EmptyState icon="sparkle" title={tx("The journey hasn't been written yet")} description={tx("Check back soon.")} />
         ) : (
           <ol className="border-b border-ink-100">
             {entries.map((entry) => {
@@ -99,7 +102,7 @@ export default function AboutJourneyPage() {
             Still figuring a lot of this out as I go. If any part of it overlaps with something you&rsquo;re building, I&rsquo;d like to hear about it.
           </p>
           <div className="lg:col-span-4 lg:justify-self-end">
-            <ButtonLink href="/contact">Get in touch</ButtonLink>
+            <ButtonLink href="/contact">{tx("Get in touch")}</ButtonLink>
           </div>
         </div>
       </section>

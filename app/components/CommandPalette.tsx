@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Item = { title: string; type: string; url: string }
 
@@ -20,6 +21,7 @@ const STATIC_LINKS: Item[] = [
 ]
 
 export default function CommandPalette() {
+  const { tx } = useLocale()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -101,12 +103,12 @@ export default function CommandPalette() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyNav}
-          placeholder="Jump to a page, project, or post..."
+          placeholder={tx("Jump to a page, project, or post...")}
           className="w-full px-5 py-4 text-base outline-none border-b border-ink-100"
         />
         <div className="max-h-80 overflow-y-auto py-2">
           {filtered.length === 0 ? (
-            <p className="text-sm text-ink-300 text-center py-8">No matches.</p>
+            <p className="text-sm text-ink-300 text-center py-8">{tx("No matches.")}</p>
           ) : (
             filtered.map((item, i) => (
               <button
@@ -124,7 +126,7 @@ export default function CommandPalette() {
           )}
         </div>
         <div className="border-t border-ink-100 px-5 py-2.5 flex items-center justify-between text-[10px] text-ink-300 font-mono">
-          <span>↑↓ navigate · ↵ select · esc close</span>
+          <span>{tx("↑↓ navigate · ↵ select · esc close")}</span>
           <span>⌘K</span>
         </div>
       </div>

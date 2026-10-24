@@ -2,7 +2,9 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 import { siteConfig } from '@/site.config'
-export default function Links() {
+import { getT } from '@/lib/locale'
+export default async function Links() {
+  const { tx } = await getT()
   return (
     <div className="min-h-screen">
     <div className="max-w-md mx-auto px-6 py-20 flex flex-col items-center">
@@ -11,7 +13,7 @@ export default function Links() {
       <div className="relative w-28 h-28 rounded-full mb-6 overflow-hidden shadow-lg border-4 border-white">
          <Image 
             src="/profile.png" 
-            alt="Profile" 
+            alt={tx("Profile")} 
             fill
             sizes="112px"
             className="object-cover" 
@@ -39,7 +41,7 @@ export default function Links() {
           rel="noopener noreferrer" 
           className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"
         >
-          Visual Design Portfolio
+          {tx("Visual Design Portfolio")}
         </a>
         
         <a 
@@ -48,14 +50,14 @@ export default function Links() {
           rel="noopener noreferrer" 
           className="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-sm"
         >
-          Instagram
+          {tx("Instagram")}
         </a>
         
         <Link 
           href="/blog" 
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-none text-center transition-all hover:scale-[1.02] shadow-md mt-4"
         >
-          Read My Articles
+          {tx("Read My Articles")}
         </Link>
       </div>
       

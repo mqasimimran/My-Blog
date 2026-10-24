@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 export default function ShareButtons({ url, title }: { url: string; title: string }) {
+  const { tx } = useLocale()
   const [copied, setCopied] = useState(false)
 
   const encodedUrl = encodeURIComponent(url)
@@ -16,13 +18,13 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs font-medium text-ink-300">Share</span>
+      <span className="text-xs font-medium text-ink-300">{tx("Share")}</span>
       <a
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
         target="_blank"
         rel="noopener noreferrer"
         className="w-8 h-8 flex items-center justify-center rounded-full border border-ink-100 text-ink-500 hover:border-accent-600 hover:text-accent-600 transition-colors text-xs font-bold"
-        aria-label="Share on LinkedIn"
+        aria-label={tx("Share on LinkedIn")}
       >
         in
       </a>
@@ -31,7 +33,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
         target="_blank"
         rel="noopener noreferrer"
         className="w-8 h-8 flex items-center justify-center rounded-full border border-ink-100 text-ink-500 hover:border-accent-600 hover:text-accent-600 transition-colors text-xs font-bold"
-        aria-label="Share on X"
+        aria-label={tx("Share on X")}
       >
         𝕏
       </a>

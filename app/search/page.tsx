@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { SkeletonTextCardGrid } from '@/app/components/Skeleton'
 import EmptyState from '@/app/components/EmptyState'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Result = {
   id: string
@@ -17,6 +18,7 @@ type Result = {
 }
 
 function SearchResults() {
+  const { tx } = useLocale()
   const searchParams = useSearchParams()
   const router = useRouter()
   const initialQuery = searchParams.get('q') || ''
@@ -63,6 +65,17 @@ function SearchResults() {
 
   const filtered = activeType === 'All' ? matched : matched.filter((r) => r.type === activeType)
 
+  // Count the search (once per term, after typing pauses) so the admin can see what people look for.
+  const logged = useRef(new Set<string>())
+  useEffect(() => {
+    if (q.length < 2 || logged.current.has(q)) return
+    const t = setTimeout(() => {
+      logged.current.add(q)
+      fetch('/api/track-search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ q, found: matched.length > 0 }), keepalive: true }).catch(() => {})
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [q, matched.length])
+
   const typeCounts = {
     Project: matched.filter((r) => r.type === 'Project').length,
     Blog: matched.filter((r) => r.type === 'Blog').length,
@@ -75,16 +88,16 @@ function SearchResults() {
   return (
     <main className="pb-24 pt-12 md:pt-20">
       <div className="container-page">
-        <h1 className="type-display text-ink-900"><SplitText text={"Search"} /></h1>
+        <h1 className="type-display text-ink-900"><SplitText text={tx("Search")} /></h1>
 
         <form onSubmit={handleSearchSubmit} role="search" className="mb-12 mt-10">
-          <label htmlFor="site-search" className="sr-only">Search the site</label>
+          <label htmlFor="site-search" className="sr-only">{tx("Search the site")}</label>
           <input
             id="site-search"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Projects, posts, design work, services"
+            placeholder={tx("Projects, posts, design work, services")}
             autoFocus
             className="w-full border-b-2 border-ink-900 bg-transparent py-3 text-2xl font-semibold tracking-[-0.03em] text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-300 focus:border-accent-600 md:text-4xl"
           />
@@ -102,7 +115,7 @@ function SearchResults() {
                     activeType === tab ? 'bg-accent-600 text-white' : 'bg-ink-100 text-ink-500 hover:bg-ink-100'
                   }`}
                 >
-                  {tab} ({count})
+                  {tx(tab)} ({count})
                 </button>
               )
             })}
@@ -112,9 +125,9 @@ function SearchResults() {
         {isLoading ? (
           <SkeletonTextCardGrid count={6} columns={2} />
         ) : !q ? (
-          <EmptyState icon="search" title="Search the whole site" description="Projects, blog posts, design work, and services, all in one place." />
+          <EmptyState icon="search" title={tx("Search the whole site")} description={tx("Projects, blog posts, design work, and services, all in one place.")} />
         ) : filtered.length === 0 ? (
-          <EmptyState icon="search" title={`No results for "${query}"`} description="Try a different word, or browse from the main nav instead." />
+          <EmptyState icon="search" title={`No results for "${query}"`} description={tx("Try a different word, or browse from the main nav instead.")} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {filtered.map((result) => (
@@ -124,7 +137,7 @@ function SearchResults() {
                 className="border border-ink-100 rounded-none p-6 hover:border-accent-600/40 hover:shadow-sm transition-all block"
               >
                 <span className="text-xs font-medium text-accent-600 mb-2 block">
-                  {result.type}
+                  {tx(result.type)}
                 </span>
                 <h2 className="text-base font-medium text-ink-900 mb-1 leading-snug">{result.title}</h2>
                 {result.description && (
@@ -140,10 +153,11 @@ function SearchResults() {
 }
 
 export default function SearchPage() {
+  const { tx } = useLocale()
   return (
     <Suspense fallback={
       <main className="min-h-screen flex items-center justify-center">
-        <p className="text-ink-300 text-xs font-mono">Loading...</p>
+        <p className="text-ink-300 text-xs font-mono">{tx("Loading...")}</p>
       </main>
     }>
       <SearchResults />

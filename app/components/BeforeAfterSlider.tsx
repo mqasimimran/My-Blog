@@ -1,8 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { beforeSrc: string; afterSrc: string; alt: string }) {
+  const { tx } = useLocale()
   const [position, setPosition] = useState(50)
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -58,8 +60,8 @@ export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { before
         </div>
       </div>
 
-      <span className="absolute top-3 left-3 text-xs font-medium bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">Before</span>
-      <span className="absolute top-3 right-3 text-xs font-medium bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">After</span>
+      <span className="absolute top-3 left-3 text-xs font-medium bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">{tx("Before")}</span>
+      <span className="absolute top-3 right-3 text-xs font-medium bg-gray-900/70 text-white px-2 py-1 rounded-none pointer-events-none">{tx("After")}</span>
     </div>
   )
 }

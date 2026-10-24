@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 export default function PreviewLinkField({ path, token }: { path: string; token: string }) {
+  const { tx } = useLocale()
   const [copied, setCopied] = useState(false)
 
   if (!token) return null
@@ -22,7 +24,7 @@ export default function PreviewLinkField({ path, token }: { path: string; token:
   return (
     <div>
       <label className="block text-xs font-medium text-ink-500 mb-2">
-        Shareable Preview Link <span className="text-ink-300 font-normal normal-case">(works even while unpublished)</span>
+        Shareable Preview Link <span className="text-ink-300 font-normal normal-case">{tx("(works even while unpublished)")}</span>
       </label>
       <div className="flex gap-2">
         <input type="text" readOnly value={url} onFocus={(e) => e.target.select()} className="w-full p-3 border border-ink-100 rounded-none text-xs text-ink-700 font-mono bg-paper" />

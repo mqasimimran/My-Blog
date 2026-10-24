@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase'
 import SplitText from '@/app/components/ui/SplitText'
 import { ButtonLink } from '@/app/components/ui/Button'
 import { SkeletonBlock } from '@/app/components/Skeleton'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 type Project = {
   id: string
@@ -20,6 +21,7 @@ type Project = {
   live_url: string | null
   feature_image: string | null
   preview_video_url: string | null
+  screenshots?: string[] | null
 }
 
 // `key` is compared (upper-case) with the category stored in the database. `label` is what visitors read.
@@ -33,6 +35,8 @@ const CATEGORIES = [
 ]
 
 export default function ProjectFilters() {
+  const { tx } = useLocale()
+  const { t } = useLocale()
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('ALL')
@@ -41,7 +45,7 @@ export default function ProjectFilters() {
     async function fetchFeaturedProjects() {
       const { data, error } = await supabase
         .from('projects')
-        .select('id, title, slug, category, tech_stack, description, status, live_url, feature_image, preview_video_url')
+        .select('id, title, slug, category, tech_stack, description, status, live_url, feature_image, preview_video_url, screenshots')
         .eq('featured', true)
         .order('created_at', { ascending: false })
 
@@ -64,9 +68,9 @@ export default function ProjectFilters() {
         {/* Pinned while the work stacks up beside it */}
         <div className="lg:col-span-4">
           <div className="lg:sticky lg:top-24">
-            <h2 className="type-h2 text-ink-900"><SplitText text="Featured work" /></h2>
-            <p className="type-lead mt-4 max-w-[40ch]">Select a category to explore my projects across software engineering, machine learning, and game development.</p>
-            <div role="group" aria-label="Filter projects by category" className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
+            <h2 className="type-h2 text-ink-900"><SplitText text={t('home.featuredWork')} /></h2>
+            <p className="type-lead mt-4 max-w-[40ch]">{tx("Select a category to explore my projects across software engineering, machine learning, and game development.")}</p>
+            <div role="group" aria-label={tx("Filter projects by category")} className="mt-8 flex flex-wrap gap-x-6 gap-y-3">
               {CATEGORIES.map((category) => {
                 const isActive = activeCategory === category.key
                 return (
@@ -78,13 +82,13 @@ export default function ProjectFilters() {
                       isActive ? 'border-accent-600 text-ink-900' : 'border-transparent text-ink-500 hover:text-ink-900'
                     }`}
                   >
-                    {category.label}
+                    {tx(category.label)}
                   </button>
                 )
               })}
             </div>
             <div className="mt-10">
-              <ButtonLink href="/projects" variant="text">See all projects</ButtonLink>
+              <ButtonLink href="/projects" variant="text">{tx("See all projects")}</ButtonLink>
             </div>
           </div>
         </div>
@@ -93,7 +97,7 @@ export default function ProjectFilters() {
           {isLoading ? (
             <SkeletonBlock className="aspect-[16/10] w-full" />
           ) : filtered.length === 0 ? (
-            <p className="text-base text-ink-500">No projects in this category yet.</p>
+            <p className="text-base text-ink-500">{tx("No projects in this category yet.")}</p>
           ) : (
             // Each card sticks just under the navbar, so the next one slides up over it.
             <ul ref={listRef}>
@@ -111,8 +115,11 @@ export default function ProjectFilters() {
 }
 
 function ProjectCard({ project }: { project: Project }) {
+  const { tx } = useLocale()
   const [isHovering, setIsHovering] = useState(false)
-  const hasThumbnail = project.preview_video_url || project.feature_image
+  // The cover picture; without one, the first screenshot; without either, the title's first letter.
+  const cover = project.feature_image || project.screenshots?.[0] || null
+  const hasThumbnail = project.preview_video_url || cover
 
   return (
     <Link
@@ -127,13 +134,13 @@ function ProjectCard({ project }: { project: Project }) {
         {hasThumbnail ? (
           project.preview_video_url ? (
             <>
-              {project.feature_image && (
-                <img src={project.feature_image} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
+              {cover && (
+                <img src={cover} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
               )}
               {isHovering && <video src={project.preview_video_url} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />}
             </>
           ) : (
-            <img src={project.feature_image!} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+            <img src={cover!} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
           )
         ) : (
           <div className="absolute inset-0 grid place-items-center text-ink-300" aria-hidden>
@@ -147,11 +154,11 @@ function ProjectCard({ project }: { project: Project }) {
           <h3 className="type-h3 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{project.title}</h3>
           <p className="type-meta mt-2 flex flex-wrap gap-x-3">
             <span>{project.category}</span>
-            {project.status && <span>{project.status}</span>}
+            {project.status && <span>{tx(project.status)}</span>}
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-900 transition-colors duration-300 group-hover:text-accent-600">
-          View project
+          {tx("View project")}
           <ArrowUpRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 ease-[var(--ease-smooth)] group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
         </span>
       </div>

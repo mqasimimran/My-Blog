@@ -558,5 +558,66 @@ $$;
 revoke all on function redeem_discount(text) from public, anon, authenticated;
 grant execute on function redeem_discount(text) to service_role;
 
+-- ---- Bundles (Oct 2026) -------------------------------------------------------
+-- A product of type 'bundle' sells several digital products together; buyers get every file.
+alter table products add column if not exists bundle_items uuid[];  -- product ids, in display order
+
+-- ---- Urdu versions of blog posts (Oct 2026) -----------------------------------------
+-- Optional. Urdu visitors see these when present; otherwise the English post.
+alter table articles add column if not exists title_ur text;
+alter table articles add column if not exists excerpt_ur text;
+alter table articles add column if not exists content_ur text;
+
+-- ---- Invoices (Oct 2026) ----------------------------------------------------------
+-- Created in Admin -> Invoices. Server-only (no public policies); clients view theirs by a private link.
+create table if not exists invoices (
+  id uuid primary key default gen_random_uuid(),
+  number text not null unique,                   -- e.g. INV-2026-001
+  client_name text not null,
+  client_email text,
+  client_address text,
+  currency text not null default 'USD' check (currency in ('USD', 'PKR')),
+  items jsonb not null default '[]'::jsonb,      -- [{ "description": "...", "quantity": 1, "unit_price": 100 }]
+  discount numeric not null default 0,           -- an amount, in the invoice's currency
+  tax_percent numeric not null default 0,
+  notes text,
+  status text not null default 'draft' check (status in ('draft', 'sent', 'paid', 'cancelled')),
+  issue_date date not null default current_date,
+  due_date date,
+  public_token text not null unique default replace(gen_random_uuid()::text, '-', ''),
+  sent_at timestamptz,
+  paid_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+-- ---- Card payments (Oct 2026) -----------------------------------------------------
+-- A product sells by card when it has a Lemon Squeezy variant ID (and the keys are set).
+alter table products add column if not exists ls_variant_id text;
+alter table orders add column if not exists payment_provider text;   -- e.g. 'lemonsqueezy'
+alter table orders add column if not exists provider_order_id text;  -- the provider's own order id
+
+-- ---- Quizzes + invoice reminders (Oct 2026) ----------------------------------------
+alter table articles add column if not exists quiz text;                          -- see lib/quiz.ts for the format
+alter table invoices add column if not exists reminders_sent integer not null default 0;  -- 1 = before due, 2 = due, 3 = overdue
+
+-- ---- Site search terms (Oct 2026) --------------------------------------------------
+-- What visitors type into the site's search, counted per day. No personal data is stored.
+create table if not exists site_searches (
+  term text not null,
+  day date not null default current_date,
+  searches integer not null default 0,
+  no_results integer not null default 0,
+  primary key (term, day)
+);
+create or replace function log_search(p_term text, p_found boolean)
+returns void language sql security definer set search_path = public as $$
+  insert into site_searches (term, day, searches, no_results)
+  values (lower(left(trim(p_term), 60)), current_date, 1, case when p_found then 0 else 1 end)
+  on conflict (term, day) do update set searches = site_searches.searches + 1,
+    no_results = site_searches.no_results + case when p_found then 0 else 1 end;
+$$;
+revoke all on function log_search(text, boolean) from public, anon, authenticated;
+grant execute on function log_search(text, boolean) to service_role;
+
 -- Refresh Supabase's column cache so new columns are visible to the site immediately.
 notify pgrst, 'reload schema';

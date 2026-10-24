@@ -1,3 +1,4 @@
+import { getT } from '@/lib/locale'
 const TOOLS = [
   'Unity 3D',
   'C#',
@@ -13,9 +14,10 @@ const TOOLS = [
   'React.js',
 ]
 
-export default function TechMarquee() {
+export default async function TechMarquee() {
+  const { tx } = await getT()
   return (
-    <section aria-label="Tools and technologies" className="select-none overflow-hidden border-y border-ink-100 bg-paper py-5">
+    <section aria-label={tx("Tools and technologies")} className="select-none overflow-hidden border-y border-ink-100 bg-paper py-5">
       <div className="animate-marquee items-center">
         {/* The list is rendered twice for a seamless loop; the copy is hidden from screen readers. */}
         {[0, 1].map((copy) => (

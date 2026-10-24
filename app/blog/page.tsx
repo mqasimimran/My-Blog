@@ -8,6 +8,9 @@ import { SkeletonBlogList } from '@/app/components/Skeleton'
 import FilterTabs from '@/app/components/ui/FilterTabs'
 import EmptyState from '@/app/components/EmptyState'
 import SplitText from '@/app/components/ui/SplitText'
+import { Rss } from '@phosphor-icons/react'
+import { useLocale } from '@/app/components/LocaleProvider'
+import { dateLocale, type Locale } from '@/lib/i18n'
 
 type Article = {
   id: string
@@ -17,6 +20,8 @@ type Article = {
   excerpt: string
   created_at: string
   feature_image: string | null
+  title_ur?: string | null
+  excerpt_ur?: string | null
 }
 
 const DAILY_QUOTES = [
@@ -33,11 +38,15 @@ const CATEGORIES = ['All', 'Engineering', 'Design', 'Productivity', 'Leadership'
   (c) => ({ key: c, label: c })
 )
 
-const formatDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+const formatDate = (iso: string, locale: Locale = 'en') => new Date(iso).toLocaleDateString(dateLocale(locale), { month: 'long', day: 'numeric', year: 'numeric' })
 
 export default function BlogPage() {
+  const { tx, locale } = useLocale()
+  const { t } = useLocale()
   const [articles, setArticles] = useState<Article[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  // Urdu visitors see a post's Urdu title and summary when it has them.
+  const localized = (list: Article[]) => (locale === 'ur' ? list.map((a) => (a.title_ur ? { ...a, title: a.title_ur, excerpt: a.excerpt_ur || a.excerpt } : a)) : list)
   const [activeCategory, setActiveCategory] = useState('All')
   const [quote, setQuote] = useState(DAILY_QUOTES[0])
 
@@ -46,26 +55,29 @@ export default function BlogPage() {
     setQuote(DAILY_QUOTES[dayOfMonth % DAILY_QUOTES.length])
 
     async function fetchPublishedArticles() {
-      const { data, error } = await supabase
+      const query = (cols: string) => supabase
         .from('articles')
-        .select('id, title, slug, category, excerpt, created_at, feature_image')
+        .select(cols)
         .eq('published', true)
         .order('created_at', { ascending: false })
+      // Urdu columns come from an SQL update; until it's run, load the English fields only.
+      let { data, error } = await query('id, title, slug, category, excerpt, created_at, feature_image, title_ur, excerpt_ur')
+      if (error && /_ur/.test(error.message)) ({ data, error } = await query('id, title, slug, category, excerpt, created_at, feature_image'))
 
       if (error) console.error('Error fetching blogs:', error)
-      else setArticles(data || [])
+      else setArticles((data as unknown as Article[]) || [])
       setIsLoading(false)
     }
 
     fetchPublishedArticles()
   }, [])
 
-  const filteredArticles = activeCategory === 'All' ? articles : articles.filter((article) => article.category === activeCategory)
+  const filteredArticles = activeCategory === 'All' ? localized(articles) : localized(articles).filter((article) => article.category === activeCategory)
 
   return (
     <main>
       <header className="container-page grid gap-10 pb-12 pt-12 md:pb-16 md:pt-20 lg:grid-cols-12 lg:items-end">
-        <h1 className="type-display text-ink-900 lg:col-span-6"><SplitText text={"Editorial"} /></h1>
+        <h1 className="type-display text-ink-900 lg:col-span-6"><SplitText text={tx("Editorial")} /></h1>
         {/* The quote of the day */}
         <figure className="lg:col-span-5 lg:col-start-8">
           <blockquote className="text-lg leading-relaxed text-ink-700">&ldquo;{quote.text}&rdquo;</blockquote>
@@ -74,13 +86,16 @@ export default function BlogPage() {
       </header>
 
       <section className="container-page pb-24">
-        <FilterTabs label="Filter articles by category" options={CATEGORIES} value={activeCategory} onChange={setActiveCategory} />
+        <a href="/feed.xml" className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-ink-700 hover:text-accent-600">
+          <Rss size={16} aria-hidden /> {t('blog.rss')}
+        </a>
+        <FilterTabs label={tx("Filter articles by category")} options={CATEGORIES} value={activeCategory} onChange={setActiveCategory} />
 
         <div className="mt-12">
           {isLoading ? (
             <SkeletonBlogList count={3} />
           ) : filteredArticles.length === 0 ? (
-            <EmptyState icon="search" title="No articles in this category yet" description="Try another category." />
+            <EmptyState icon="search" title={tx("No articles in this category yet")} description={tx("Try another category.")} />
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredArticles.map((article) => (
@@ -97,7 +112,7 @@ export default function BlogPage() {
                     <div className="flex flex-1 flex-col p-6">
                       <p className="type-meta flex gap-x-4">
                         <span>{article.category}</span>
-                        <time dateTime={article.created_at}>{formatDate(article.created_at)}</time>
+                        <time dateTime={article.created_at}>{formatDate(article.created_at, locale)}</time>
                       </p>
                       <h2 className="mt-3 text-xl font-semibold leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{article.title}</h2>
                       {article.excerpt && article.excerpt.trim() !== '' && <p className="mt-3 line-clamp-3 text-[15px] leading-relaxed text-ink-700">{article.excerpt}</p>}

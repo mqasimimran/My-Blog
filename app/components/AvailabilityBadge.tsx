@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 export default function AvailabilityBadge() {
+  const { tx } = useLocale()
   const [available, setAvailable] = useState(false)
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -29,7 +31,7 @@ export default function AvailabilityBadge() {
         <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-60 motion-safe:animate-ping" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
       </span>
-      {message}
+      {tx(message)}
     </p>
   )
 }

@@ -15,6 +15,8 @@ import EmptyState from '@/app/components/EmptyState'
 
 import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
+import ExplainProject from '@/app/components/ExplainProject'
 type Project = {
   title: string
   category: string
@@ -41,6 +43,7 @@ type RelatedProject = {
 }
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { tx } = useLocale()
   const { slug } = use(params)
   const [project, setProject] = useState<Project | null>(null)
   const [relatedProjects, setRelatedProjects] = useState<RelatedProject[]>([])
@@ -77,7 +80,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
 
   const backLink = (
     <Link href="/projects" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 transition-colors duration-200 hover:text-ink-900">
-      <ArrowLeft size={16} aria-hidden /> Project archive
+      <ArrowLeft size={16} aria-hidden /> {tx("Project archive")}
     </Link>
   )
 
@@ -98,7 +101,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
     return (
       <div className="container-page pb-24 pt-10">
         {backLink}
-        <EmptyState icon="search" title="Project not found" description="It may have been unpublished or renamed." />
+        <EmptyState icon="search" title={tx("Project not found")} description={tx("It may have been unpublished or renamed.")} />
       </div>
     )
   }
@@ -140,7 +143,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
         <header className="mt-12 max-w-4xl md:mt-16">
           <p className="type-meta flex flex-wrap items-center gap-x-4 gap-y-2">
             <span className="text-ink-900">{project.category}</span>
-            {project.status && <span className="border border-ink-100 px-1.5 py-0.5">{project.status}</span>}
+            {project.status && <span className="border border-ink-100 px-1.5 py-0.5">{tx(project.status)}</span>}
           </p>
           <h1 className="type-title mt-5 text-ink-900"><SplitText text={project.title} /></h1>
           {project.tech_stack && <p className="type-meta mt-5">{project.tech_stack}</p>}
@@ -148,8 +151,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
 
           {(project.live_url || project.github_url) && (
             <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-4">
-              {project.live_url && <ButtonLink href={project.live_url} external>Live demo</ButtonLink>}
-              {project.github_url && <ButtonLink href={project.github_url} external variant="text">GitHub repo</ButtonLink>}
+              {project.live_url && <ButtonLink href={project.live_url} external>{tx("Live demo")}</ButtonLink>}
+              {project.github_url && <ButtonLink href={project.github_url} external variant="text">{tx("GitHub repo")}</ButtonLink>}
             </div>
           )}
         </header>
@@ -164,8 +167,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       )}
 
       {project.play_url && (
-        <section className="container-page mt-14 md:mt-20" aria-label="Play the game">
-          <h2 className="type-h2 text-ink-900"><SplitText text="Play it in your browser" /></h2>
+        <section className="container-page mt-14 md:mt-20" aria-label={tx("Play the game")}>
+          <h2 className="type-h2 text-ink-900"><SplitText text={tx("Play it in your browser")} /></h2>
           <div className="mt-8">
             <GamePlayer src={project.play_url} title={project.title} poster={project.feature_image} />
           </div>
@@ -173,6 +176,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       )}
 
       <div className="container-page">
+        <ExplainProject slug={slug} />
+
         {/* Stats */}
         {project.stats && (
           <div className="mt-14 grid grid-cols-2 gap-x-8 gap-y-10 border-y border-ink-100 py-10 sm:grid-cols-3 md:mt-20">
@@ -192,10 +197,10 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
         {/* Case study */}
         {project.problem || project.approach || project.outcome ? (
           <div className="mt-8 md:mt-12">
-            {project.problem && <Row label="The problem"><p className={bodyText}>{project.problem}</p></Row>}
-            {project.approach && <Row label="The approach"><p className={bodyText}>{project.approach}</p></Row>}
+            {project.problem && <Row label={tx("The problem")}><p className={bodyText}>{project.problem}</p></Row>}
+            {project.approach && <Row label={tx("The approach")}><p className={bodyText}>{project.approach}</p></Row>}
             {project.tech_stack && (
-              <Row label="The stack">
+              <Row label={tx("The stack")}>
                 <ul className="flex flex-wrap gap-2">
                   {project.tech_stack.split(',').map((tech) => (
                     <li key={tech} className="border border-ink-100 bg-paper-raised px-3 py-1.5 font-mono text-[13px] text-ink-700">{tech.trim()}</li>
@@ -212,9 +217,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                 ))}
               </div>
             )}
-            {project.outcome && <Row label="The outcome"><p className={bodyText}>{project.outcome}</p></Row>}
+            {project.outcome && <Row label={tx("The outcome")}><p className={bodyText}>{project.outcome}</p></Row>}
             {project.content && (
-              <Row label="Notes">
+              <Row label={tx("Notes")}>
                 <div className={proseClass} dangerouslySetInnerHTML={{ __html: project.content }} />
               </Row>
             )}
@@ -224,7 +229,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
             {project.content ? (
               <div className={`${proseClass} mx-auto`} dangerouslySetInnerHTML={{ __html: project.content }} />
             ) : (
-              <p className="text-base text-ink-500">A detailed case study for this project is on its way.</p>
+              <p className="text-base text-ink-500">{tx("A detailed case study for this project is on its way.")}</p>
             )}
           </div>
         )}

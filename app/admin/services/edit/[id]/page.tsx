@@ -21,6 +21,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
   const [tagline, setTagline] = useState('')
   const [description, setDescription] = useState('')
   const [includes, setIncludes] = useState('')
+  const [details, setDetails] = useState<Record<string, string>>({ deliverables: '', ideal_for: '', process: '', tools: '', turnaround: '', faq: '' })
   const [icon, setIcon] = useState('')
   const [startingPrice, setStartingPrice] = useState('')
   const [coverImage, setCoverImage] = useState<string | null>(null)
@@ -43,6 +44,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         setTagline(data.tagline || '')
         setDescription(data.description || '')
         setIncludes(data.includes || '')
+        setDetails({ deliverables: data.deliverables || '', ideal_for: data.ideal_for || '', process: data.process || '', tools: data.tools || '', turnaround: data.turnaround || '', faq: data.faq || '' })
         setIcon(data.icon || '')
         setStartingPrice(data.starting_price || '')
         setCoverImage(data.cover_image || null)
@@ -81,6 +83,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       tagline,
       description,
       includes,
+      ...Object.fromEntries(Object.entries(details).map(([k, v]) => [k, v.trim() || null])),
       icon,
       cover_image: coverImageUrl,
       starting_price: startingPrice,
@@ -177,6 +180,34 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 rows={4}
                 className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm font-mono"
               />
+            </div>
+
+            <div className="space-y-6 border-t border-ink-100 pt-6">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-ink-900">Service details (optional, shown on the service page)</p>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">What you’ll get (one per line)</label>
+                <textarea rows={4} value={details.deliverables} onChange={(e) => setDetails({ ...details, deliverables: e.target.value })} placeholder={"Logo in 3 concepts\nColour palette\nBrand guidelines PDF"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Who it’s for</label>
+                <textarea rows={2} value={details.ideal_for} onChange={(e) => setDetails({ ...details, ideal_for: e.target.value })} placeholder={"Small businesses and startups that need a clear, professional identity."} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">How it works (one step per line, "Step: detail")</label>
+                <textarea rows={4} value={details.process} onChange={(e) => setDetails({ ...details, process: e.target.value })} placeholder={"Discovery: we talk about your goals\nConcepts: I design three directions\nRefine: two rounds of revisions\nDeliver: final files and guidelines"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Tools I use (comma separated)</label>
+                <textarea rows={1} value={details.tools} onChange={(e) => setDetails({ ...details, tools: e.target.value })} placeholder={"Illustrator, Photoshop, Figma"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Turnaround</label>
+                <textarea rows={1} value={details.turnaround} onChange={(e) => setDetails({ ...details, turnaround: e.target.value })} placeholder={"Usually 1 to 2 weeks"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">FAQs ("Q:" then "A:", blank line between)</label>
+                <textarea rows={6} value={details.faq} onChange={(e) => setDetails({ ...details, faq: e.target.value })} placeholder={"Q: How many revisions are included?\nA: Two rounds, and more can be added.\n\nQ: Do I own the files?\nA: Yes, once paid in full."} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              </div>
             </div>
 
             <div>

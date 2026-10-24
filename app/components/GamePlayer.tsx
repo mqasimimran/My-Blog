@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import { ArrowsOut, Play } from '@phosphor-icons/react'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 /*
  * A playable WebGL build (e.g. a Unity export hosted on itch.io or in /public/games) shown on its
@@ -9,6 +10,7 @@ import { ArrowsOut, Play } from '@phosphor-icons/react'
  * for everyone who doesn't play.
  */
 export default function GamePlayer({ src, title, poster }: { src: string; title: string; poster?: string | null }) {
+  const { tx } = useLocale()
   const [playing, setPlaying] = useState(false)
   const frame = useRef<HTMLIFrameElement>(null)
 
@@ -31,15 +33,15 @@ export default function GamePlayer({ src, title, poster }: { src: string; title:
               <span className="grid h-20 w-20 place-items-center rounded-full bg-paper text-ink-900 transition-transform duration-500 ease-[var(--ease-smooth)] group-hover:scale-110">
                 <Play size={30} weight="fill" aria-hidden />
               </span>
-              <span className="font-display text-2xl uppercase tracking-wide text-white">Play in your browser</span>
-              <span className="text-sm text-white/70">Loads the game. It can take a moment.</span>
+              <span className="font-display text-2xl uppercase tracking-wide text-white">{tx("Play in your browser")}</span>
+              <span className="text-sm text-white/70">{tx("Loads the game. It can take a moment.")}</span>
             </span>
           </button>
         )}
       </div>
       {playing && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <p className="type-meta">Click the game to control it. Best on a computer with a keyboard.</p>
+          <p className="type-meta">{tx("Click the game to control it. Best on a computer with a keyboard.")}</p>
           <button type="button" onClick={() => frame.current?.requestFullscreen?.()} className="inline-flex items-center gap-2 text-sm font-medium text-ink-900 hover:text-accent-600">
             <ArrowsOut size={16} aria-hidden /> Full screen
           </button>

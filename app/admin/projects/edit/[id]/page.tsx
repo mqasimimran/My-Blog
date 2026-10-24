@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
+import CoverImageField from '@/app/admin/projects/CoverImageField'
 
 export default function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -25,6 +26,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const [outcome, setOutcome] = useState('')
   const [stats, setStats] = useState('')
   const [existingScreenshots, setExistingScreenshots] = useState<string[]>([])
+  const [featureImageUrl, setFeatureImageUrl] = useState<string | null>(null)
   const [screenshotFiles, setScreenshotFiles] = useState<File[]>([])
   const [previewVideoUrl, setPreviewVideoUrl] = useState<string | null>(null)
   const [previewVideoFile, setPreviewVideoFile] = useState<File | null>(null)
@@ -60,6 +62,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         setOutcome(data.outcome || '')
         setStats(data.stats || '')
         setExistingScreenshots(data.screenshots || [])
+        setFeatureImageUrl(data.feature_image || null)
         setPreviewVideoUrl(data.preview_video_url || null)
         setLiveUrl(data.live_url || '')
         setPlayUrl(data.play_url || '')
@@ -126,6 +129,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       outcome,
       stats,
       screenshots: screenshotUrls,
+      feature_image: featureImageUrl,
       preview_video_url: finalPreviewVideoUrl,
       live_url: liveUrl,
       play_url: playUrl || null,
@@ -236,6 +240,8 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Stat Callouts (optional, one "value|label" per line)</label>
               <textarea value={stats} onChange={(e) => setStats(e.target.value)} rows={3} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm font-mono" />
             </div>
+
+            <CoverImageField value={featureImageUrl} onChange={setFeatureImageUrl} screenshots={existingScreenshots} />
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Screenshots</label>

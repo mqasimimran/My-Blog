@@ -5,12 +5,15 @@
  * and starts when ScrollAnimator marks the headline as arrived.
  */
 export default function SplitText({ text }: { text: string }) {
+  // Urdu (and other joined scripts) must not be split into letters, or the letters stop joining up.
+  if (/[\u0600-\u06FF]/.test(text)) return <>{text}</>
   let i = 0
   const words = text.split(' ')
   return (
     <>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true">
+      {/* dir="auto": an English headline keeps its word order on an Urdu (right-to-left) page */}
+      <span aria-hidden="true" dir="auto">
         {words.map((word, w) => (
           <span key={w}>
             <span className="split-w">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, use } from 'react'
+import { useState, useEffect, use, Suspense } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { siteConfig } from '@/site.config'
@@ -8,6 +8,9 @@ import { ArrowLeft, ArrowRight, Check } from '@phosphor-icons/react'
 import { SkeletonBlock } from '@/app/components/Skeleton'
 import EmptyState from '@/app/components/EmptyState'
 import SplitText from '@/app/components/ui/SplitText'
+import { useLocale } from '@/app/components/LocaleProvider'
+import ServiceDetails from '@/app/components/ServiceDetails'
+import ServiceRequestForm from '@/app/components/ServiceRequestForm'
 
 type ServicePackage = {
   id: string
@@ -29,6 +32,7 @@ type Service = {
 }
 
 export default function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { tx } = useLocale()
   const { slug } = use(params)
   const [service, setService] = useState<Service | null>(null)
   const [packages, setPackages] = useState<ServicePackage[]>([])
@@ -37,11 +41,10 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
 
   useEffect(() => {
     async function fetchService() {
-      const { data: serviceData, error: serviceError } = await supabase
-        .from('services')
-        .select('id, name, tagline, description, icon, cover_image')
-        .eq('slug', slug)
-        .single()
+      // The detailed fields come from an SQL update; until it's run, load the basic ones.
+      const BASIC = 'id, name, tagline, description, icon, cover_image'
+      let { data: serviceData, error: serviceError } = await supabase.from('services').select(`${BASIC}, deliverables, ideal_for, process, tools, turnaround, faq`).eq('slug', slug).single()
+      if (serviceError && /deliverables|ideal_for|process|tools|turnaround|faq/.test(serviceError.message)) ({ data: serviceData, error: serviceError } = await supabase.from('services').select(BASIC).eq('slug', slug).single())
 
       if (serviceError || !serviceData) {
         setNotFound(true)
@@ -49,7 +52,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
         return
       }
 
-      setService(serviceData)
+      setService(serviceData as any)
 
       const { data: packageData, error: packageError } = await supabase
         .from('service_packages')
@@ -68,7 +71,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
 
   const backLink = (
     <Link href="/services" className="inline-flex items-center gap-2 text-sm font-medium text-ink-500 transition-colors duration-200 hover:text-ink-900">
-      <ArrowLeft size={16} aria-hidden /> All services
+      <ArrowLeft size={16} aria-hidden /> {tx("All services")}
     </Link>
   )
 
@@ -90,7 +93,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
     return (
       <main className="container-page pb-24 pt-10">
         {backLink}
-        <EmptyState icon="search" title="This service couldn't be found" description="It may have been removed or renamed." />
+        <EmptyState icon="search" title={tx("This service couldn't be found")} description={tx("It may have been removed or renamed.")} />
       </main>
     )
   }
@@ -110,15 +113,17 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
       </div>
 
       {/* Packages, compared side by side */}
+      <ServiceDetails service={service as any} part="intro" />
+
       <section className="container-page mt-16 md:mt-20">
         {packages.length === 0 ? (
-          <EmptyState icon="inbox" title="No packages set up for this service yet" description="Get in touch for a custom quote." />
+          <EmptyState icon="inbox" title={tx("No packages set up for this service yet")} description={tx("Get in touch for a custom quote.")} />
         ) : (
           <div className={`grid grid-cols-1 gap-6 ${packages.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
             {packages.map((pkg, index) => {
               const isFeatured = packages.length === 3 && index === 1
               const featuresList = pkg.features ? pkg.features.split('\n').map((line) => line.trim()).filter(Boolean) : []
-              const contactHref = `/contact?subject=${encodeURIComponent(`${service.name} - ${pkg.tier} package`)}&message=${encodeURIComponent(`Hi ${siteConfig.firstName}, I'd like to get started on the ${pkg.tier} package (${pkg.price}) for ${service.name}.`)}`
+                            const contactHref = `?package=${encodeURIComponent(pkg.tier)}#request`
 
               return (
                 <div
@@ -127,13 +132,13 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
                 >
                   <div className="flex items-baseline justify-between gap-4">
                     <p className="text-sm font-medium text-ink-900">{pkg.tier}</p>
-                    {isFeatured && <p className="type-meta text-accent-600">Most popular</p>}
+                    {isFeatured && <p className="type-meta text-accent-600">{tx("Most popular")}</p>}
                   </div>
                   <p className="mt-4 text-[2.5rem] font-semibold leading-none tracking-[-0.04em] text-ink-900 tabular-nums">{pkg.price}</p>
 
                   {(pkg.delivery_days || pkg.revisions) && (
                     <p className="type-meta mt-5 flex flex-wrap gap-x-4 border-b border-ink-100 pb-6">
-                      {pkg.delivery_days && <span>{pkg.delivery_days}-day delivery</span>}
+                      {pkg.delivery_days && <span>{tx('{days}-day delivery').replace('{days}', String(pkg.delivery_days))}</span>}
                       {pkg.revisions && <span>{pkg.revisions}</span>}
                     </p>
                   )}
@@ -153,7 +158,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
                       isFeatured ? 'bg-ink-900 text-paper hover:bg-accent-600 hover:text-on-accent' : 'border border-ink-900 text-ink-900 hover:bg-ink-900 hover:text-paper'
                     }`}
                   >
-                    Get started
+                    {tx("Get started")}
                     <ArrowRight size={16} weight="bold" aria-hidden className="transition-transform duration-300 group-hover:translate-x-0.5" />
                   </Link>
                 </div>
@@ -162,6 +167,9 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
           </div>
         )}
       </section>
+
+      <ServiceDetails service={service as any} part="faq" />
+      <Suspense fallback={null}><ServiceRequestForm serviceName={service.name} packages={packages.map((p) => p.tier)} /></Suspense>
     </main>
   )
 }

@@ -1,5 +1,7 @@
 'use client'
 
+import { useLocale } from '@/app/components/LocaleProvider'
+
 /** Underlined text tabs used to filter lists. Scrolls sideways on small screens instead of wrapping. */
 export default function FilterTabs<T extends string>({
   options,
@@ -12,8 +14,9 @@ export default function FilterTabs<T extends string>({
   onChange: (key: T) => void
   label: string
 }) {
+  const { tx } = useLocale()
   return (
-    <div role="group" aria-label={label} className="-mx-5 flex gap-7 overflow-x-auto px-5 sm:mx-0 sm:px-0">
+    <div role="group" aria-label={tx(label)} className="-mx-5 flex gap-7 overflow-x-auto px-5 sm:mx-0 sm:px-0">
       {options.map((o) => {
         const active = o.key === value
         return (
@@ -25,7 +28,7 @@ export default function FilterTabs<T extends string>({
               active ? 'border-accent-600 text-ink-900' : 'border-transparent text-ink-500 hover:text-ink-900'
             }`}
           >
-            {o.label}
+            {tx(o.label)}
           </button>
         )
       })}

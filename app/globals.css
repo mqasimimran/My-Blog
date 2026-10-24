@@ -417,3 +417,40 @@
     width: 100%;
   }
 }
+
+/* ==== Urdu version =========================================================
+   Noto Nastaliq Urdu (self-hosted, OFL license in app/fonts) covers only Arabic-script characters
+   (unicode-range), so it downloads only when Urdu text is shown; Latin words keep the site's fonts.
+   Letter-spacing and capitals are switched off: spacing breaks Urdu's joined letters apart. */
+@font-face {
+  font-family: 'Noto Nastaliq Urdu';
+  src: url('./fonts/noto-nastaliq-urdu-arabic-400-normal.woff2') format('woff2');
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E;
+}
+:root[lang='ur'] {
+  --font-sans: 'Noto Nastaliq Urdu', var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Noto Nastaliq Urdu', var(--font-anton), Impact, 'Arial Narrow', sans-serif;
+  --font-mono: 'Noto Nastaliq Urdu', var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+/* On an Urdu page, each paragraph, heading, list item, label and link takes its direction from its own
+   first letter: English content (project names, posts) keeps its punctuation and word order, Urdu
+   reads right to left. */
+:root[dir='rtl'] :is(p, li, h1, h2, h3, h4, h5, h6, blockquote, dd, dt, figcaption, label, td, th, a, button, input, textarea) { unicode-bidi: plaintext; }
+:root[lang='ur'] body { line-height: 2; }
+:root[lang='ur'] *:not(code):not(pre):not(.font-mono) { letter-spacing: 0 !important; text-transform: none !important; }
+/* Nastaliq is a tall script: give headings room so lines never overlap or clip. */
+:root[lang='ur'] .type-display { font-size: clamp(2.25rem, 6.5vw, 5rem); line-height: 1.6; }
+:root[lang='ur'] .type-h1, :root[lang='ur'] .type-h2 { line-height: 1.7; }
+:root[lang='ur'] .ch { display: inline !important; }
+:root[lang='ur'] h1, :root[lang='ur'] h2, :root[lang='ur'] h3 { padding-block: 0.08em; }
+
+/* Term explainers in blog posts (lib/glossary.ts): dotted underline; hover or focus shows the definition. */
+.term { position: relative; cursor: help; text-decoration: underline dotted; text-decoration-color: var(--color-accent-600); text-underline-offset: 3px; outline: none; }
+.term-tip { position: absolute; bottom: calc(100% + 8px); inset-inline-start: 50%; z-index: 20; width: max-content; max-width: min(18rem, 80vw); translate: -50% 0;
+  background: var(--color-ink-900); color: var(--color-paper); padding: 0.5rem 0.75rem; font-size: 0.85rem; line-height: 1.45; font-weight: 400;
+  opacity: 0; visibility: hidden; transition: opacity 150ms; pointer-events: none; text-decoration: none; }
+.term:hover .term-tip, .term:focus-visible .term-tip, .term:focus .term-tip { opacity: 1; visibility: visible; }
+.term:focus-visible { box-shadow: 0 0 0 2px var(--color-accent-600); }
+

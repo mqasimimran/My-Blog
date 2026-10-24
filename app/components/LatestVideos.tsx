@@ -3,10 +3,13 @@ import SectionHeader from '@/app/components/ui/SectionHeader'
 import { ButtonLink } from '@/app/components/ui/Button'
 import { getLatestVideos } from '@/lib/youtube'
 import { siteConfig } from '@/site.config'
+import { getT } from '@/lib/locale'
+import { dateLocale } from '@/lib/i18n'
 
 // Your latest YouTube videos on the homepage, refreshed every hour. Set the channel in
 // site.config.ts -> videos.youtubeChannelId. With no channel (or no videos), the section is hidden.
 export default async function LatestVideos() {
+  const t = await getT()
   const videos = await getLatestVideos(siteConfig.videos.youtubeChannelId, 3)
   if (videos.length === 0) return null
 
@@ -14,9 +17,9 @@ export default async function LatestVideos() {
     <section className="border-t border-ink-100">
       <div className="container-page section-y">
         <SectionHeader
-          title="Latest videos"
-          meta="(From YouTube)"
-          action={<ButtonLink href={siteConfig.social.youtube} external variant="text">See the channel</ButtonLink>}
+          title={t('home.videos.title')}
+          meta={t('home.videos.meta')}
+          action={<ButtonLink href={siteConfig.social.youtube} external variant="text">{t('home.videos.channel')}</ButtonLink>}
         />
         <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
           {videos.map((v) => (
@@ -37,7 +40,7 @@ export default async function LatestVideos() {
                 </span>
               </div>
               <div className="p-5">
-                {v.published && <p className="type-meta">{new Date(v.published).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>}
+                {v.published && <p className="type-meta">{new Date(v.published).toLocaleDateString(dateLocale(t.locale), { month: 'short', day: 'numeric', year: 'numeric' })}</p>}
                 <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{v.title}</h3>
               </div>
             </a>

@@ -139,6 +139,49 @@ export const siteConfig = {
   // ---- Admin sign-in defaults --------------------------------------------
   // Overridden by the ADMIN_USERNAME / ADMIN_NAME / ADMIN_EMAIL environment
   // variables. Passwords and 2FA are never stored here.
+  // ---- Media kit page (/media-kit) for brands and collaborators -----------------
+  // Empty sections are hidden. Add your real audience numbers when you have them.
+  mediaKit: {
+    intro: 'Software engineer and graphic designer creating content about AI, computer science and design. Open to collaborations, sponsorships and speaking.',
+    stats: [] as { value: string; label: string }[],   // e.g. { value: '12K', label: 'Instagram followers' }
+    topics: ['AI and machine learning explained', 'Computer science for students', 'Game development with Unity', 'Graphic and UI design'],
+    highlights: [
+      { title: 'Lead Graphic Designer, TEDxUMT', detail: 'Visual identity and event design.' },
+      { title: 'Graphic Designer, UMT Entrepreneurial Society and UMT Happiness Society', detail: 'Campaign and event graphics.' },
+      { title: 'Two indie games shipped', detail: 'Hospital of the Damned and Ball Blast, built in Unity.' },
+    ],
+    downloads: [
+      { label: 'Profile photo', href: '/profile.png' },
+      { label: 'Logo (512 px)', href: '/icons/512' },
+    ],
+  },
+
+  // ---- Free download for an email (blog) ------------------------------------
+  // Visitors join your newsletter and get this file straight away. Upload the file (e.g. to
+  // Supabase storage or /public) and paste its link; empty fileUrl = hidden.
+    leadMagnet: {
+     title: 'Free CS Student Starter Kit',
+     description: '12 free resources I recommend to every new computer science student, on one page. Join the newsletter and download it straight away.',
+     fileUrl: '/downloads/cs-student-starter-kit.pdf',
+   },
+
+  // ---- Urdu version -------------------------------------------------------
+  // Shown when a visitor switches the site to Urdu (the EN / \u0627\u0631\u062f\u0648 button in the menu).
+  // Please review: these are translations of the English hero text above. Keep the same number
+  // of roles as hero.roles. Menu and button wording lives in lib/i18n.ts.
+  urdu: {
+    name: '\u0645\u062d\u0645\u062f \u0642\u0627\u0633\u0645 \u0639\u0645\u0631\u0627\u0646',
+    firstName: '\u0642\u0627\u0633\u0645',
+    /** Contact page intro in Urdu (translation of contact.intro). */
+    contactIntro: '\u0686\u0627\u06c1\u06d2 \u0622\u067e \u0633\u0627\u0641\u0679 \u0648\u06cc\u0626\u0631 \u0627\u0646\u062c\u06cc\u0646\u0626\u0631 \u06a9\u06cc \u062a\u0644\u0627\u0634 \u0645\u06cc\u06ba \u06c1\u0648\u06ba\u060c \u06a9\u0633\u06cc \u0646\u0626\u06d2 \u06a9\u0627\u0645 \u06a9\u06d2 \u0644\u06cc\u06d2 \u0688\u06cc\u0632\u0627\u0626\u0646\u0631 \u06cc\u0627 \u0628\u0633 \u06c1\u06cc\u0644\u0648 \u06a9\u06c1\u0646\u0627 \u0686\u0627\u06c1\u062a\u06d2 \u06c1\u0648\u06ba\u060c \u0645\u06cc\u0631\u0627 \u0627\u0646 \u0628\u0627\u06a9\u0633 \u06a9\u06be\u0644\u0627 \u06c1\u06d2\u06d4',
+    greeting: '\u0627\u0644\u0633\u0644\u0627\u0645 \u0639\u0644\u06cc\u06a9\u0645\u060c \u0645\u06cc\u06ba \u0642\u0627\u0633\u0645 \u06c1\u0648\u06ba',
+    roles: ['\u0633\u0627\u0641\u0679 \u0648\u06cc\u0626\u0631 \u0627\u0646\u062c\u06cc\u0646\u0626\u0631', '\u06af\u0631\u0627\u0641\u06a9 \u0688\u06cc\u0632\u0627\u0626\u0646\u0631', '\u06af\u06cc\u0645 \u0688\u06cc\u0648\u0644\u067e\u0631', '\u0627\u06d2 \u0622\u0626\u06cc \u0628\u0644\u0688\u0631'],
+    bio: [
+      '\u0645\u06cc\u06ba \u0627\u06cc\u06a9 \u0633\u0627\u0641\u0679 \u0648\u06cc\u0626\u0631 \u0627\u0646\u062c\u06cc\u0646\u0626\u0631 \u0627\u0648\u0631 \u06af\u0631\u0627\u0641\u06a9 \u0688\u06cc\u0632\u0627\u0626\u0646\u0631 \u06c1\u0648\u06ba \u062c\u0648 \u0645\u0636\u0628\u0648\u0637\u060c \u06a9\u0627\u0631\u0622\u0645\u062f \u06a9\u0648\u0688 \u0627\u0648\u0631 \u0633\u0627\u062f\u06c1\u060c \u062e\u0648\u0628\u0635\u0648\u0631\u062a \u0688\u06cc\u0632\u0627\u0626\u0646 \u06a9\u0648 \u0627\u06cc\u06a9 \u0633\u0627\u062a\u06be \u0644\u0627\u062a\u0627 \u06c1\u06d2\u06d4 \u0627\u0633 \u0648\u0642\u062a \u06a9\u0645\u067e\u06cc\u0648\u0679\u0631 \u0633\u0627\u0626\u0646\u0633 \u0645\u06cc\u06ba \u0628\u06cc \u0627\u06cc\u0633 \u06a9\u0631 \u0631\u06c1\u0627 \u06c1\u0648\u06ba\u060c \u0627\u0648\u0631 \u0645\u06cc\u0631\u06cc \u062a\u0648\u062c\u06c1 \u0622\u0633\u0627\u0646 \u0627\u0648\u0631 \u0631\u0648\u0627\u06ba \u0688\u06cc\u062c\u06cc\u0679\u0644 \u062a\u062c\u0631\u0628\u0627\u062a \u0628\u0646\u0627\u0646\u06d2 \u067e\u0631 \u06c1\u06d2\u06d4',
+      '\u06cc\u0648\u0646\u0679\u06cc \u0645\u06cc\u06ba \u06af\u06cc\u0645 \u0645\u06cc\u06a9\u06cc\u0646\u06a9\u0633 \u0627\u0648\u0631 Next.js \u06a9\u06d2 \u0633\u0627\u062a\u06be \u0648\u06cc\u0628 \u0633\u0633\u0679\u0645 \u0628\u0646\u0627\u0646\u06d2 \u0633\u06d2 \u0644\u06d2 \u06a9\u0631 \u0627\u06cc\u0688\u0648\u0628\u06cc \u0633\u0648\u0679 \u06a9\u06cc \u0645\u062f\u062f \u0633\u06d2 \u0645\u06a9\u0645\u0644 \u0628\u0631\u0627\u0646\u0688 \u0634\u0646\u0627\u062e\u062a \u0688\u06cc\u0632\u0627\u0626\u0646 \u06a9\u0631\u0646\u06d2 \u062a\u06a9\u060c \u0645\u062c\u06be\u06d2 \u0645\u0646\u0637\u0642 \u0627\u0648\u0631 \u062a\u062e\u0644\u06cc\u0642 \u06a9\u06d2 \u0633\u0646\u06af\u0645 \u067e\u0631 \u06a9\u0627\u0645 \u06a9\u0631\u0646\u0627 \u067e\u0633\u0646\u062f \u06c1\u06d2\u06d4 \u0628\u06af \u0628\u0631\u06cc\u0646\u0632 \u0644\u0631\u0646\u0646\u06af \u0645\u06cc\u06ba \u0633\u0627\u0641\u0679 \u0648\u06cc\u0626\u0631 \u06a9\u0648\u0627\u0644\u0679\u06cc \u0627\u0646\u062c\u06cc\u0646\u0626\u0631\u0646\u06af \u0627\u0646\u0679\u0631\u0646 \u0634\u067e \u06a9\u06d2 \u062f\u0648\u0631\u0627\u0646\u060c \u062c\u06c1\u0627\u06ba \u06cc\u0648 \u0622\u0626\u06cc/\u06cc\u0648 \u0627\u06cc\u06a9\u0633 \u0679\u06cc\u0633\u0679\u0646\u06af \u0627\u0648\u0631 \u0628\u0627\u0624\u0646\u0688\u0631\u06cc \u0648\u06cc\u0644\u06cc\u0648 \u0627\u06cc\u0646\u0627\u0644\u06cc\u0633\u0633 \u067e\u0631 \u06a9\u0627\u0645 \u06a9\u06cc\u0627\u060c \u062a\u0641\u0635\u06cc\u0644 \u067e\u0631 \u0645\u06cc\u0631\u06cc \u0646\u0638\u0631 \u0645\u0632\u06cc\u062f \u067e\u062e\u062a\u06c1 \u06c1\u0648\u0626\u06cc\u06d4',
+    ],
+  },
+
   // ---- Latest videos (homepage) -------------------------------------------
   videos: {
     /** Your YouTube channel ID: starts with "UC", 24 characters. Find it in YouTube Studio ->

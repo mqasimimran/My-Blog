@@ -17,6 +17,12 @@ export default function NewArticle() {
   const [category, setCategory] = useState('Engineering')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
+  const [titleUr, setTitleUr] = useState('')
+  const [excerptUr, setExcerptUr] = useState('')
+  const [contentUr, setContentUr] = useState('')
+  const [quiz, setQuiz] = useState('')
+  const [drafting, setDrafting] = useState(false)
+  const [urduKey, setUrduKey] = useState(0)
   const [readTime, setReadTime] = useState('5 min read')
   const [featureImage, setFeatureImage] = useState('')
 
@@ -60,6 +66,10 @@ export default function NewArticle() {
       category,
       excerpt,
       content,
+      title_ur: titleUr.trim() || null,
+      excerpt_ur: excerptUr.trim() || null,
+      content_ur: contentUr && contentUr !== '<p></p>' ? contentUr : null,
+      quiz: quiz.trim() || null,
       read_time: readTime,
       feature_image: featureImage,
       published: publishStatus,
@@ -150,6 +160,42 @@ export default function NewArticle() {
           <div>
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Article Content</label>
             <RichTextEditor content={content} onChange={setContent} />
+          </div>
+
+          <div className="pt-6 border-t border-ink-100">
+            <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Quiz (optional)</label>
+            <p className="mb-3 text-xs text-ink-500">Shown at the end of the post. One question per block, blank line between. Start with "Q:", list answers with "- ", put a * after the right one, and optionally add "Why:".</p>
+            <textarea rows={6} value={quiz} onChange={(e) => setQuiz(e.target.value)} placeholder={'Q: What does CNN stand for?\n- Convolutional neural network *\n- Central neural node\nWhy: Convolution layers scan images for patterns.'} className="w-full border border-ink-100 p-3 font-mono text-sm outline-none focus:border-ink-900" />
+          </div>
+
+          <div className="pt-6 border-t border-ink-100">
+            <p className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Urdu version (optional)</p>
+            <button type="button" disabled={drafting} onClick={async () => {
+              if ((titleUr || contentUr.replace(/<[^>]+>/g, '').trim()) && !confirm('Replace the current Urdu version with an AI draft?')) return
+              setDrafting(true)
+              try {
+                const res = await fetch('/api/admin/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, excerpt, content }) })
+                const d = await res.json()
+                if (!res.ok) alert(d.error || 'The AI draft did not work.')
+                else { setTitleUr(d.title); setExcerptUr(d.excerpt || ''); setContentUr(d.content); setUrduKey((k) => k + 1) }
+              } catch { alert('The AI draft did not work.') }
+              setDrafting(false)
+            }} className="mb-4 bg-ink-900 px-4 py-2 text-xs font-medium uppercase tracking-[0.08em] text-paper hover:bg-accent-600 disabled:opacity-60">{drafting ? 'Drafting...' : 'Draft Urdu with AI'}</button>
+            <p className="mb-5 text-xs text-ink-500">Visitors reading the site in Urdu see this version. Leave it empty and they see the English post with a short note.</p>
+            <div dir="rtl" lang="ur" className="space-y-6">
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2" dir="ltr">Urdu title</label>
+                <input type="text" value={titleUr} onChange={(e) => setTitleUr(e.target.value)} className="w-full border-b border-ink-100 py-2 text-lg outline-none focus:border-ink-900" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2" dir="ltr">Urdu summary</label>
+                <input type="text" value={excerptUr} onChange={(e) => setExcerptUr(e.target.value)} className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2" dir="ltr">Urdu text</label>
+                <RichTextEditor key={urduKey} content={contentUr} onChange={setContentUr} />
+              </div>
+            </div>
           </div>
 
           <div className="pt-6 border-t border-ink-100">

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useLocale } from '@/app/components/LocaleProvider'
 
 // Comments powered by Giscus (giscus.app) — free, backed by GitHub
 // Discussions on your own repo, with zero moderation infrastructure to run
@@ -18,6 +19,7 @@ import { useEffect, useRef } from 'react'
 // showing a broken embed.
 
 export default function Comments() {
+  const { tx } = useLocale()
   const ref = useRef<HTMLDivElement>(null)
 
   const repo = process.env.NEXT_PUBLIC_GISCUS_REPO
@@ -51,7 +53,7 @@ export default function Comments() {
 
   return (
     <div className="max-w-2xl mx-auto mt-16 pt-10 border-t border-ink-100">
-      <p className="text-xs font-medium text-ink-300 mb-6">Discussion</p>
+      <p className="text-xs font-medium text-ink-300 mb-6">{tx("Discussion")}</p>
       <div ref={ref} />
     </div>
   )
