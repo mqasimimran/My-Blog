@@ -20,6 +20,10 @@ import Image from 'next/image'
 import { siteConfig } from '@/site.config'
 import { getT } from '@/lib/locale'
 
+// Your photo. To change it, add a new file to /public with a NEW name and set `photo` in site.config.ts
+// (a new name makes browsers and Vercel fetch it fresh instead of showing a cached copy for hours).
+const PHOTO = (siteConfig as { photo?: string }).photo || '/profile.png'
+
 export default async function HomePage() {
   const { tx } = await getT()
   const t = await getT()
@@ -37,9 +41,11 @@ export default async function HomePage() {
             transparent background for the "floating" cutout look. */}
         <div className="hero-photo hidden lg:flex absolute top-0 bottom-0 end-[max(0px,calc((100vw-1360px)/2+1px))] items-end justify-end" style={{ width: '46%' }}>
           <Image
-            src="/profile.png"
+            src={PHOTO}
             alt={tx("Portrait")}
             width={806}
+            // Shown only on large screens; on phones the browser fetches a tiny placeholder instead of 1920px.
+            sizes="(min-width: 1024px) 46vw, 1px"
             height={1050}
             priority
             className="h-full w-auto max-w-full object-contain object-bottom"
@@ -96,9 +102,12 @@ export default async function HomePage() {
                 bottom edge — same zero-gap divider treatment as desktop. */}
             <div className="lg:hidden pt-8 -mb-16 md:-mb-20 flex justify-center">
               <Image
-                src="/profile.png"
+                src={PHOTO}
                 alt={tx("Portrait")}
                 width={560}
+                sizes="(min-width: 1024px) 1px, 300px"
+                // On phones this photo is the largest thing on the page, so load it straight away.
+                loading="eager"
                 height={729}
                 className="w-auto max-h-[360px] max-w-full object-contain"
               />

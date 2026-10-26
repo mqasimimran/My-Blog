@@ -1,6 +1,5 @@
 import './globals.css'
 import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 import localFont from 'next/font/local'
 import Navbar from './Navbar'
 import Script from 'next/script'
@@ -14,13 +13,24 @@ import ScrollAnimator from '@/app/components/ScrollAnimator'
 import PublicOnly from '@/app/components/PublicOnly'
 import AccentStyle from '@/app/components/AccentStyle'
 import LocaleProvider from '@/app/components/LocaleProvider'
-import { getLocale } from '@/lib/locale'
+import { getLocale, getPathname } from '@/lib/locale'
 import { tr } from '@/lib/i18n'
 import AssistantWidget from '@/app/components/AssistantWidget'
 import CursorBadge from '@/app/components/CursorBadge'
 
 // Headline face (condensed). The font file lives in the project (app/fonts), so it needs no
 // install step and no Google request. Anton is under the SIL Open Font License (app/fonts/Anton-OFL.txt).
+// Geist Mono is only used for small details (prices, numbers), so it isn't preloaded: it no longer
+// competes with the page's main content on slow connections, and loads when first needed.
+const GeistMono = localFont({
+  src: '../node_modules/geist/dist/fonts/geist-mono/GeistMono-Variable.woff2',
+  variable: '--font-geist-mono',
+  weight: '100 900',
+  display: 'swap',
+  preload: false,
+  fallback: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+})
+
 const anton = localFont({
   src: './fonts/anton-latin-400-normal.woff2',
   variable: '--font-anton',
@@ -28,11 +38,11 @@ const anton = localFont({
 })
 import type { Metadata } from 'next'
 
-import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
+import { siteConfig, SITE_URL } from '@/site.config'
 import RegisterServiceWorker from '@/app/components/RegisterServiceWorker'
 const SITE_DESCRIPTION = siteConfig.description
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: `${siteConfig.name} - ${siteConfig.jobTitle}`,
@@ -40,6 +50,8 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   alternates: {
+    // Every page points at its own address as the main (canonical) one; detail pages set theirs too.
+    canonical: './',
     types: {
       'application/rss+xml': '/feed.xml',
     },
@@ -58,6 +70,20 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: ['/profile.png'],
   },
+}
+
+// Each page points at its own address (canonical) and at its twin in the other language (hreflang),
+// so Google shows the Urdu page to Urdu searchers. The address comes from proxy.ts.
+export async function generateMetadata(): Promise<Metadata> {
+  const [locale, path] = await Promise.all([getLocale(), getPathname()])
+  const ur = path === '/' ? '/ur' : `/ur${path}`
+  const urBio = Array.isArray(siteConfig.urdu?.bio) ? siteConfig.urdu.bio[0] : undefined
+  return {
+    ...baseMetadata,
+    ...(locale === 'ur' && urBio ? { description: urBio } : {}),
+    alternates: { ...baseMetadata.alternates, canonical: locale === 'ur' ? ur : path, languages: { en: path, ur, 'x-default': path } },
+    openGraph: { ...baseMetadata.openGraph, locale: locale === 'ur' ? 'ur_PK' : 'en_US', alternateLocale: locale === 'ur' ? 'en_US' : 'ur_PK' },
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

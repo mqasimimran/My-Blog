@@ -13,7 +13,7 @@ import { SkeletonBlock } from '@/app/components/Skeleton'
 import EmptyState from '@/app/components/EmptyState'
 
 
-import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
+import { siteConfig, SITE_URL } from '@/site.config'
 import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
 import ExplainProject from '@/app/components/ExplainProject'

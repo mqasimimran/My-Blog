@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase'
 
 
-import { siteConfig, SITE_URL_SLASH as SITE_URL } from '@/site.config'
+import { siteConfig, SITE_URL } from '@/site.config'
 function escapeXml(str: string): string {
   return str
     .replace(/&/g, '&amp;')

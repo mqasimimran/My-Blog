@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { useLocale } from '@/app/components/LocaleProvider'
 import SplitText from '@/app/components/ui/SplitText'
 import { getDone } from '@/lib/courseProgress'
+import { responsive } from '@/lib/img'
 
 type C = { id: string; slug: string; title: string; description: string | null; cover_image: string | null; level: string | null; course_lessons: { id: string }[] }
 
@@ -28,7 +29,7 @@ export default function CoursesPage() {
         <ul className="mt-12 grid gap-6 md:grid-cols-2">
           {courses.map((c) => { const total = c.course_lessons.length, n = done[c.id] || 0; return (
             <li key={c.id}><Link href={`/courses/${c.slug}`} className="group flex h-full flex-col border border-ink-100 bg-paper-raised transition-colors hover:border-ink-900">
-              {c.cover_image && <div className="relative aspect-video overflow-hidden border-b border-ink-100"><img src={c.cover_image} alt="" className="absolute inset-0 h-full w-full object-cover" /></div>}
+              {c.cover_image && <div className="relative aspect-video overflow-hidden border-b border-ink-100"><img {...responsive(c.cover_image, '(min-width: 768px) 50vw, 100vw')} alt="" className="absolute inset-0 h-full w-full object-cover" /></div>}
               <div className="flex flex-1 flex-col p-6">
                 <p className="type-meta">{[c.level, `${total} ${tx('lessons')}`].filter(Boolean).join(' \u00b7 ')}</p>
                 <h2 className="mt-2 text-2xl font-medium tracking-tight text-ink-900 group-hover:text-accent-600" dir="auto">{c.title}</h2>

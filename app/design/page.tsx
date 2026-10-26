@@ -10,6 +10,7 @@ import EmptyState from '@/app/components/EmptyState'
 import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
+import { responsive } from '@/lib/img'
 
 type DesignItem = {
   id: string
@@ -178,7 +179,7 @@ function DesignGalleryInner() {
                   <BeforeAfterSlider beforeSrc={selectedItem.before_image} afterSrc={selectedItem.images[currentImageIndex]} alt={selectedItem.title} />
                 </div>
               ) : (
-                <img src={selectedItem.images[currentImageIndex]} alt={`${selectedItem.title}, ${currentImageIndex + 1} of ${selectedItem.images.length}`} className="max-h-[80vh] w-auto object-contain" />
+                <img {...responsive(selectedItem.images[currentImageIndex], '100vw', 85)} alt={`${selectedItem.title}, ${currentImageIndex + 1} of ${selectedItem.images.length}`} className="max-h-[80vh] w-auto object-contain" />
               )}
 
               {selectedItem.images.length > 1 && (
