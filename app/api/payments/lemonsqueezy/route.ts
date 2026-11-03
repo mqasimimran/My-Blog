@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { fulfillOrder } from '@/lib/fulfillOrder'
 import { CARD_PROVIDER, readCardWebhook, verifyCardWebhook } from '@/lib/cardPayments'
+import { whatsappMe } from '@/lib/notify'
 
 // Lemon Squeezy calls this when a card payment succeeds (order_created) or is refunded (order_refunded).
 // Nothing is trusted unless the signature matches our secret. A paid order is fulfilled automatically:
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
   }
   await supabaseAdmin.from('orders').update({ provider_order_id: ev.providerOrderId || null, customer_transaction_id: ev.reference ? `Lemon Squeezy ${ev.reference}` : 'Lemon Squeezy' }).eq('id', order.id)
   const result = await fulfillOrder(order.id)
+  if (result.ok && !result.alreadyPaid) await whatsappMe('\u{1F4B3} A card payment just came in. The order was fulfilled automatically.')
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 }) // provider retries
   return NextResponse.json({ ok: true, alreadyPaid: result.alreadyPaid })
 }

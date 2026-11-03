@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowUpRight, CheckCircle, DownloadSimple } from '@phosphor-icons/react'
 import { SkeletonBlock } from '@/app/components/Skeleton'
 import { useLocale } from '@/app/components/LocaleProvider'
+import ReviewForm from '@/app/components/ReviewForm'
 
 type Order = { product_name: string; customer_name: string; status: string }
 type FileItem = { name: string; url: string }
@@ -115,6 +116,7 @@ export default function DownloadPage({ params }: { params: Promise<{ token: stri
         )}
         <Link href="/shop" className="link-draw mt-10 inline-block text-sm font-medium text-ink-900">{tx("Back to the shop")}</Link>
       </div>
+      {order?.status === 'paid' && <ReviewForm token={token} defaultName={order.customer_name || ''} />}
     </main>
   )
 }

@@ -38,7 +38,7 @@ export default function ListenButton() {
   const play = () => {
     if (state === 'paused') { speechSynthesis.resume(); setState('playing'); return }
     const text = document.getElementById('post-body')?.innerText || ''
-    queue.current = text.replace(/\s+/g, ' ').match(/[^.!?\u06d4\u061f]+[.!?\u06d4\u061f]*/g)?.map((t) => t.trim()).filter(Boolean) || []
+    queue.current = text.replace(/\s+/g, ' ').match(/[^.!?۔؟]+[.!?۔؟]*/g)?.map((t) => t.trim()).filter(Boolean) || []
     speechSynthesis.cancel(); setState('playing'); speakNext()
   }
   const pause = () => { speechSynthesis.pause(); setState('paused') }

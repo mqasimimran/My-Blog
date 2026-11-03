@@ -1,0 +1,45 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
+import { responsive } from '@/lib/img'
+
+type D = { id: string; title: string; category: string | null; images: string[] | null }
+
+// A client's designs, with a simple lightbox (arrows, Escape to close).
+export default function ClientGallery({ designs }: { designs: D[] }) {
+  const items = designs.flatMap((d) => (d.images || []).slice(0, 1).map((src) => ({ src, d })))
+  const [open, setOpen] = useState<number | null>(null)
+  useEffect(() => {
+    if (open === null) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(null); if (e.key === 'ArrowRight') setOpen((i) => (i! + 1) % items.length); if (e.key === 'ArrowLeft') setOpen((i) => (i! - 1 + items.length) % items.length) }
+    window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey)
+  }, [open, items.length])
+  if (!items.length) return <p className="mt-10 text-ink-500">Designs for this client are coming soon.</p>
+  return (
+    <>
+      <ul className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3">
+        {items.map(({ src, d }, i) => (
+          <li key={d.id}><button type="button" onClick={() => setOpen(i)} className="group block w-full text-start" aria-label={`Open ${d.title}`}>
+            <div className="relative aspect-[4/5] overflow-hidden border border-ink-100 bg-ink-50">
+              <img {...responsive(src, '(min-width: 768px) 33vw, 50vw')} alt={d.title} loading={i < 3 ? 'eager' : 'lazy'} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+            </div>
+            <p className="mt-2 text-[15px] font-medium text-ink-900 group-hover:text-accent-600" dir="auto">{d.title}</p>
+            {d.category && <p className="text-xs text-ink-500">{d.category}</p>}
+          </button></li>
+        ))}
+      </ul>
+      {open !== null && (
+        <div role="dialog" aria-modal="true" aria-label={items[open].d.title} className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={() => setOpen(null)}>
+          <img {...responsive(items[open].src, '100vw', 85)} alt={items[open].d.title} className="max-h-[88vh] max-w-full object-contain" onClick={(e) => e.stopPropagation()} />
+          <button type="button" aria-label="Close" onClick={() => setOpen(null)} className="absolute end-4 top-4 grid h-11 w-11 place-items-center bg-white/10 text-white"><X size={22} /></button>
+          {items.length > 1 && <>
+            <button type="button" aria-label="Previous" onClick={(e) => { e.stopPropagation(); setOpen((open - 1 + items.length) % items.length) }} className="absolute start-4 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center bg-white/10 text-white"><CaretLeft size={22} /></button>
+            <button type="button" aria-label="Next" onClick={(e) => { e.stopPropagation(); setOpen((open + 1) % items.length) }} className="absolute end-4 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center bg-white/10 text-white"><CaretRight size={22} /></button>
+          </>}
+          <p className="absolute bottom-4 start-4 text-sm text-white/80">{items[open].d.title} &middot; {open + 1}/{items.length}</p>
+        </div>
+      )}
+    </>
+  )
+}

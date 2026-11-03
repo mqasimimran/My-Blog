@@ -19,11 +19,13 @@ type Order = {
   customer_email: string
   payment_method: string
   customer_transaction_id: string
+  payment_proof?: string | null
   status: string
   created_at: string
 }
 
 export default function AdminOrdersPage() {
+  const [proofOpen, setProofOpen] = useState<string | null>(null)
   const { data: session, status } = useSession()
   const [orders, setOrders] = useState<Order[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -165,6 +167,7 @@ export default function AdminOrdersPage() {
                       <p className="text-[10px] font-bold uppercase tracking-widest text-ink-300 mb-1">Payment</p>
                       <p className="text-ink-900">{labelFor(order.payment_method)}</p>
                       <p className="text-ink-500 text-xs font-mono">TID: {order.customer_transaction_id}</p>
+                      {order.payment_proof && <button type="button" onClick={() => setProofOpen(order.payment_proof!)} className="mt-1 text-xs font-medium text-accent-600 underline">View payment screenshot</button>}
                     </div>
                   </div>
 
@@ -188,6 +191,7 @@ export default function AdminOrdersPage() {
           )}
         </div>
       </main>
+      {proofOpen && <div role="dialog" aria-modal="true" aria-label="Payment screenshot" onClick={() => setProofOpen(null)} className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4"><img src={proofOpen} alt="Payment screenshot" className="max-h-[90vh] max-w-full object-contain" /></div>}
     </div>
   )
 }

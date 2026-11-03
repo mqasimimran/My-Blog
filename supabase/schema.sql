@@ -619,5 +619,248 @@ $$;
 revoke all on function log_search(text, boolean) from public, anon, authenticated;
 grant execute on function log_search(text, boolean) to service_role;
 
+-- ---- Freelancing: leads + proposals (Oct 2026) ------------------------------------
+-- Leads are contact-form messages with a stage, notes and a follow-up date.
+alter table messages add column if not exists stage text not null default 'new';   -- new, contacted, proposal, won, lost
+alter table messages add column if not exists notes text;
+alter table messages add column if not exists follow_up date;
+
+-- Proposals: sent by private link; the client signs by typing their name, which creates an invoice.
+create table if not exists proposals (
+  id uuid primary key default gen_random_uuid(),
+  number text not null unique,                    -- e.g. PRO-2026-001
+  client_name text not null,
+  client_email text,
+  title text not null,
+  summary text,
+  scope text,                                     -- what's included, one item per line
+  timeline text,
+  currency text not null default 'USD' check (currency in ('USD', 'PKR')),
+  items jsonb not null default '[]'::jsonb,       -- same shape as invoice items
+  discount numeric not null default 0,
+  tax_percent numeric not null default 0,
+  terms text,
+  valid_until date,
+  status text not null default 'draft' check (status in ('draft', 'sent', 'accepted', 'declined')),
+  public_token text not null unique default replace(gen_random_uuid()::text, '-', ''),
+  sent_at timestamptz,
+  accepted_at timestamptz,
+  signed_name text,
+  signed_ip_hash text,
+  decline_reason text,
+  invoice_id uuid,
+  lead_id uuid,
+  created_at timestamptz not null default now()
+);
+
+-- ---- Wallpapers + detailed services (Oct 2026) -------------------------------------
+-- A product of type 'wallpaper' has one file per resolution. Like digital_file_url, the files are
+-- hidden from the public (security-lockdown.sql); free ones are downloaded through the server.
+alter table products add column if not exists wallpaper_files jsonb;   -- [{ "label": "Desktop 4K", "width": 3840, "height": 2160, "url": "..." }]
+alter table services add column if not exists deliverables text;       -- one per line
+alter table services add column if not exists ideal_for text;
+alter table services add column if not exists process text;            -- one step per line: "Discovery: we talk about your goals"
+alter table services add column if not exists tools text;              -- comma separated
+alter table services add column if not exists turnaround text;
+alter table services add column if not exists faq text;                -- Q: ... / A: ... blocks
+
+-- ---- Freelancing: time tracking + client project pages (Oct 2026) -------------------
+create table if not exists time_entries (
+  id uuid primary key default gen_random_uuid(),
+  client_name text not null,
+  project text,
+  description text,
+  work_date date not null default current_date,
+  minutes integer not null check (minutes > 0),
+  rate numeric not null default 0,                 -- per hour, in the entry's currency
+  currency text not null default 'USD' check (currency in ('USD', 'PKR')),
+  invoice_id uuid,                                 -- set once billed, so hours are never invoiced twice
+  created_at timestamptz not null default now()
+);
+create table if not exists client_projects (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  client_name text not null,
+  client_email text,                               -- their invoices with this email appear on the page
+  status text not null default 'planning' check (status in ('planning', 'in_progress', 'review', 'done')),
+  progress integer not null default 0 check (progress between 0 and 100),
+  summary text,
+  needs_from_client text,
+  milestones jsonb not null default '[]'::jsonb,   -- [{ "title": "...", "due": "2026-11-01", "done": false }]
+  updates jsonb not null default '[]'::jsonb,      -- [{ "date": "2026-10-20", "text": "..." }] newest first
+  files jsonb not null default '[]'::jsonb,        -- [{ "label": "...", "url": "..." }]
+  public_token text not null unique default replace(gen_random_uuid()::text, '-', ''),
+  created_at timestamptz not null default now()
+);
+
+-- ---- Mini-courses, design feedback, blog comments (Oct 2026) -----------------------
+create table if not exists courses (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  title text not null,
+  description text,
+  cover_image text,
+  level text,                                    -- e.g. Beginner
+  published boolean not null default false,
+  order_index integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create table if not exists course_lessons (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references courses(id) on delete cascade,
+  slug text not null,
+  title text not null,
+  content text,                                  -- HTML from the editor
+  quiz text,                                     -- same format as blog quizzes (lib/quiz.ts)
+  minutes integer,
+  order_index integer not null default 0,
+  created_at timestamptz not null default now(),
+  unique (course_id, slug)
+);
+-- Design feedback: a design image the client comments on by clicking it (server-only).
+create table if not exists feedback_boards (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  client_name text,
+  client_email text,
+  image_url text not null,
+  status text not null default 'open' check (status in ('open', 'approved')),
+  approved_name text,
+  approved_at timestamptz,
+  public_token text not null unique default replace(gen_random_uuid()::text, '-', ''),
+  created_at timestamptz not null default now()
+);
+create table if not exists feedback_comments (
+  id uuid primary key default gen_random_uuid(),
+  board_id uuid not null references feedback_boards(id) on delete cascade,
+  x numeric not null check (x between 0 and 100),   -- position on the image, in percent
+  y numeric not null check (y between 0 and 100),
+  body text not null,
+  author_name text,
+  from_owner boolean not null default false,        -- your replies
+  resolved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+-- Blog comments without GitHub: held for approval; emails are never shown (server-only table).
+create table if not exists post_comments (
+  id uuid primary key default gen_random_uuid(),
+  article_slug text not null,
+  parent_id uuid references post_comments(id) on delete cascade,
+  name text not null,
+  email text,
+  body text not null,
+  status text not null default 'pending' check (status in ('pending', 'approved')),
+  from_owner boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+-- ---- Newsletter campaigns (Oct 2026) -----------------------------------------------
+-- A record of newsletters sent from Admin -> Newsletter -> Write a newsletter (server-only).
+create table if not exists newsletter_campaigns (
+  id uuid primary key default gen_random_uuid(),
+  subject text not null,
+  body text not null,
+  recipients integer not null default 0,
+  failed integer not null default 0,
+  sent_at timestamptz not null default now()
+);
+
+-- ---- Client pages + service options (Oct 2026) --------------------------------------
+-- Clients (from Client Logos) get their own page on the design page: /design/clients/<slug>.
+alter table client_logos add column if not exists slug text unique;
+alter table client_logos add column if not exists role text;               -- e.g. Lead Graphic Designer
+alter table client_logos add column if not exists period text;             -- e.g. 2024 to present
+alter table client_logos add column if not exists summary text;            -- the case study
+alter table client_logos add column if not exists testimonial_quote text;
+alter table client_logos add column if not exists testimonial_author text;
+alter table client_logos add column if not exists show_on_design boolean not null default true;
+alter table designs add column if not exists client_id uuid references client_logos(id) on delete set null;
+-- Services: options customers pick for a live price estimate (see lib/serviceOptions.ts).
+alter table services add column if not exists options jsonb not null default '[]'::jsonb;
+-- Package requests carry the chosen items, so a proposal can be filled in from them.
+alter table messages add column if not exists request_items jsonb;
+
+-- ---- Recurring invoices (retainers) (Oct 2026) --------------------------------------
+-- An invoice marked "repeat monthly" is copied and emailed to the client each month (daily job).
+alter table invoices add column if not exists repeat_monthly boolean not null default false;
+alter table invoices add column if not exists repeat_next date;            -- when the next copy goes out
+alter table invoices add column if not exists repeated_from uuid;          -- copies point at their original
+
+-- ---- Recruiter packs, payment screenshots, link clicks, error reports (Oct 2026) -----
+-- A private page per company you apply to; views and clicks are recorded (server-only).
+create table if not exists recruiter_packs (
+  id uuid primary key default gen_random_uuid(),
+  company text not null,
+  role_applied text,
+  contact_name text,
+  note text,                                        -- your personal message at the top
+  project_ids uuid[] not null default '{}',         -- up to 3 projects
+  include_cv boolean not null default true,
+  public_token text not null unique default replace(gen_random_uuid()::text, '-', ''),
+  views integer not null default 0,
+  first_viewed_at timestamptz,
+  last_viewed_at timestamptz,
+  created_at timestamptz not null default now()
+);
+create table if not exists recruiter_events (
+  id uuid primary key default gen_random_uuid(),
+  pack_id uuid not null references recruiter_packs(id) on delete cascade,
+  event text not null,                              -- view, cv, project, contact
+  detail text,
+  created_at timestamptz not null default now()
+);
+-- A buyer's payment screenshot (resized JPEG), kept with the order for checking.
+alter table orders add column if not exists payment_proof text;
+-- Taps on the Links page, counted per day (no personal data).
+create table if not exists link_clicks (
+  label text not null,
+  day date not null default current_date,
+  clicks integer not null default 0,
+  primary key (label, day)
+);
+create or replace function log_link_click(p_label text)
+returns void language sql security definer set search_path = public as $$
+  insert into link_clicks (label, day, clicks) values (left(trim(p_label), 80), current_date, 1)
+  on conflict (label, day) do update set clicks = link_clicks.clicks + 1;
+$$;
+revoke all on function log_link_click(text) from public, anon, authenticated;
+grant execute on function log_link_click(text) to service_role;
+-- Errors visitors hit (browser and server), grouped by message; you're emailed once per hour per error.
+create table if not exists error_reports (
+  id uuid primary key default gen_random_uuid(),
+  hash text not null unique,
+  message text not null,
+  source text not null,                             -- browser or server
+  url text,
+  detail text,
+  count integer not null default 1,
+  first_seen timestamptz not null default now(),
+  last_seen timestamptz not null default now(),
+  notified_at timestamptz
+);
+
+-- ---- Content calendar + product reviews (Oct 2026) ----------------------------------
+create table if not exists content_items (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  kind text not null default 'post',            -- post, reel, video, newsletter, other
+  status text not null default 'idea' check (status in ('idea', 'drafting', 'scheduled', 'published')),
+  planned_for date,                             -- empty = an idea without a date yet
+  notes text,
+  link text,
+  created_at timestamptz not null default now()
+);
+-- Reviews from verified buyers only (one per paid order), shown after you approve them.
+create table if not exists product_reviews (
+  id uuid primary key default gen_random_uuid(),
+  product_id uuid not null references products(id) on delete cascade,
+  order_id uuid not null unique references orders(id) on delete cascade,
+  name text not null,
+  rating integer not null check (rating between 1 and 5),
+  body text,
+  status text not null default 'pending' check (status in ('pending', 'approved')),
+  created_at timestamptz not null default now()
+);
+
 -- Refresh Supabase's column cache so new columns are visible to the site immediately.
 notify pgrst, 'reload schema';

@@ -1,0 +1,17 @@
+# Runs on every push and pull request: installs the project and type-checks it, so a mistake shows up
+# here (a red cross in GitHub) before Vercel tries to deploy it. Needs no secrets.
+name: Check
+on:
+  push:
+  pull_request:
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit

@@ -3,6 +3,7 @@ import Image from 'next/image'
 
 import { siteConfig } from '@/site.config'
 import { getT } from '@/lib/locale'
+import LinkTracker from '@/app/components/LinkTracker'
 export default async function Links() {
   const { tx } = await getT()
   return (
@@ -62,6 +63,7 @@ export default async function Links() {
       </div>
       
     </div>
+      <LinkTracker />
     </div>
   )
 }

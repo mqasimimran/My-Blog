@@ -43,6 +43,21 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [transactionId, setTransactionId] = useState('')
+  const [proof, setProof] = useState('')
+  const [proofError, setProofError] = useState('')
+  // Resize the screenshot in the browser (max 1400px, JPEG) so it uploads quickly even on mobile data.
+  async function pickProof(file?: File) {
+    setProofError(''); if (!file) return
+    if (!file.type.startsWith('image/')) return setProofError('Please choose an image.')
+    try {
+      const img = await createImageBitmap(file); const scale = Math.min(1, 1400 / Math.max(img.width, img.height))
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale)
+      c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
+      const url = c.toDataURL('image/jpeg', 0.75)
+      if (url.length > 1_300_000) return setProofError('That image is too large. Try a smaller screenshot.')
+      setProof(url)
+    } catch { setProofError('Could not read that image.') }
+  }
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [orderNumber, setOrderNumber] = useState('')
@@ -120,6 +135,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
           customerEmail: email,
           paymentMethod,
           customerTransactionId: transactionId,
+          ...(proof ? { paymentProof: proof } : {}),
         }),
       })
       const data = await res.json()
@@ -348,6 +364,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ slug: strin
               <input id="co-txn" type="text" required value={transactionId} onChange={(e) => setTransactionId(e.target.value)} className={fieldClass} />
               <p className="type-meta mt-2">{tx("Found in your payment confirmation")}</p>
             </div>
+            )}
+            {paymentMethod !== 'card' && (
+              <div>
+                <label htmlFor="co-proof" className="mb-2 block text-sm font-medium text-ink-900">{tx('Payment screenshot (optional, speeds up verification)')}</label>
+                <input id="co-proof" type="file" accept="image/*" onChange={(e) => pickProof(e.target.files?.[0])} className="block w-full text-sm text-ink-700 file:me-3 file:border file:border-ink-500 file:bg-paper file:px-3 file:py-2 file:text-sm" />
+                {proof && <div className="mt-3 flex items-center gap-3"><img src={proof} alt={tx('Your payment screenshot')} className="h-16 w-16 border border-ink-100 object-cover" /><button type="button" onClick={() => setProof('')} className="text-sm text-ink-500 underline">{tx('Remove')}</button></div>}
+                {proofError && <p role="alert" className="mt-2 text-sm text-error">{proofError}</p>}
+              </div>
             )}
 
             {error && <p role="alert" className="text-sm text-error">{error}</p>}

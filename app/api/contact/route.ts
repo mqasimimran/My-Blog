@@ -5,6 +5,8 @@ import { escapeHtml, oneLine, EMAIL_RE } from '@/lib/escapeHtml'
 
 import { sendEmail } from '@/lib/mail'
 import { siteConfig } from '@/site.config'
+import { cleanOptions, estimate, parsePrice, type LineItem, type Selection } from '@/lib/serviceOptions'
+import { whatsappMe } from '@/lib/notify'
 const MAX_SUBMISSIONS = 5
 const WINDOW_MINUTES = 60
 
@@ -58,11 +60,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { error: insertError } = await supabase.from('messages').insert([{ name, email, subject, message }])
+    // Package requests (service page configurator): re-price on the server from the service's own
+    // options and packages, so the saved line items can be trusted when turned into a proposal.
+    let request_items: LineItem[] | null = null
+    if (body.request && typeof body.request.serviceId === 'string') {
+      const { data: svc } = await supabase.from('services').select('name, options').eq('id', body.request.serviceId).maybeSingle()
+      const { data: pk } = svc ? await supabase.from('service_packages').select('tier, price').eq('service_id', body.request.serviceId) : { data: null }
+      const pkg = (pk || []).find((x) => x.tier === body.request.tier)
+      if (svc && pkg) request_items = estimate(parsePrice(pkg.price), `${svc.name}: ${pkg.tier} package`, cleanOptions(svc.options), (body.request.selection || {}) as Selection).items
+    }
+    const { error: insertError } = await supabase.from('messages').insert([{ name, email, subject, message, ...(request_items ? { request_items } : {}) }])
     if (insertError) {
       console.error('Error saving message:', insertError)
       return NextResponse.json({ error: insertError.message }, { status: 500 })
     }
+    await whatsappMe(`\u{1F4E9} ${request_items ? 'Package request' : 'New message'} from ${name}${subject ? `: ${String(subject).slice(0, 80)}` : ''}. Check Admin -> Leads.`)
 
     // Log this submission for rate limiting purposes
     await supabase.from('rate_limit_log').insert([{ identifier: ip, action: 'contact' }])

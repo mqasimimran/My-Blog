@@ -29,12 +29,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/links`, changeFrequency: 'monthly', priority: 0.3 },
   ]
 
-  const [projectsRes, articlesRes, servicesRes, productsRes, coursesRes] = await Promise.all([
+  const [projectsRes, articlesRes, servicesRes, productsRes, coursesRes, clientsRes] = await Promise.all([
     supabase.from('projects').select('slug, created_at'),
     supabase.from('articles').select('slug, created_at').eq('published', true),
     supabase.from('services').select('slug, created_at').eq('active', true),
     supabase.from('products').select('slug, created_at').eq('active', true),
     supabase.from('courses').select('slug, created_at, course_lessons(slug)').eq('published', true),
+    supabase.from('client_logos').select('slug').not('slug', 'is', null).eq('show_on_design', true),
   ])
 
   const projectRoutes: MetadataRoute.Sitemap = (projectsRes.data || []).map((p) => ({
@@ -66,8 +67,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/courses/${c.slug}`, lastModified: c.created_at ? new Date(c.created_at) : undefined, changeFrequency: 'monthly' as const, priority: 0.7 },
     ...((c.course_lessons || []) as { slug: string }[]).map((l) => ({ url: `${SITE_URL}/courses/${c.slug}/${l.slug}`, changeFrequency: 'monthly' as const, priority: 0.5 })),
   ])
+  const clientRoutes: MetadataRoute.Sitemap = (clientsRes.data || []).map((c: any) => ({ url: `${SITE_URL}/design/clients/${c.slug}`, changeFrequency: 'monthly' as const, priority: 0.6 }))
   // Every page in both languages; each entry names its twin so Google pairs them (hreflang).
-  const all = [...staticRoutes, ...projectRoutes, ...articleRoutes, ...serviceRoutes, ...productRoutes, ...courseRoutes]
+  const all = [...staticRoutes, ...projectRoutes, ...articleRoutes, ...serviceRoutes, ...productRoutes, ...courseRoutes, ...clientRoutes]
   const urOf = (u: string) => { const p = u.slice(SITE_URL.length) || '/'; return `${SITE_URL}${p === '/' ? '/ur' : `/ur${p}`}` }
   return all.flatMap((e) => {
     const languages = { en: e.url, ur: urOf(e.url) }

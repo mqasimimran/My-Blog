@@ -7,6 +7,7 @@ import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 import RichTextEditor from '@/components/RichTextEditor'
 import { siteConfig } from '@/site.config'
+import AiHelper from '@/app/admin/AiHelper'
 
 // ISO time -> the value a datetime-local input expects, in the visitor's own timezone.
 const toLocalInput = (iso: string) => new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16)
@@ -26,6 +27,7 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
   const [category, setCategory] = useState('Engineering')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
+  const [contentKey, setContentKey] = useState(0)
   const [titleUr, setTitleUr] = useState('')
   const [excerptUr, setExcerptUr] = useState('')
   const [contentUr, setContentUr] = useState('')
@@ -121,7 +123,7 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
           body: JSON.stringify({ articleTitle: title, articleSlug: articleSlug, articleExcerpt: excerpt }),
         }).catch((err) => console.error('Newsletter notification failed (article was still saved):', err))
       }
-      router.push('/admin')
+      router.push('/admin/articles')
     } catch (err: any) {
       console.error('Error updating article:', err.message)
       alert('Failed to update article.')
@@ -136,7 +138,7 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
       <aside className="w-64 bg-paper text-ink-900 border-r border-ink-100 p-6 flex flex-col hidden md:flex">
         <h2 className="text-xl font-light tracking-wide uppercase mb-10">{siteConfig.firstName} Admin</h2>
         <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-          <Link href="/admin" className="text-left text-accent-600 transition-colors">← Back to Blogs</Link>
+          <Link href="/admin/articles" className="text-left text-accent-600 transition-colors">← Back to Blogs</Link>
         </nav>
       </aside>
 
@@ -196,9 +198,11 @@ export default function EditArticle({ params }: { params: Promise<{ id: string }
             </div>
           </div>
 
+            <AiHelper title={title} content={content} onTitle={setTitle} onExcerpt={setExcerpt} onContent={(h) => { setContent(h); setContentKey((k) => k + 1) }} />
+
           <div>
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Article Content</label>
-            <RichTextEditor content={content} onChange={setContent} />
+            <RichTextEditor key={contentKey} content={content} onChange={setContent} />
           </div>
 
           <div className="pt-6 border-t border-ink-100">

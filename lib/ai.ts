@@ -5,12 +5,14 @@ export const provider = (): Provider | null => (process.env.ANTHROPIC_API_KEY ? 
 
 
 // Sends the conversation to whichever provider is configured; returns the reply text.
-export async function complete(system: string, messages: { role: 'user' | 'assistant'; content: string }[], maxTokens = 1024): Promise<string> {
+// image (optional): attached to the last message, for tasks like writing alt text.
+export async function complete(system: string, messages: { role: 'user' | 'assistant'; content: string }[], maxTokens = 1024, image?: { mime: string; data: string }): Promise<string> {
   if (provider() === 'anthropic') {
     const res = await fetch(`${process.env.ANTHROPIC_API_URL || 'https://api.anthropic.com'}/v1/messages`, {
       method: 'POST',
       headers: { 'x-api-key': process.env.ANTHROPIC_API_KEY!, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model: process.env.ASSISTANT_MODEL || 'claude-haiku-5-5', max_tokens: Math.min(maxTokens, 8192), system, messages }),
+      body: JSON.stringify({ model: process.env.ASSISTANT_MODEL || 'claude-haiku-5-5', max_tokens: Math.min(maxTokens, 8192), system,
+        messages: messages.map((m, i) => (image && i === messages.length - 1 ? { role: m.role, content: [{ type: 'image', source: { type: 'base64', media_type: image.mime, data: image.data } }, { type: 'text', text: m.content }] } : m)) }),
     })
     if (!res.ok) throw new AssistantError(res.status, 'Claude', await res.text())
     const data = await res.json()
@@ -22,7 +24,7 @@ export async function complete(system: string, messages: { role: 'user' | 'assis
       headers: { 'x-goog-api-key': process.env.GEMINI_API_KEY!.trim(), 'content-type': 'application/json' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: system }] },
-        contents: messages.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
+        contents: messages.map((m, i) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [...(image && i === messages.length - 1 ? [{ inline_data: { mime_type: image.mime, data: image.data } }] : []), { text: m.content }] })),
         // Room for the model's internal "thinking" as well as the short answer itself.
         generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3 },
       }),

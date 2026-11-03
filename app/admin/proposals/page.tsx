@@ -26,9 +26,10 @@ function ProposalsAdmin() {
     setMsg('')
     let number = `PRO-${new Date().getFullYear()}-001`
     try { number = (await (await fetch('/api/admin/proposals/next-number')).json()).number || number } catch {}
-    let client_name = '', client_email = '', summary = ''
-    if (leadId) { try { const l: any = await adminApi.get('messages', leadId); client_name = l?.name || ''; client_email = l?.email || ''; summary = '' } catch {} }
-    setDraft({ number, client_name, client_email, title: '', summary, scope: '', timeline: '', currency: 'USD', items: [{ description: '', quantity: 1, unit_price: 0 }], discount: 0, tax_percent: 0,
+    let client_name = '', client_email = '', summary = '', items: InvoiceItem[] = [{ description: '', quantity: 1, unit_price: 0 }]
+    // A package request from the service page brings its chosen options as ready-made line items.
+    if (leadId) { try { const l: any = await adminApi.get('messages', leadId); client_name = l?.name || ''; client_email = l?.email || ''; if (Array.isArray(l?.request_items) && l.request_items.length) items = l.request_items } catch {} }
+    setDraft({ number, client_name, client_email, title: '', summary, scope: '', timeline: '', currency: 'USD', items, discount: 0, tax_percent: 0,
       terms: DEFAULT_TERMS, valid_until: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10), status: 'draft', lead_id: leadId || null })
   }
   useEffect(() => { const lead = params.get('lead'); if (lead) startNew(lead) }, [params])

@@ -6,6 +6,7 @@ import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 import RichTextEditor from '@/components/RichTextEditor'
+import AiHelper from '@/app/admin/AiHelper'
 
 export default function NewArticle() {
   const router = useRouter()
@@ -17,6 +18,7 @@ export default function NewArticle() {
   const [category, setCategory] = useState('Engineering')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
+  const [contentKey, setContentKey] = useState(0)
   const [titleUr, setTitleUr] = useState('')
   const [excerptUr, setExcerptUr] = useState('')
   const [contentUr, setContentUr] = useState('')
@@ -90,7 +92,7 @@ export default function NewArticle() {
           body: JSON.stringify({ articleTitle: title, articleSlug: slug, articleExcerpt: excerpt }),
         }).catch((err) => console.error('Newsletter notification failed (article was still saved):', err))
       }
-      router.push('/admin')
+      router.push('/admin/articles')
     }
   }
 
@@ -99,7 +101,7 @@ export default function NewArticle() {
       <aside className="w-64 bg-paper text-ink-900 border-r border-ink-100 p-6 flex flex-col hidden md:flex">
         <h2 className="text-xl font-light tracking-wide uppercase mb-10">Admin</h2>
         <nav className="flex flex-col gap-4 text-xs font-bold tracking-widest uppercase">
-          <Link href="/admin" className="text-left text-accent-600 transition-colors">← Back to Blogs</Link>
+          <Link href="/admin/articles" className="text-left text-accent-600 transition-colors">← Back to Blogs</Link>
         </nav>
       </aside>
 
@@ -157,9 +159,11 @@ export default function NewArticle() {
             </div>
           </div>
 
+            <AiHelper title={title} content={content} onTitle={setTitle} onExcerpt={setExcerpt} onContent={(h) => { setContent(h); setContentKey((k) => k + 1) }} />
+
           <div>
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Article Content</label>
-            <RichTextEditor content={content} onChange={setContent} />
+            <RichTextEditor key={contentKey} content={content} onChange={setContent} />
           </div>
 
           <div className="pt-6 border-t border-ink-100">

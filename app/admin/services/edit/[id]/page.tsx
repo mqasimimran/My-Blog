@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
+import OptionsEditor from '@/app/admin/services/OptionsEditor'
+import { cleanOptions, type ServiceOption } from '@/lib/serviceOptions'
 
 function slugify(text: string) {
   return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -21,6 +23,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
   const [tagline, setTagline] = useState('')
   const [description, setDescription] = useState('')
   const [includes, setIncludes] = useState('')
+  const [options, setOptions] = useState<ServiceOption[]>([])
   const [details, setDetails] = useState<Record<string, string>>({ deliverables: '', ideal_for: '', process: '', tools: '', turnaround: '', faq: '' })
   const [icon, setIcon] = useState('')
   const [startingPrice, setStartingPrice] = useState('')
@@ -44,6 +47,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
         setTagline(data.tagline || '')
         setDescription(data.description || '')
         setIncludes(data.includes || '')
+        setOptions(cleanOptions(data.options))
         setDetails({ deliverables: data.deliverables || '', ideal_for: data.ideal_for || '', process: data.process || '', tools: data.tools || '', turnaround: data.turnaround || '', faq: data.faq || '' })
         setIcon(data.icon || '')
         setStartingPrice(data.starting_price || '')
@@ -83,6 +87,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       tagline,
       description,
       includes,
+      options: cleanOptions(options),
       ...Object.fromEntries(Object.entries(details).map(([k, v]) => [k, v.trim() || null])),
       icon,
       cover_image: coverImageUrl,
@@ -181,6 +186,8 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm font-mono"
               />
             </div>
+
+            <OptionsEditor value={options} onChange={setOptions} />
 
             <div className="space-y-6 border-t border-ink-100 pt-6">
               <p className="text-[10px] font-bold tracking-widest uppercase text-ink-900">Service details (optional, shown on the service page)</p>

@@ -30,7 +30,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ token
         <p className="mt-10 type-meta">Prepared for</p><p className="mt-1 font-medium text-ink-900">{p.client_name}</p>
         <h1 className="mt-8 text-3xl font-medium tracking-tight text-ink-900">{p.title}</h1>
         {p.summary && <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-ink-700">{p.summary}</p>}
-        {p.scope && <section className="mt-10"><h2 className="type-meta">What&rsquo;s included</h2><ul className="mt-3 list-disc space-y-1.5 ps-5 text-ink-900">{p.scope.split('\n').map((s) => s.trim().replace(/^[-*\u2022]\s*/, '')).filter(Boolean).map((s) => <li key={s}>{s}</li>)}</ul></section>}
+        {p.scope && <section className="mt-10"><h2 className="type-meta">What&rsquo;s included</h2><ul className="mt-3 list-disc space-y-1.5 ps-5 text-ink-900">{p.scope.split('\n').map((s) => s.trim().replace(/^[-*•]\s*/, '')).filter(Boolean).map((s) => <li key={s}>{s}</li>)}</ul></section>}
         {p.timeline && <section className="mt-10"><h2 className="type-meta">Timeline</h2><p className="mt-3 whitespace-pre-line text-ink-900">{p.timeline}</p></section>}
         <section className="mt-10">
           <h2 className="type-meta">Investment</h2>

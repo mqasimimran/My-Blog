@@ -58,6 +58,7 @@ export default function AdminNewsletterPage() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-10">
             <div>
               <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900">Newsletter</h1>
+              <Link href="/admin/newsletter/send" className="mt-4 inline-block bg-ink-900 px-5 py-2.5 text-xs font-medium uppercase tracking-[0.08em] text-paper hover:bg-accent-600">Write a newsletter</Link>
               <p className="text-xs text-ink-500 mt-1">{subscribers.length} subscriber{subscribers.length !== 1 ? 's' : ''}</p>
             </div>
             {subscribers.length > 0 && (

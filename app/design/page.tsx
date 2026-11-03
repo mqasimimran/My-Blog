@@ -11,6 +11,7 @@ import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
 import { responsive } from '@/lib/img'
+import ClientsRow from '@/app/components/ClientsRow'
 
 type DesignItem = {
   id: string
@@ -113,6 +114,10 @@ function DesignGalleryInner() {
           {tx("A curated showcase of brand identities, UI/UX architecture, and promotional graphics. Select a piece to see the full design set.")}
         </p>
       </header>
+
+      <div className="container-page">
+        <ClientsRow />
+      </div>
 
       <section className="container-page">
         <FilterTabs label={tx("Filter designs by category")} options={categories.map((c) => ({ key: c, label: c }))} value={activeCategory} onChange={setActiveCategory} />

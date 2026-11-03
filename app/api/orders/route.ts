@@ -8,6 +8,7 @@ import { generateOrderNumber } from '@/lib/orderNumber'
 import { sendEmail } from '@/lib/mail'
 import { computeDiscount, type DiscountKind } from '@/lib/discount'
 import { siteConfig } from '@/site.config'
+import { whatsappMe } from '@/lib/notify'
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0].trim()
@@ -113,6 +114,8 @@ export async function POST(request: NextRequest) {
 
     const { error: insertError } = await supabase.from('orders').insert([{
       order_number: orderNumber,
+      // Optional payment screenshot: only a real JPEG under ~1 MB is kept.
+      ...(typeof body.paymentProof === 'string' && body.paymentProof.length < 1_400_000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(body.paymentProof) ? { payment_proof: body.paymentProof } : {}),
       product_id: productId,
       product_name: product.name,
       product_price: price,
@@ -160,6 +163,7 @@ export async function POST(request: NextRequest) {
       if (!mail.ok) console.error('Order notification email failed (order was still saved):', mail.error)
     }
 
+    await whatsappMe(`\u{1F6D2} New order ${orderNumber}: ${product.name} via ${paymentMethod}${typeof body.paymentProof === 'string' ? ' (screenshot attached)' : ''}. Check Admin -> Orders.`)
     return NextResponse.json({ success: true, orderNumber })
   } catch (error) {
     console.error('Orders route error:', error)

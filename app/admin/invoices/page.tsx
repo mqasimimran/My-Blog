@@ -7,6 +7,7 @@ import { invoiceTotals, money, type Invoice, type InvoiceItem } from '@/lib/invo
 import { siteConfig } from '@/site.config'
 
 type Draft = Omit<Invoice, 'id' | 'public_token' | 'sent_at' | 'paid_at' | 'created_at'> & { id?: string }
+const nextMonth = (d: string) => { const x = new Date((d || new Date().toISOString().slice(0, 10)) + 'T00:00:00Z'); x.setUTCMonth(x.getUTCMonth() + 1); return x.toISOString().slice(0, 10) }
 
 const field = 'w-full border border-ink-300 bg-paper-raised px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-accent-600'
 const label = 'mb-1.5 block text-[11px] font-medium uppercase tracking-[0.08em] text-ink-500'
@@ -46,7 +47,8 @@ export default function InvoicesPage() {
     setBusy('save')
     const row = { number: draft.number.trim(), client_name: draft.client_name.trim(), client_email: draft.client_email?.trim() || null, client_address: draft.client_address?.trim() || null,
       currency: draft.currency, items, discount: Number(draft.discount) || 0, tax_percent: Number(draft.tax_percent) || 0, notes: draft.notes?.trim() || null,
-      status: draft.status, issue_date: draft.issue_date, due_date: draft.due_date || null }
+      status: draft.status, issue_date: draft.issue_date, due_date: draft.due_date || null,
+      repeat_monthly: !!draft.repeat_monthly, repeat_next: draft.repeat_monthly ? draft.repeat_next || nextMonth(draft.issue_date) : null }
     try {
       if (draft.id) await adminApi.update('invoices', draft.id, row)
       else await adminApi.insert('invoices', row)
@@ -103,7 +105,7 @@ export default function InvoicesPage() {
                   <input aria-label={`Item ${i + 1} quantity`} type="number" min="0" step="any" value={it.quantity} onChange={(e) => setItem(i, { quantity: e.target.value as unknown as number })} className={`${field} col-span-3 md:col-span-1`} />
                   <input aria-label={`Item ${i + 1} unit price`} type="number" min="0" step="any" value={it.unit_price} onChange={(e) => setItem(i, { unit_price: e.target.value as unknown as number })} className={`${field} col-span-4 md:col-span-2`} />
                   <span className="col-span-4 text-right font-mono text-sm tabular-nums text-ink-700 md:col-span-2">{money((Number(it.quantity) || 0) * (Number(it.unit_price) || 0), draft.currency)}</span>
-                  <button type="button" aria-label={`Remove item ${i + 1}`} onClick={() => setDraft({ ...draft, items: draft.items.filter((_, k) => k !== i) })} className="col-span-1 text-sm text-ink-500 hover:text-error">\u2715</button>
+                  <button type="button" aria-label={`Remove item ${i + 1}`} onClick={() => setDraft({ ...draft, items: draft.items.filter((_, k) => k !== i) })} className="col-span-1 text-sm text-ink-500 hover:text-error">✕</button>
                 </div>
               ))}
             </div>
@@ -115,6 +117,8 @@ export default function InvoicesPage() {
                   <div><label htmlFor="i-dis" className={label}>Discount ({draft.currency === 'PKR' ? 'Rs' : '$'})</label><input id="i-dis" type="number" min="0" step="any" value={draft.discount} onChange={(e) => setDraft({ ...draft, discount: e.target.value as unknown as number })} className={field} /></div>
                   <div><label htmlFor="i-tax" className={label}>Tax (%)</label><input id="i-tax" type="number" min="0" step="any" value={draft.tax_percent} onChange={(e) => setDraft({ ...draft, tax_percent: e.target.value as unknown as number })} className={field} /></div>
                 </div>
+                <div className="border border-ink-100 p-3"><label className="flex items-center gap-2 text-sm text-ink-900"><input type="checkbox" checked={!!draft.repeat_monthly} onChange={(e) => setDraft({ ...draft, repeat_monthly: e.target.checked, repeat_next: draft.repeat_next || nextMonth(draft.issue_date) })} className="h-4 w-4" /> Repeat monthly (retainer)</label>
+                  {draft.repeat_monthly && <label className="mt-2 flex items-center gap-2 text-xs text-ink-500">Next copy is created and emailed on <input type="date" value={draft.repeat_next || ''} onChange={(e) => setDraft({ ...draft, repeat_next: e.target.value })} className="border border-ink-300 bg-paper-raised px-2 py-1 text-sm" /></label>}</div>
                 <div><label htmlFor="i-notes" className={label}>Notes (optional)</label><textarea id="i-notes" rows={3} placeholder="e.g. Thanks for your business! Payment within 14 days." value={draft.notes || ''} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} className={`${field} resize-y`} /></div>
               </div>
               <div className="self-end space-y-2 text-sm">
@@ -139,7 +143,7 @@ export default function InvoicesPage() {
                 : invoices.length === 0 ? <tr><td colSpan={6} className="px-4 py-6 text-ink-500">No invoices yet. Create your first one above.</td></tr>
                 : invoices.map((inv) => (
                   <tr key={inv.id}>
-                    <td className="px-4 py-3 font-mono text-ink-900">{inv.number}</td>
+                    <td className="px-4 py-3 font-mono text-ink-900">{inv.number}{inv.repeat_monthly && <span className="ms-2 bg-ink-900 px-1.5 py-0.5 font-sans text-[10px] uppercase tracking-[0.08em] text-paper">Monthly</span>}</td>
                     <td className="px-4 py-3">{inv.client_name}</td>
                     <td className="px-4 py-3 text-right font-mono tabular-nums">{money(invoiceTotals(inv).total, inv.currency)}</td>
                     <td className="px-4 py-3">{inv.due_date || '\u2014'}</td>

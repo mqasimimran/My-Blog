@@ -40,6 +40,7 @@ import type { Metadata } from 'next'
 
 import { siteConfig, SITE_URL } from '@/site.config'
 import RegisterServiceWorker from '@/app/components/RegisterServiceWorker'
+import ErrorReporter from '@/app/components/ErrorReporter'
 const SITE_DESCRIPTION = siteConfig.description
 
 const baseMetadata: Metadata = {
@@ -89,7 +90,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale()
   return (
-    <html lang={locale} dir={locale === 'ur' ? 'rtl' : 'ltr'} className={`${GeistSans.variable} ${GeistMono.variable} ${anton.variable}`} suppressHydrationWarning>
+    <html data-scroll-behavior="smooth" lang={locale} dir={locale === 'ur' ? 'rtl' : 'ltr'} className={`${GeistSans.variable} ${GeistMono.variable} ${anton.variable}`} suppressHydrationWarning>
       <head>
         {/* Site-wide Person structured data — helps Google associate this
             site with you specifically (knowledge panel, rich results) */}
@@ -185,6 +186,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <PublicOnly><WhatsAppButton /></PublicOnly>
         <PublicOnly><AssistantWidget /></PublicOnly>
         <RegisterServiceWorker />
+        <ErrorReporter />
         
         </LocaleProvider>
       </body>

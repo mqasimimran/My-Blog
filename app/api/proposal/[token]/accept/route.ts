@@ -7,6 +7,7 @@ import { invoiceTotals, money } from '@/lib/invoice'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { sendEmail } from '@/lib/mail'
 import { siteConfig } from '@/site.config'
+import { whatsappMe } from '@/lib/notify'
 
 // The client accepts by typing their full name and agreeing to the terms. That signature is recorded
 // (name, time, a one-way fingerprint of their connection), the proposal is claimed atomically so it can
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }]).select('id, number, public_token').single()
   if (inv) await supabaseAdmin.from('proposals').update({ invoice_id: inv.id }).eq('id', p.id)
   if (p.lead_id) await supabaseAdmin.from('messages').update({ stage: 'won' }).eq('id', p.lead_id)
+  await whatsappMe(`\u{1F389} ${name} signed your proposal "${p.title}" (${p.number}). Invoice created.`)
 
   const total = money(invoiceTotals(p).total, p.currency)
   const proposalLink = `${siteConfig.url}/proposal/${p.public_token}`, invoiceLink = inv ? `${siteConfig.url}/invoice/${inv.public_token}` : ''

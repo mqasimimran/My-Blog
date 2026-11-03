@@ -9,6 +9,7 @@ import EmptyState from '@/app/components/EmptyState'
 import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
 import WallpaperSizes from '@/app/components/WallpaperSizes'
+import ProductReviews from '@/app/components/ProductReviews'
 
 type Product = {
   id: string
@@ -181,6 +182,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           )}
         </div>
       </div>
+      <div className="container-page"><ProductReviews productId={product.id} /></div>
     </main>
   )
 }

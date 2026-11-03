@@ -33,10 +33,10 @@ begin
     select schemaname, tablename, policyname from pg_policies
     where schemaname = 'public' and tablename in (
       'articles','projects','designs','services','service_packages','testimonials',
-      'products','journey_entries','certifications','experiences','education',
+      'products','journey_entries','courses','course_lessons','certifications','experiences','education',
       'projects_resume','roadmap_items','client_logos','site_settings',
       'messages','newsletter_subscribers','orders','rate_limit_log',
-      'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes','invoices','site_searches'
+      'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes','invoices','site_searches','proposals','time_entries','client_projects','feedback_boards','feedback_comments','post_comments','newsletter_campaigns','recruiter_packs','recruiter_events','link_clicks','error_reports','content_items','product_reviews'
     )
   loop
     execute format('drop policy %I on %I.%I', r.policyname, r.schemaname, r.tablename);
@@ -49,10 +49,10 @@ declare t text;
 begin
   foreach t in array array[
     'articles','projects','designs','services','service_packages','testimonials',
-    'products','journey_entries','certifications','experiences','education',
+    'products','journey_entries','courses','course_lessons','certifications','experiences','education',
     'projects_resume','roadmap_items','client_logos','site_settings',
     'messages','newsletter_subscribers','orders','rate_limit_log',
-    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes','invoices','site_searches'
+    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes','invoices','site_searches','proposals','time_entries','client_projects','feedback_boards','feedback_comments','post_comments','newsletter_campaigns','recruiter_packs','recruiter_events','link_clicks','error_reports','content_items','product_reviews'
   ] loop
     if to_regclass('public.' || t) is not null then
       execute format('alter table public.%I enable row level security', t);
@@ -68,7 +68,7 @@ declare t text;
 begin
   foreach t in array array[
     'articles','projects','designs','services','service_packages','testimonials',
-    'products','journey_entries','certifications','experiences','education',
+    'products','journey_entries','courses','course_lessons','certifications','experiences','education',
     'projects_resume','roadmap_items','client_logos','site_settings'
   ] loop
     if to_regclass('public.' || t) is not null then
@@ -81,7 +81,7 @@ begin
   -- service-role key (server-side API routes) can touch these.
   foreach t in array array[
     'messages','newsletter_subscribers','orders','rate_limit_log',
-    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes','invoices','site_searches'
+    'login_attempts','activity_log','security_audit_log','admin_totp_used','private_settings','discount_codes','invoices','site_searches','proposals','time_entries','client_projects','feedback_boards','feedback_comments','post_comments','newsletter_campaigns','recruiter_packs','recruiter_events','link_clicks','error_reports','content_items','product_reviews'
   ] loop
     if to_regclass('public.' || t) is not null then
       execute format('revoke all on public.%I from anon, authenticated', t);
@@ -102,6 +102,8 @@ begin
     ('testimonials',     'active = true'),
     ('products',         'active = true'),
     ('journey_entries',  'true'),
+    ('courses',          'published = true'),
+    ('course_lessons',   'exists (select 1 from public.courses c where c.id = course_lessons.course_id and c.published)'),
     ('certifications',   'true'),
     ('experiences',      'true'),
     ('education',        'true'),
@@ -132,7 +134,8 @@ begin
     select string_agg(quote_ident(column_name), ', ') into cols
     from information_schema.columns
     where table_schema = 'public' and table_name = 'products'
-      and column_name <> 'digital_file_url';
+      and column_name <> 'digital_file_url'
+      and column_name <> 'wallpaper_files';   -- paid wallpaper files, same reason
     execute 'revoke select on public.products from anon, authenticated';
     execute format('grant select (%s) on public.products to anon, authenticated', cols);
   end if;

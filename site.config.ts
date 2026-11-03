@@ -57,8 +57,8 @@ export const siteConfig = {
     domain: mailDomain,
     ordersFrom: `${name} <orders@${mailDomain}>`,
     newsletterFrom: `${name} <newsletter@${mailDomain}>`,
-    storeFallbackFrom: 'Portfolio Store <onboarding@resend.dev>',
-    contactFormFrom: 'Portfolio Contact Form <onboarding@resend.dev>',
+    storeFallbackFrom: `${name} <orders@${mailDomain}>`,
+    contactFormFrom: `${name} <hello@${mailDomain}>`,
   },
 
   // ---- Profiles -----------------------------------------------------------

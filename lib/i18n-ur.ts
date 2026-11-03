@@ -332,4 +332,7 @@ export const UR: Record<string, string> = {
   "Previous": "پچھلا",
   "Mark complete and continue": "مکمل کریں اور آگے بڑھیں",
   "Finish the course": "کورس مکمل کریں",
+  // payment screenshot
+  "Payment screenshot (optional, speeds up verification)": "ادائیگی کا اسکرین شاٹ (اختیاری، تصدیق جلد ہوتی ہے)",
+  "Your payment screenshot": "آپ کی ادائیگی کا اسکرین شاٹ",
 }

@@ -11,6 +11,7 @@ import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
 import ServiceDetails from '@/app/components/ServiceDetails'
 import ServiceRequestForm from '@/app/components/ServiceRequestForm'
+import { cleanOptions } from '@/lib/serviceOptions'
 
 type ServicePackage = {
   id: string
@@ -43,8 +44,8 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
     async function fetchService() {
       // The detailed fields come from an SQL update; until it's run, load the basic ones.
       const BASIC = 'id, name, tagline, description, icon, cover_image'
-      let { data: serviceData, error: serviceError } = await supabase.from('services').select(`${BASIC}, deliverables, ideal_for, process, tools, turnaround, faq`).eq('slug', slug).single()
-      if (serviceError && /deliverables|ideal_for|process|tools|turnaround|faq/.test(serviceError.message)) ({ data: serviceData, error: serviceError } = await supabase.from('services').select(BASIC).eq('slug', slug).single())
+      let { data: serviceData, error: serviceError } = await supabase.from('services').select(`${BASIC}, deliverables, ideal_for, process, tools, turnaround, faq, options`).eq('slug', slug).single()
+      if (serviceError && /deliverables|ideal_for|process|tools|turnaround|faq|options/.test(serviceError.message)) ({ data: serviceData, error: serviceError } = await supabase.from('services').select(BASIC).eq('slug', slug).single())
 
       if (serviceError || !serviceData) {
         setNotFound(true)
@@ -169,7 +170,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
       </section>
 
       <ServiceDetails service={service as any} part="faq" />
-      <Suspense fallback={null}><ServiceRequestForm serviceName={service.name} packages={packages.map((p) => p.tier)} /></Suspense>
+      <Suspense fallback={null}><ServiceRequestForm serviceName={service.name} packages={packages.map((p) => p.tier)} serviceId={(service as any).id} packageList={packages.map((p) => ({ tier: p.tier, price: (p as any).price }))} options={cleanOptions((service as any).options)} /></Suspense>
     </main>
   )
 }

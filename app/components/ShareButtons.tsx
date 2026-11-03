@@ -18,7 +18,7 @@ export default function ShareButtons({ url, title }: { url: string; title: strin
 
   return (
     <div className="flex items-center gap-3">
-      <span className="text-xs font-medium text-ink-300">{tx("Share")}</span>
+      <span className="text-xs font-medium text-ink-500">{tx("Share")}</span>
       <a
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
         target="_blank"

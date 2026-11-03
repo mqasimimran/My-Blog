@@ -12,7 +12,10 @@ export async function GET() {
   const totals = new Map<string, { searches: number; no_results: number }>()
   for (const r of data || []) { const t = totals.get(r.term) || { searches: 0, no_results: 0 }; t.searches += r.searches; t.no_results += r.no_results; totals.set(r.term, t) }
   const rows = [...totals].map(([term, v]) => ({ term, ...v }))
+  const { data: lc } = await supabaseAdmin.from('link_clicks').select('label, clicks').gte('day', since)
+  const lt = new Map<string, number>(); for (const r of lc || []) lt.set(r.label, (lt.get(r.label) || 0) + r.clicks)
   return NextResponse.json({
+    links: [...lt].map(([label, clicks]) => ({ label, clicks })).sort((a, b) => b.clicks - a.clicks),
     total: rows.reduce((s, r) => s + r.searches, 0),
     top: [...rows].sort((a, b) => b.searches - a.searches).slice(0, 25),
     missing: rows.filter((r) => r.no_results > 0).sort((a, b) => b.no_results - a.no_results).slice(0, 25),

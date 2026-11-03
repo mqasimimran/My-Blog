@@ -6,6 +6,8 @@ import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
+const slugifyClient = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9\\s-]/g, '').trim().replace(/\\s+/g, '-').slice(0, 60)
+
 export default function EditLogoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
@@ -15,7 +17,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
   const [darkFile, setDarkFile] = useState<File | null>(null)
   const [currentImageUrl, setCurrentImageUrl] = useState('')
   const [currentDarkImageUrl, setCurrentDarkImageUrl] = useState<string | null>(null)
-  const [formData, setFormData] = useState({ name: '', link_url: '', order_index: 0 })
+  const [formData, setFormData] = useState({ name: '', link_url: '', order_index: 0, slug: '', role: '', period: '', summary: '', testimonial_quote: '', testimonial_author: '', show_on_design: true })
 
   useEffect(() => {
     async function fetchLogo() {
@@ -25,7 +27,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
       if (error) {
         alert('Error loading logo: ' + error.message)
       } else if (data) {
-        setFormData({ name: data.name, link_url: data.link_url || '', order_index: data.order_index })
+        setFormData({ name: data.name, link_url: data.link_url || '', order_index: data.order_index, slug: data.slug || '', role: data.role || '', period: data.period || '', summary: data.summary || '', testimonial_quote: data.testimonial_quote || '', testimonial_author: data.testimonial_author || '', show_on_design: data.show_on_design !== false })
         setCurrentImageUrl(data.image_url)
         setCurrentDarkImageUrl(data.dark_image_url)
       }
@@ -53,6 +55,8 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
       let dbError: any = null
       try { await adminApi.update('client_logos', id, {
         name: formData.name,
+        slug: formData.slug || slugifyClient(formData.name) || null, role: formData.role || null, period: formData.period || null, summary: formData.summary || null,
+        testimonial_quote: formData.testimonial_quote || null, testimonial_author: formData.testimonial_author || null, show_on_design: formData.show_on_design,
         link_url: formData.link_url || null,
         order_index: formData.order_index,
         image_url: imageUrl,
@@ -109,6 +113,20 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
               <img src={currentImageUrl} alt={formData.name} className="h-16 border border-ink-100 bg-paper p-2 mb-3" />
               <label className="block text-xs text-ink-500 mb-2">Replace image (optional)</label>
               <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
+            </div>
+            <div className="space-y-4 border-t border-ink-100 pt-6">
+              <p className="text-[10px] font-bold tracking-widest uppercase text-ink-900">Client page (optional): /design/clients/{formData.slug || '...'}</p>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500">Address<input value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: slugifyClient(e.target.value) })} placeholder="e.g. tedxumt" className="mt-1 block w-full border-b border-ink-100 py-2 font-mono text-sm normal-case tracking-normal text-ink-900 outline-none focus:border-ink-900" /></label>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500">Your role<input value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} placeholder="e.g. Lead Graphic Designer" className="mt-1 block w-full border-b border-ink-100 py-2 text-sm normal-case tracking-normal text-ink-900 outline-none focus:border-ink-900" /></label>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500">Period<input value={formData.period} onChange={(e) => setFormData({ ...formData, period: e.target.value })} placeholder="e.g. 2024 to present" className="mt-1 block w-full border-b border-ink-100 py-2 text-sm normal-case tracking-normal text-ink-900 outline-none focus:border-ink-900" /></label>
+                <label className="flex items-center gap-2 text-sm text-ink-900"><input type="checkbox" checked={formData.show_on_design} onChange={(e) => setFormData({ ...formData, show_on_design: e.target.checked })} className="h-4 w-4" /> Show on the design page</label>
+              </div>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500">Case study (what you did; blank line between paragraphs)<textarea rows={5} value={formData.summary} onChange={(e) => setFormData({ ...formData, summary: e.target.value })} className="mt-1 block w-full border border-ink-100 p-3 text-sm normal-case tracking-normal text-ink-900 outline-none focus:border-ink-900" /></label>
+              <div className="grid gap-4 md:grid-cols-3">
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 md:col-span-2">Testimonial (optional)<input value={formData.testimonial_quote} onChange={(e) => setFormData({ ...formData, testimonial_quote: e.target.value })} className="mt-1 block w-full border-b border-ink-100 py-2 text-sm normal-case tracking-normal text-ink-900 outline-none focus:border-ink-900" /></label>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500">From<input value={formData.testimonial_author} onChange={(e) => setFormData({ ...formData, testimonial_author: e.target.value })} placeholder="Name, role" className="mt-1 block w-full border-b border-ink-100 py-2 text-sm normal-case tracking-normal text-ink-900 outline-none focus:border-ink-900" /></label>
+              </div>
             </div>
 
             <div className="border-t border-ink-100 pt-4">
