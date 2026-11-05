@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useEffect, useState } from 'react'
 import AdminNav from '@/app/admin/AdminNav'
 import { adminApi } from '@/lib/adminApi'
@@ -18,9 +19,10 @@ export default function DiscountCodesPage() {
   const [saving, setSaving] = useState(false)
 
   const load = async () => {
-    try { setCodes(((await adminApi.list('discount_codes', { orderBy: 'created_at', ascending: false })) as Code[]) || []) }
-    catch { setError('Could not load codes. Has the latest SQL update been run?') }
-    setLoading(false)
+    await adminApi.list('discount_codes', { orderBy: 'created_at', ascending: false })
+      .then((rows: Code[]) => setCodes(rows || []))
+      .catch(() => setError('Could not load codes. Has the latest SQL update been run?'))
+      .finally(() => setLoading(false))
   }
   useEffect(() => { load() }, [])
 
@@ -40,7 +42,8 @@ export default function DiscountCodesPage() {
       })
       setForm({ code: '', kind: 'percent', value: '', maxUses: '', expires: '' })
       await load()
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       setError(/duplicate|unique/i.test(err?.message || '') ? 'That code already exists.' : 'Could not create the code.')
     }
     setSaving(false)

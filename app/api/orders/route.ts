@@ -57,6 +57,7 @@ export async function POST(request: NextRequest) {
       .from('products')
       .select('name, price, type, stock_quantity')
       .eq('id', productId)
+      .eq('active', true)
       .single()
 
     if (productError || !product) {
@@ -80,8 +81,7 @@ export async function POST(request: NextRequest) {
     const rawCode = typeof body.discountCode === 'string' ? body.discountCode.trim().toUpperCase() : ''
     if (rawCode) {
       if (rawCode.length > 40) return NextResponse.json({ error: "That discount code isn't valid." }, { status: 400 })
-      const { data: redeemed, error: redeemError } = await supabase.rpc('redeem_discount', { p_code: rawCode })
-      const row = Array.isArray(redeemed) ? redeemed[0] : redeemed
+      const { data: row, error: redeemError } = await supabase.from('discount_codes').select('kind, value').eq('code', rawCode).eq('active', true).maybeSingle()
       if (redeemError || !row) {
         return NextResponse.json({ error: "That discount code isn't valid any more. Remove it and try again." }, { status: 400 })
       }
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const { error: insertError } = await supabase.from('orders').insert([{
+    const { error: insertError } = await supabase.rpc('place_shop_order', { payload: {
       order_number: orderNumber,
       // Optional payment screenshot: only a real JPEG under ~1 MB is kept.
       ...(typeof body.paymentProof === 'string' && body.paymentProof.length < 1_400_000 && /^data:image\/jpeg;base64,[A-Za-z0-9+/]+=*$/.test(body.paymentProof) ? { payment_proof: body.paymentProof } : {}),
@@ -128,11 +128,11 @@ export async function POST(request: NextRequest) {
       payment_method: paymentMethod,
       customer_transaction_id: customerTransactionId,
       status: 'pending_verification',
-    }])
+    } })
 
     if (insertError) {
       console.error('Error creating order:', insertError)
-      return NextResponse.json({ error: insertError.message }, { status: 500 })
+      return NextResponse.json({ error: insertError.code === 'P0001' ? insertError.message : 'Could not save order' }, { status: insertError.code === 'P0001' ? 409 : 500 })
     }
 
     await supabase.from('rate_limit_log').insert([{ identifier: ip, action: 'order' }])

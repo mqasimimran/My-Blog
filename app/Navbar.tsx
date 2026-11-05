@@ -101,10 +101,13 @@ export default function Navbar() {
   }
 
   // Close menus when the page changes, and on Escape.
-  useEffect(() => {
+  const [menuPath, setMenuPath] = useState(pathname)
+  if (menuPath !== pathname) {
+    setMenuPath(pathname)
     setIsMenuOpen(false)
     setIsSearchOpen(false)
-  }, [pathname])
+    setOpenGroup(null)
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -127,7 +130,6 @@ export default function Navbar() {
   }, [isSearchOpen])
 
   // Close a group's menu when the page changes, on an outside click, or with Escape.
-  useEffect(() => setOpenGroup(null), [pathname])
   useEffect(() => {
     if (!openGroup) return
     const onDown = (e: MouseEvent) => { if (!navRef.current?.contains(e.target as Node)) setOpenGroup(null) }

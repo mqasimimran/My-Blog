@@ -3,11 +3,14 @@ import { invoiceTotals, type Invoice } from '@/lib/invoice'
 
 // What needs you right now, and this month's numbers. Shared by the admin overview and the Monday email.
 // Each count falls back to 0 if its table doesn't exist yet.
-async function count(table: string, apply: (q: any) => any = (q) => q) {
-  try { const { count: n, error } = await apply(supabaseAdmin.from(table).select('id', { count: 'exact', head: true })); return error ? 0 : n || 0 } catch { return 0 }
+const selectRows = (table: string, columns: string, countOnly = false) =>
+  supabaseAdmin.from(table).select(columns, countOnly ? { count: 'exact', head: true } : {})
+type Query = ReturnType<typeof selectRows>
+async function count(table: string, apply: (q: Query) => Query = (q) => q) {
+  try { const { count: n, error } = await apply(selectRows(table, 'id', true)); return error ? 0 : n || 0 } catch { return 0 }
 }
-async function rows<T>(table: string, cols: string, apply: (q: any) => any = (q) => q): Promise<T[]> {
-  try { const { data, error } = await apply(supabaseAdmin.from(table).select(cols)); return error ? [] : (data as T[]) || [] } catch { return [] }
+async function rows<T>(table: string, cols: string, apply: (q: Query) => Query = (q) => q): Promise<T[]> {
+  try { const { data, error } = await apply(selectRows(table, cols)); return error ? [] : (data as T[]) || [] } catch { return [] }
 }
 
 export async function getOverview() {

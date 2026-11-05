@@ -14,7 +14,7 @@ export async function GET() {
       next: { revalidate: 3600 },
     })
     if (!res.ok) throw new Error(`GitHub ${res.status}`)
-    const events: any[] = await res.json()
+    const events: { type: string; created_at: string; repo?: { name: string }; payload?: { size?: number; commits?: { message?: string }[] } }[] = await res.json()
     const WORK = new Set(['PushEvent', 'CreateEvent', 'PullRequestEvent', 'IssuesEvent', 'ReleaseEvent', 'PublicEvent'])
     // Activity per day for the last 12 weeks (84 days).
     const today = new Date(); today.setUTCHours(0, 0, 0, 0)

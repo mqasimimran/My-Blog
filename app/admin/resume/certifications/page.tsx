@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
@@ -40,17 +41,18 @@ export default function AddCertification() {
       }
 
       // 3. Save to Database
-      let dbError: any = null
+      let dbError: Error | null = null
       try { await adminApi.insert('certifications', {
         ...formData,
         image_url: imageUrl
-      }) } catch (e: any) { dbError = e }
+      }) } catch (cause) { dbError = asError(cause) }
 
       if (dbError) throw dbError
 
       alert('Certification added successfully!')
       router.push('/admin')
-    } catch (error: any) {
+    } catch (cause) {
+      const error = asError(cause)
       alert('Error: ' + error.message)
     } finally {
       setLoading(false)

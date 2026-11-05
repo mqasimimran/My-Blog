@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState } from 'react'
 import { adminStorage } from '@/lib/adminStorage'
 
@@ -26,7 +27,7 @@ export default function CoverImageField({ value, onChange, screenshots = [] }: {
       <p className="mb-3 text-[11px] text-ink-500">Shown on project cards and at the top of the project page. Best at 1600 × 1000 (16:10). No cover? Cards use the first screenshot.</p>
       <div className="flex flex-wrap items-start gap-4">
         <div className="relative aspect-[16/10] w-56 overflow-hidden border border-ink-100 bg-ink-50">
-          {value ? <img src={value} alt="Current cover" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 grid place-items-center text-xs text-ink-500">No cover yet</span>}
+          {value ? <SiteImage src={value} alt="Current cover" className="absolute inset-0 h-full w-full object-cover" /> : <span className="absolute inset-0 grid place-items-center text-xs text-ink-500">No cover yet</span>}
         </div>
         <div className="flex flex-col gap-2">
           <label className="inline-flex cursor-pointer items-center bg-ink-900 px-4 py-2 text-xs font-medium uppercase tracking-[0.08em] text-paper hover:bg-accent-600">
@@ -44,7 +45,7 @@ export default function CoverImageField({ value, onChange, screenshots = [] }: {
             {screenshots.map((src) => (
               <button key={src} type="button" onClick={() => onChange(src)} aria-label="Use this screenshot as the cover"
                 className={`relative aspect-[16/10] w-24 overflow-hidden border-2 ${value === src ? 'border-accent-600' : 'border-transparent hover:border-ink-300'}`}>
-                <img src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                <SiteImage src={src} alt="" className="absolute inset-0 h-full w-full object-cover" />
               </button>
             ))}
           </div>

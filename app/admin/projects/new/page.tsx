@@ -1,6 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import VideoLinksField from '@/app/components/admin/VideoLinksField'
+import { parseVideoLinks } from '@/lib/portfolioVideo'
+import { asError } from '@/lib/asError'
+import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -10,6 +13,7 @@ import { adminApi } from '@/lib/adminApi'
 export default function NewProjectPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [videoLinks, setVideoLinks] = useState('')
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [category, setCategory] = useState('Game Dev')
@@ -39,6 +43,11 @@ export default function NewProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const clips = parseVideoLinks(videoLinks)
+    if (!clips) {
+      alert('Enter a valid YouTube video or Shorts link on each line.')
+      return
+    }
     setIsSubmitting(true)
 
     let imageUrl = null
@@ -57,7 +66,7 @@ export default function NewProjectPage() {
       imageUrl = publicUrlData.publicUrl
     }
 
-    let screenshotUrls: string[] = []
+    const screenshotUrls: string[] = []
     for (const file of screenshotFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `screenshot_${Math.random().toString(36).substring(2)}.${fileExt}`
@@ -98,7 +107,7 @@ export default function NewProjectPage() {
       approach,
       outcome,
       stats,
-      screenshots: screenshotUrls,
+      screenshots: [...screenshotUrls, ...clips],
       preview_video_url: previewVideoUrl,
       live_url: liveUrl,
       play_url: playUrl || null,
@@ -108,7 +117,8 @@ export default function NewProjectPage() {
       feature_image: imageUrl
     })
       router.push('/admin/projects')
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error saving project: ' + err.message)
       setIsSubmitting(false)
     }
@@ -205,9 +215,11 @@ export default function NewProjectPage() {
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Stat Callouts (optional, one "value|label" per line)</label>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Stat Callouts (optional, one &quot;value|label&quot; per line)</label>
               <textarea value={stats} onChange={(e) => setStats(e.target.value)} rows={3} placeholder={'94%|Classification accuracy\n3|Custom systems shipped'} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm font-mono" />
             </div>
+
+            <VideoLinksField value={videoLinks} onChange={setVideoLinks} />
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Screenshots (optional, multiple)</label>

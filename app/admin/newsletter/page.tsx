@@ -1,7 +1,8 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
@@ -16,9 +17,9 @@ export default function AdminNewsletterPage() {
 
   useEffect(() => {
     async function fetchSubscribers() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.list('newsletter_subscribers', { orderBy: 'created_at', ascending: false }) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.list('newsletter_subscribers', { orderBy: 'created_at', ascending: false }) } catch (cause) { error = asError(cause) }
 
       if (error) console.error('Error fetching subscribers:', error)
       else setSubscribers(data || [])
@@ -30,8 +31,8 @@ export default function AdminNewsletterPage() {
 
   async function deleteSubscriber(id: string) {
     if (!confirm('Remove this subscriber?')) return
-    let error: any = null
-    try { await adminApi.remove('newsletter_subscribers', id) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.remove('newsletter_subscribers', id) } catch (cause) { error = asError(cause) }
     if (error) alert('Error: ' + error.message)
     else setSubscribers(prev => prev.filter(s => s.id !== id))
   }

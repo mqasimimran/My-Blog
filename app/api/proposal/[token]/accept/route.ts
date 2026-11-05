@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'node:crypto'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
-import { getProposalByToken, nextNumber } from '@/lib/invoiceServer'
+import { getProposalByToken } from '@/lib/invoiceServer'
 import { invoiceTotals, money } from '@/lib/invoice'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { sendEmail } from '@/lib/mail'
@@ -24,18 +24,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const name = typeof b.name === 'string' ? b.name.trim().replace(/\s+/g, ' ').slice(0, 100) : ''
   if (name.length < 2 || b.agree !== true) return NextResponse.json({ error: 'Type your full name and tick the box to accept.' }, { status: 400 })
 
-  const now = new Date().toISOString()
   const fingerprint = createHash('sha256').update(`${ip}:${process.env.NEXTAUTH_SECRET || ''}`).digest('hex').slice(0, 24)
-  const { data: claimed } = await supabaseAdmin.from('proposals').update({ status: 'accepted', accepted_at: now, signed_name: name, signed_ip_hash: fingerprint }).eq('id', p.id).eq('status', 'sent').select('id')
-  if (!claimed?.length) return NextResponse.json({ error: 'This proposal has already been accepted.' }, { status: 409 })
-
-  const due = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
-  const { data: inv } = await supabaseAdmin.from('invoices').insert([{
-    number: await nextNumber('invoices', 'INV'), client_name: p.client_name, client_email: p.client_email, currency: p.currency, items: p.items,
-    discount: p.discount, tax_percent: p.tax_percent, notes: `For proposal ${p.number}: ${p.title}`, status: 'sent', due_date: due, sent_at: now,
-  }]).select('id, number, public_token').single()
-  if (inv) await supabaseAdmin.from('proposals').update({ invoice_id: inv.id }).eq('id', p.id)
-  if (p.lead_id) await supabaseAdmin.from('messages').update({ stage: 'won' }).eq('id', p.lead_id)
+  const { data: inv, error } = await supabaseAdmin.rpc('accept_proposal', {
+    proposal_token: p.public_token, signer: name, fingerprint,
+  })
+  if (error) return NextResponse.json({ error: 'Could not create the invoice. Please try again.' }, { status: 503 })
+  if (!inv) return NextResponse.json({ error: 'This proposal can no longer be accepted.' }, { status: 409 })
   await whatsappMe(`\u{1F389} ${name} signed your proposal "${p.title}" (${p.number}). Invoice created.`)
 
   const total = money(invoiceTotals(p).total, p.currency)

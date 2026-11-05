@@ -17,7 +17,12 @@ export default function ServiceRequestForm({ serviceName, packages, serviceId, p
   const params = useSearchParams()
   const [f, setF] = useState({ name: '', email: '', pkg: packages[0] || '', details: '', budget: '', deadline: '', website: '' })
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle')
-  useEffect(() => { const p = params.get('package'); if (p && packages.includes(p)) setF((x) => ({ ...x, pkg: p })) }, [params, packages])
+  const requested = params.get('package')
+  const [previousPackage, setPreviousPackage] = useState<string | null>(null)
+  if (requested !== previousPackage) {
+    setPreviousPackage(requested)
+    if (requested && packages.includes(requested)) setF({ ...f, pkg: requested })
+  }
   const field = 'w-full border border-ink-500 bg-paper px-4 text-base text-ink-900 outline-none focus:border-accent-600'
   const pkg = packageList.find((p) => p.tier === f.pkg)
   const est = estimate(parsePrice(pkg?.price), `${serviceName}: ${f.pkg} package`, options, sel)

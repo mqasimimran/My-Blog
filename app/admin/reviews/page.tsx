@@ -11,8 +11,11 @@ type R = { id: string; product_id: string; name: string; rating: number; body: s
 export default function ReviewsAdmin() {
   const [list, setList] = useState<R[]>([]), [products, setProducts] = useState<Record<string, string>>({}), [tab, setTab] = useState<'pending' | 'approved'>('pending'), [msg, setMsg] = useState('')
   const load = async () => {
-    try { setList(((await adminApi.list('product_reviews', { orderBy: 'created_at', ascending: false })) as R[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') }
-    const p = ((await adminApi.list('products').catch(() => [])) as { id: string; name: string }[]) || []; setProducts(Object.fromEntries(p.map((x) => [x.id, x.name])))
+    await adminApi.list('product_reviews', { orderBy: 'created_at', ascending: false })
+      .then((rows: R[]) => setList(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?'))
+    await adminApi.list('products').catch(() => []).then((products: { id: string; name: string }[]) =>
+      setProducts(Object.fromEntries(products.map((p) => [p.id, p.name]))))
   }
   useEffect(() => { load() }, [])
   const shown = list.filter((r) => r.status === tab)

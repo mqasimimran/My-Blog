@@ -1,5 +1,7 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -23,9 +25,9 @@ export default function EditJourneyEntryPage({ params }: { params: Promise<{ id:
 
   useEffect(() => {
     async function fetchEntry() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('journey_entries', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('journey_entries', id) } catch (cause) { error = asError(cause) }
       if (error) {
         console.error('Error fetching entry:', error)
       } else if (data) {
@@ -58,13 +60,13 @@ export default function EditJourneyEntryPage({ params }: { params: Promise<{ id:
       finalImageUrl = publicUrlData.publicUrl
     }
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.update('journey_entries', id, {
       date_label: dateLabel,
       title,
       body,
       image_url: finalImageUrl,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error updating entry: ' + error.message)
@@ -124,10 +126,10 @@ export default function EditJourneyEntryPage({ params }: { params: Promise<{ id:
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Photo</label>
               {imageUrl && !imageFile && (
-                <img src={imageUrl} alt="Current" className="w-full h-40 object-cover rounded-none mb-2 border border-ink-100" />
+                <SiteImage src={imageUrl} alt="Current" className="w-full h-40 object-cover rounded-none mb-2 border border-ink-100" />
               )}
               {imageFile && (
-                <img src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-40 object-cover rounded-none mb-2 border border-ink-100" />
+                <SiteImage src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-40 object-cover rounded-none mb-2 border border-ink-100" />
               )}
               <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>

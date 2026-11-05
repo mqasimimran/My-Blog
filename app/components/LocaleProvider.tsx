@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext } from 'react'
 import { useRouter } from 'next/navigation'
-import { translate, tr, isRtl, type Key, type Locale } from '@/lib/i18n'
+import { translate, tr, type Key, type Locale } from '@/lib/i18n'
 import { siteConfig } from '@/site.config'
 
 type Ctx = { locale: Locale; t: (key: Key, vars?: Record<string, string>) => string; tx: (text: string) => string; setLocale: (l: Locale) => void }

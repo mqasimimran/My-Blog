@@ -76,7 +76,7 @@ export async function buildAssistantContext(): Promise<string> {
   }
   if (services.data?.length) {
     lines.push('\nSERVICES AND PRICES')
-    for (const s of services.data as any[]) {
+    for (const s of services.data) {
       lines.push(`- ${s.name}: ${cut(s.tagline || s.description, 250)}${s.starting_price ? ` ${s.starting_price}.` : ''}`)
       for (const pk of s.service_packages || []) lines.push(`  - ${pk.tier}: ${pk.price}${pk.delivery_days ? `, ${pk.delivery_days}-day delivery` : ''}. ${cut(String(pk.features || '').replace(/\n/g, ', '), 200)}`)
     }
@@ -97,7 +97,7 @@ export async function buildAssistantContext(): Promise<string> {
     lines.push('\nSHOP')
     for (const p of products.data) lines.push(`- ${p.name} (${p.type}${p.category ? ', ' + p.category : ''}), $${p.price}. ${cut(p.description, 140)} ${siteConfig.url}/shop/${p.slug}`)
   }
-  const stack = (siteConfig.techStack || []).flatMap((g: any) => (g.items || []).map((i: any) => i.name))
+  const stack = (siteConfig.techStack || []).flatMap((g) => (g.items || []).map((i) => i.name))
   if (stack.length) lines.push(`\nTECH STACK: ${stack.join(', ')}. Details: ${siteConfig.url}/tech-stack`)
   if (journey.data?.length) {
     lines.push('\nJOURNEY (timeline)')

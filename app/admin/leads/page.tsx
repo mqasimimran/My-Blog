@@ -20,9 +20,10 @@ export default function LeadsPage() {
   const [form, setForm] = useState({ name: '', email: '', message: '' })
 
   const load = async () => {
-    try { setLeads(((await adminApi.list('messages', { orderBy: 'created_at', ascending: false })) as Lead[]) || []) }
-    catch { setError('Could not load leads. Has the latest SQL update been run?') }
-    setLoading(false)
+    await adminApi.list('messages', { orderBy: 'created_at', ascending: false })
+      .then((rows: Lead[]) => setLeads(rows || []))
+      .catch(() => setError('Could not load leads. Has the latest SQL update been run?'))
+      .finally(() => setLoading(false))
   }
   useEffect(() => { load() }, [])
   const save = async (id: string, patch: Partial<Lead>) => {

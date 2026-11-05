@@ -22,7 +22,9 @@ export default function ClientProjectsPage() {
   const [newUpdate, setNewUpdate] = useState('')
   const [msg, setMsg] = useState('')
   const [uploading, setUploading] = useState(false)
-  const load = async () => { try { setList(((await adminApi.list('client_projects', { orderBy: 'created_at', ascending: false })) as CP[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') } }
+  const load = async () => { await adminApi.list('client_projects', { orderBy: 'created_at', ascending: false })
+      .then((rows: CP[]) => setList(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?')) }
   useEffect(() => { load() }, [])
 
   async function save() {

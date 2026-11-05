@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
 import { adminApi } from '@/lib/adminApi'
 
@@ -45,7 +46,8 @@ export default function RecentActivity() {
       try {
         const data = await adminApi.list('activity_log', { orderBy: 'created_at', ascending: false, limit: 10 })
         setRows(data || [])
-      } catch (err: any) {
+      } catch (cause) {
+        const err = asError(cause)
         console.error('Error fetching activity log:', err.message)
       }
       setIsLoading(false)

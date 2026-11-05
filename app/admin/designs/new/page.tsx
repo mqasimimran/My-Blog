@@ -1,5 +1,9 @@
 'use client'
 
+import VideoLinksField from '@/app/components/admin/VideoLinksField'
+import { parseVideoLinks } from '@/lib/portfolioVideo'
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -10,6 +14,7 @@ import { adminApi } from '@/lib/adminApi'
 export default function NewDesignPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [videoLinks, setVideoLinks] = useState('')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('Graphic Design')
   const [clientId, setClientId] = useState('')
@@ -45,8 +50,13 @@ export default function NewDesignPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (imageFiles.length === 0) {
-      alert('Please select at least one image.')
+    const clips = parseVideoLinks(videoLinks)
+    if (!clips) {
+      alert('Enter a valid YouTube video or Shorts link on each line.')
+      return
+    }
+    if (imageFiles.length === 0 && clips.length === 0) {
+      alert('Add at least one image or YouTube video.')
       return
     }
 
@@ -84,16 +94,16 @@ export default function NewDesignPage() {
       beforeImageUrl = publicUrlData.publicUrl
     }
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.insert('designs', {
       title,
       category,
       client_id: clientId || null,
-      images: uploadedImageUrls,
+      images: [...uploadedImageUrls, ...clips],
       before_image: beforeImageUrl,
       featured,
       published
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error saving design record: ' + error.message)
@@ -159,6 +169,8 @@ export default function NewDesignPage() {
               </label>
             </div>
 
+            <VideoLinksField value={videoLinks} onChange={setVideoLinks} />
+
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Upload Images</label>
               <input type="file" accept="image/*" multiple onChange={handleFileChange} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
@@ -166,7 +178,7 @@ export default function NewDesignPage() {
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
-                "Before" Image (optional — enables a drag-to-compare slider in the lightbox)
+                &quot;Before&quot; Image (optional — enables a drag-to-compare slider in the lightbox)
               </label>
               <input type="file" accept="image/*" onChange={(e) => setBeforeImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
@@ -180,7 +192,7 @@ export default function NewDesignPage() {
                     return (
                       <div key={idx} className="relative bg-paper border border-ink-100 rounded-none p-2 flex flex-col items-center">
                         <div className="relative w-full h-32 mb-2 rounded-none overflow-hidden bg-paper border border-ink-100">
-                          <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                          <SiteImage src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
                           {idx === 0 && (
                             <span className="absolute bottom-1 left-1 bg-accent-600 text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-none">Cover</span>
                           )}

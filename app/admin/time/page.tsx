@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useStoredValue, storeValue } from '@/lib/useStoredValue'
+import { useEffect, useMemo, useState } from 'react'
 import AdminNav from '@/app/admin/AdminNav'
 import { adminApi } from '@/lib/adminApi'
 import { money } from '@/lib/invoice'
@@ -15,18 +16,23 @@ const KEY = 'time-tracker-running'
 // manual entries, and one-click invoices from a client's unbilled hours.
 export default function TimePage() {
   const [entries, setEntries] = useState<Entry[]>([])
-  const [running, setRunning] = useState<Running | null>(null)
-  const [now, setNow] = useState(Date.now())
+  const stored = useStoredValue(KEY)
+  const running = useMemo((): Running | null => {
+    try { return stored ? JSON.parse(stored) : null } catch { return null }
+  }, [stored])
+  const [now, setNow] = useState(Date.now)
   const [f, setF] = useState({ client: '', project: '', description: '', rate: '', currency: 'USD' as 'USD' | 'PKR', minutes: '', date: new Date().toISOString().slice(0, 10) })
   const [msg, setMsg] = useState('')
-  const load = async () => { try { setEntries(((await adminApi.list('time_entries', { orderBy: 'work_date', ascending: false })) as Entry[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') } }
-  useEffect(() => { load(); try { const r = localStorage.getItem(KEY); if (r) setRunning(JSON.parse(r)) } catch {} }, [])
+  const load = async () => { await adminApi.list('time_entries', { orderBy: 'work_date', ascending: false })
+      .then((rows: Entry[]) => setEntries(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?')) }
+  useEffect(() => { load() }, [])
   useEffect(() => { if (!running) return; const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t) }, [running])
 
   const start = () => {
     if (!f.client.trim()) return setMsg('Add a client name first.')
     const r: Running = { client: f.client.trim(), project: f.project.trim(), description: f.description.trim(), rate: f.rate, currency: f.currency, startedAt: Date.now() }
-    setRunning(r); try { localStorage.setItem(KEY, JSON.stringify(r)) } catch {} setMsg('')
+    storeValue(KEY, JSON.stringify(r)); setMsg('')
   }
   const save = async (client: string, project: string, description: string, minutes: number, rate: string, currency: 'USD' | 'PKR', date: string) => {
     await adminApi.insert('time_entries', { client_name: client, project: project || null, description: description || null, minutes, rate: Number(rate) || 0, currency, work_date: date })
@@ -36,7 +42,7 @@ export default function TimePage() {
     if (!running) return
     const minutes = Math.max(1, Math.ceil((Date.now() - running.startedAt) / 60000))
     await save(running.client, running.project, running.description, minutes, running.rate, running.currency, new Date().toISOString().slice(0, 10))
-    setRunning(null); try { localStorage.removeItem(KEY) } catch {} setMsg(`Saved ${hm(minutes)} for ${running.client}.`)
+    storeValue(KEY, null); setMsg(`Saved ${hm(minutes)} for ${running.client}.`)
   }
   const addManual = async (e: React.FormEvent) => {
     e.preventDefault()

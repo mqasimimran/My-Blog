@@ -1,5 +1,7 @@
 'use client'
 
+import { mediaCover } from '@/lib/portfolioVideo'
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect, useRef } from 'react'
 import useStackShrink from '@/app/components/ui/useStackShrink'
 import Link from 'next/link'
@@ -9,7 +11,6 @@ import SplitText from '@/app/components/ui/SplitText'
 import { ButtonLink } from '@/app/components/ui/Button'
 import { SkeletonBlock } from '@/app/components/Skeleton'
 import { useLocale } from '@/app/components/LocaleProvider'
-import { responsive } from '@/lib/img'
 
 type Project = {
   id: string
@@ -119,7 +120,7 @@ function ProjectCard({ project }: { project: Project }) {
   const { tx } = useLocale()
   const [isHovering, setIsHovering] = useState(false)
   // The cover picture; without one, the first screenshot; without either, the title's first letter.
-  const cover = project.feature_image || project.screenshots?.[0] || null
+  const cover = project.feature_image || mediaCover(project.screenshots?.[0]) || null
   const hasThumbnail = project.preview_video_url || cover
 
   return (
@@ -136,12 +137,12 @@ function ProjectCard({ project }: { project: Project }) {
           project.preview_video_url ? (
             <>
               {cover && (
-                <img {...responsive(cover, '(min-width: 1024px) 50vw, 100vw')} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
+                <SiteImage src={cover} sizes={'(min-width: 1024px) 50vw, 100vw'} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
               )}
               {isHovering && <video src={project.preview_video_url} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />}
             </>
           ) : (
-            <img {...responsive(cover, '(min-width: 1024px) 50vw, 100vw')} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+            <SiteImage src={cover} sizes={'(min-width: 1024px) 50vw, 100vw'} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
           )
         ) : (
           <div className="absolute inset-0 grid place-items-center text-ink-300" aria-hidden>

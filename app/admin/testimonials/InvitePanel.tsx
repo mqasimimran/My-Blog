@@ -16,7 +16,7 @@ export default function InvitePanel() {
 
   useEffect(() => {
     adminApi.get('private_settings', 1, 'testimonial_invite_code')
-      .then((row: any) => setCode(row?.testimonial_invite_code || null))
+      .then((row) => setCode(row?.testimonial_invite_code || null))
       .catch(() => setCode(null))
       .finally(() => setLoaded(true))
   }, [])

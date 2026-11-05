@@ -1,8 +1,8 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
@@ -45,9 +45,9 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     async function fetchSettings() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('site_settings', 1) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('site_settings', 1) } catch (cause) { error = asError(cause) }
       if (error) console.error('Error fetching settings:', error)
       else if (data) {
         setAvailableForWork(data.available_for_work)
@@ -72,7 +72,7 @@ export default function AdminSettingsPage() {
 
   async function handleSave() {
     setIsSaving(true)
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.update('site_settings', 1, {
       available_for_work: availableForWork,
       availability_message: availabilityMessage,
@@ -87,7 +87,7 @@ export default function AdminSettingsPage() {
       bank_account_number: bankAccountNumber,
       bank_iban: bankIban,
       payoneer_email: payoneerEmail,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error saving: ' + error.message)
@@ -161,7 +161,7 @@ export default function AdminSettingsPage() {
               <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-3">Availability Badge</p>
               <div className="flex items-center gap-3 mb-4">
                 <input type="checkbox" id="available" checked={availableForWork} onChange={(e) => setAvailableForWork(e.target.checked)} className="w-4 h-4 accent-gray-900" />
-                <label htmlFor="available" className="text-sm text-ink-700">Show "Available for work" badge on the homepage and Services</label>
+                <label htmlFor="available" className="text-sm text-ink-700">Show &quot;Available for work&quot; badge on the homepage and Services</label>
               </div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Badge Text</label>
               <input
@@ -174,7 +174,7 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="pt-6 border-t border-ink-100">
-              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-3">"Right Now" Widget</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-ink-900 mb-3">&quot;Right Now&quot; Widget</p>
               <p className="text-[11px] text-ink-300 mb-3">Shown on the homepage. Leave blank to hide it.</p>
               <textarea
                 value={nowText}

@@ -27,11 +27,10 @@ export async function getPaymentLines(currency: 'USD' | 'PKR'): Promise<{ method
 }
 
 /** The next number in a yearly series, e.g. nextNumber('invoices', 'INV') -> INV-2026-004. */
-export async function nextNumber(table: 'invoices' | 'proposals', code: 'INV' | 'PRO') {
-  const prefix = `${code}-${new Date().getFullYear()}-`
-  const { data } = await supabaseAdmin.from(table).select('number').like('number', `${prefix}%`)
-  const max = (data || []).reduce((m, r) => Math.max(m, parseInt(String(r.number).slice(prefix.length), 10) || 0), 0)
-  return `${prefix}${String(max + 1).padStart(3, '0')}`
+export async function nextNumber(code: 'INV' | 'PRO') {
+  const { data, error } = await supabaseAdmin.rpc('next_billing_number', { series: code })
+  if (error) throw error
+  return String(data)
 }
 
 export async function getProposalByToken(token: string) {

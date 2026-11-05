@@ -2,7 +2,7 @@
 
 import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { siteConfig } from '@/site.config'
 
 function LoginForm() {
@@ -11,7 +11,6 @@ function LoginForm() {
   const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
   const searchParams = useSearchParams()
   const loggedOutForIdle = searchParams.get('reason') === 'idle'
 
@@ -20,19 +19,25 @@ function LoginForm() {
     setIsLoading(true)
     setError('')
 
-    const result = await signIn('credentials', {
-      username,
-      password,
-      code,
-      redirect: false,
-    })
+    try {
+      const result = await signIn('credentials', {
+        username,
+        password,
+        code,
+        redirect: false,
+      })
 
-    if (result?.error) {
-      setError('Sign-in failed. Check your details (and authentication code, if you use one), or wait a few minutes if you tried too many times.')
+      if (!result?.ok || result.error) {
+        setError('Sign-in failed. Check your details (and authentication code, if you use one), or wait a few minutes if you tried too many times.')
+        setIsLoading(false)
+      } else {
+        const target = new URL(searchParams.get('callbackUrl') || '/admin', window.location.origin)
+        const safe = target.origin === window.location.origin && (target.pathname === '/admin' || target.pathname.startsWith('/admin/'))
+        window.location.replace(safe ? target.href : '/admin')
+      }
+    } catch {
+      setError('Could not reach the sign-in service. Please try again.')
       setIsLoading(false)
-    } else {
-      router.push('/admin')
-      router.refresh()
     }
   }
 
@@ -84,7 +89,7 @@ function LoginForm() {
 
           <div>
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
-              Authentication Code <span className="text-ink-300 normal-case font-normal">(only if you've enabled 2FA)</span>
+              Authentication Code <span className="text-ink-300 normal-case font-normal">(only if you&apos;ve enabled 2FA)</span>
             </label>
             <input
               type="text"

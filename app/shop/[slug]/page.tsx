@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect, use } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -100,7 +101,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
           <div className="lg:sticky lg:top-28">
             <div className="relative grid aspect-square place-items-center overflow-hidden bg-ink-50">
               {product.images?.[activeImage] ? (
-                <img src={product.images[activeImage]} alt={product.name} className="absolute inset-0 h-full w-full object-contain" />
+                <SiteImage src={product.images[activeImage]} alt={product.name} className="absolute inset-0 h-full w-full object-contain" />
               ) : product.type === 'digital' ? (
                 <DownloadSimple size={64} weight="light" aria-hidden className="text-ink-300" />
               ) : (
@@ -117,7 +118,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ slug: 
                     aria-pressed={i === activeImage}
                     className={`h-20 w-20 overflow-hidden border-2 bg-ink-50 transition-colors duration-200 ${i === activeImage ? 'border-accent-600' : 'border-transparent hover:border-ink-300'}`}
                   >
-                    <img src={img} alt="" className="h-full w-full object-cover" />
+                    <SiteImage src={img} alt="" className="h-full w-full object-cover" />
                   </button>
                 ))}
               </div>

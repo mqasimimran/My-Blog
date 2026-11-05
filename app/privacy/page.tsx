@@ -38,7 +38,7 @@ export default async function PrivacyPage() {
           <ul className="space-y-3 list-disc pl-5">
             <li>
               <strong className="text-ink-900">Contact form.</strong> If you send a message, I collect the name, email
-              address, subject, and message you enter. It is stored in the site's database and emailed to me so I can
+              address, subject, and message you enter. It is stored in the site&apos;s database and emailed to me so I can
               reply. Your IP address is also recorded briefly to limit spam and repeated submissions.
             </li>
             <li>
@@ -47,7 +47,7 @@ export default async function PrivacyPage() {
             </li>
             <li>
               <strong className="text-ink-900">Comments.</strong> Blog comments are powered by giscus and stored as
-              GitHub Discussions. Commenting requires a GitHub account and is governed by GitHub's own privacy
+              GitHub Discussions. Commenting requires a GitHub account and is governed by GitHub&apos;s own privacy
               practices.
             </li>
           </ul>
@@ -62,7 +62,7 @@ export default async function PrivacyPage() {
             </li>
             <li>
               <strong className="text-ink-900">Reactions.</strong> When you tap the reaction button on a post, a small
-              marker is saved in your own browser (local storage) so the button knows you've already reacted. The
+              marker is saved in your own browser (local storage) so the button knows you&apos;ve already reacted. The
               reaction count itself is stored anonymously.
             </li>
           </ul>
@@ -72,7 +72,7 @@ export default async function PrivacyPage() {
           <h2 className="text-lg font-medium text-ink-900 mb-3"><SplitText text={"Advertising"} /></h2>
           <p className="mb-3">
             This site may display ads served by Google AdSense. Third-party vendors, including Google, use cookies to
-            serve ads based on a user's prior visits to this and other websites. Google's use of advertising cookies
+            serve ads based on a user&apos;s prior visits to this and other websites. Google&apos;s use of advertising cookies
             enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the
             internet.
           </p>
@@ -81,7 +81,7 @@ export default async function PrivacyPage() {
             <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-accent-600 underline">
               Google Ads Settings
             </a>
-            , or learn more about opting out of third-party vendors' use of cookies at{' '}
+            , or learn more about opting out of third-party vendors&apos; use of cookies at{' '}
             <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-accent-600 underline">
               aboutads.info
             </a>
@@ -120,7 +120,7 @@ export default async function PrivacyPage() {
         <div>
           <h2 className="text-lg font-medium text-ink-900 mb-3"><SplitText text={"Changes to this policy"} /></h2>
           <p>
-            If how the site handles information changes, I'll update this page and the date at the top.
+            If how the site handles information changes, I&apos;ll update this page and the date at the top.
           </p>
         </div>
 

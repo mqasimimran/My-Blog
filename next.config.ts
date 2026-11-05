@@ -4,6 +4,7 @@ import createMDX from '@next/mdx';
 const nextConfig: NextConfig = {
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   images: {
+    qualities: [40, 75, 80, 85],
     remotePatterns: [
       {
         // Matches any Supabase project's storage URLs, e.g.

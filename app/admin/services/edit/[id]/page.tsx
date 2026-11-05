@@ -1,5 +1,7 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -36,9 +38,9 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     async function fetchService() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('services', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('services', id) } catch (cause) { error = asError(cause) }
       if (error) {
         console.error('Error fetching service:', error)
       } else if (data) {
@@ -80,7 +82,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       coverImageUrl = publicUrlData.publicUrl
     }
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.update('services', id, {
       name,
       slug: slug || slugify(name),
@@ -93,7 +95,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
       cover_image: coverImageUrl,
       starting_price: startingPrice,
       active,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error updating service: ' + error.message)
@@ -160,7 +162,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Cover Image (optional)</label>
               {coverImage && !coverImageFile && (
-                <img src={coverImage} alt="Current cover" className="w-full h-32 object-cover rounded-none mb-2 border border-ink-100" />
+                <SiteImage src={coverImage} alt="Current cover" className="w-full h-32 object-cover rounded-none mb-2 border border-ink-100" />
               )}
               <input type="file" accept="image/*" onChange={(e) => setCoverImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>
@@ -177,7 +179,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
-                What's Included (one per line) — only shown if you don't add packages
+                What&apos;s Included (one per line) — only shown if you don&apos;t add packages
               </label>
               <textarea
                 value={includes}
@@ -200,7 +202,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 <textarea rows={2} value={details.ideal_for} onChange={(e) => setDetails({ ...details, ideal_for: e.target.value })} placeholder={"Small businesses and startups that need a clear, professional identity."} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">How it works (one step per line, "Step: detail")</label>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">How it works (one step per line, &quot;Step: detail&quot;)</label>
                 <textarea rows={4} value={details.process} onChange={(e) => setDetails({ ...details, process: e.target.value })} placeholder={"Discovery: we talk about your goals\nConcepts: I design three directions\nRefine: two rounds of revisions\nDeliver: final files and guidelines"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
               <div>
@@ -212,7 +214,7 @@ export default function EditServicePage({ params }: { params: Promise<{ id: stri
                 <textarea rows={1} value={details.turnaround} onChange={(e) => setDetails({ ...details, turnaround: e.target.value })} placeholder={"Usually 1 to 2 weeks"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">FAQs ("Q:" then "A:", blank line between)</label>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">FAQs (&quot;Q:&quot; then &quot;A:&quot;, blank line between)</label>
                 <textarea rows={6} value={details.faq} onChange={(e) => setDetails({ ...details, faq: e.target.value })} placeholder={"Q: How many revisions are included?\nA: Two rounds, and more can be added.\n\nQ: Do I own the files?\nA: Yes, once paid in full."} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
             </div>

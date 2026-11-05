@@ -3,13 +3,12 @@
 import { useState, useEffect, use, Suspense } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
-import { siteConfig } from '@/site.config'
 import { ArrowLeft, ArrowRight, Check } from '@phosphor-icons/react'
 import { SkeletonBlock } from '@/app/components/Skeleton'
 import EmptyState from '@/app/components/EmptyState'
 import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
-import ServiceDetails from '@/app/components/ServiceDetails'
+import ServiceDetails, { type ServiceDetailFields } from '@/app/components/ServiceDetails'
 import ServiceRequestForm from '@/app/components/ServiceRequestForm'
 import { cleanOptions } from '@/lib/serviceOptions'
 
@@ -23,7 +22,8 @@ type ServicePackage = {
   order_index: number
 }
 
-type Service = {
+type Service = ServiceDetailFields & {
+  options?: unknown
   id: string
   name: string
   tagline: string | null
@@ -53,7 +53,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
         return
       }
 
-      setService(serviceData as any)
+      setService(serviceData)
 
       const { data: packageData, error: packageError } = await supabase
         .from('service_packages')
@@ -114,7 +114,7 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
       </div>
 
       {/* Packages, compared side by side */}
-      <ServiceDetails service={service as any} part="intro" />
+      <ServiceDetails service={service} part="intro" />
 
       <section className="container-page mt-16 md:mt-20">
         {packages.length === 0 ? (
@@ -169,8 +169,8 @@ export default function ServiceDetailPage({ params }: { params: Promise<{ slug: 
         )}
       </section>
 
-      <ServiceDetails service={service as any} part="faq" />
-      <Suspense fallback={null}><ServiceRequestForm serviceName={service.name} packages={packages.map((p) => p.tier)} serviceId={(service as any).id} packageList={packages.map((p) => ({ tier: p.tier, price: (p as any).price }))} options={cleanOptions((service as any).options)} /></Suspense>
+      <ServiceDetails service={service} part="faq" />
+      <Suspense fallback={null}><ServiceRequestForm serviceName={service.name} packages={packages.map((p) => p.tier)} serviceId={(service).id} packageList={packages.map((p) => ({ tier: p.tier, price: (p).price }))} options={cleanOptions((service).options)} /></Suspense>
     </main>
   )
 }

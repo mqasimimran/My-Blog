@@ -1,3 +1,4 @@
+import SiteImage from '@/components/SiteImage'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -17,7 +18,6 @@ import { dateLocale } from '@/lib/i18n'
 import { addTermExplainers } from '@/lib/glossary'
 import PostQuiz from '@/app/components/PostQuiz'
 import ListenButton from '@/app/components/ListenButton'
-import { responsive } from '@/lib/img'
 function calculateReadTime(html: string | null): string {
   if (!html) return '1 min read'
   const text = html.replace(/<[^>]+>/g, ' ')
@@ -50,7 +50,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
   const { data: article, error } = await supabase
     .from('articles')
-    .select('*')
+    .select('title, excerpt, content, created_at, category, feature_image, reaction_count, series_name, quiz, title_ur, content_ur, excerpt_ur')
     .eq('slug', slug)
     .single()
 
@@ -95,7 +95,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     description: article.excerpt,
     image: article.feature_image ? [article.feature_image] : undefined,
     datePublished: article.created_at,
-    dateModified: article.updated_at || article.created_at,
+    dateModified: article.created_at,
     author: {
       '@type': 'Person',
       name: siteConfig.name,
@@ -142,7 +142,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       {article.feature_image && (
         <figure className="container-page mt-12 md:mt-16">
           <div className="mx-auto max-w-5xl overflow-hidden bg-ink-50">
-            <img {...responsive(article.feature_image, '(min-width: 1280px) 1200px, 100vw', 80)} alt={`${article.title} cover`} fetchPriority="high" className="h-auto w-full" />
+            <SiteImage src={article.feature_image} sizes={'(min-width: 1280px) 1200px, 100vw'} quality={80} alt={`${article.title} cover`} fetchPriority="high" className="h-auto w-full" />
           </div>
         </figure>
       )}
@@ -214,7 +214,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 <Link key={related.slug} href={`/blog/${related.slug}`} className="group flex h-full w-full flex-col border border-ink-100 bg-paper-raised transition-colors duration-300 hover:border-ink-900">
                   {related.feature_image && (
                     <div className="relative aspect-video overflow-hidden bg-ink-50">
-                      <img {...responsive(related.feature_image, '384px', 40)} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
+                      <SiteImage src={related.feature_image} sizes={'384px'} quality={40} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
                       <Image
                         src={related.feature_image}
                         alt={related.title}

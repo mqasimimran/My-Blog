@@ -4,6 +4,7 @@ import { accentCss } from '@/lib/accent'
 // minute, so saving a new colour shows up across the site within a minute. Without a saved colour,
 // the default from app/globals.css is used.
 export default async function AccentStyle() {
+  let css: string | null
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -14,9 +15,9 @@ export default async function AccentStyle() {
     })
     if (!res.ok) return null
     const rows: { accent_color: string | null }[] = await res.json()
-    const css = rows[0]?.accent_color ? accentCss(rows[0].accent_color) : null
-    return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null
+    css = rows[0]?.accent_color ? accentCss(rows[0].accent_color) : null
   } catch {
     return null
   }
+  return css ? <style dangerouslySetInnerHTML={{ __html: css }} /> : null
 }

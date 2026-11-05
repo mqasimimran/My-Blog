@@ -1,5 +1,6 @@
 'use client'
 
+import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useState, useEffect } from 'react'
 
 import { siteConfig } from '@/site.config'
@@ -12,11 +13,7 @@ function articleFor(word: string): 'a' | 'an' {
 export default function RoleCycler() {
   const [index, setIndex] = useState(0)
   const [fadeIn, setFadeIn] = useState(true)
-  const [reducedMotion, setReducedMotion] = useState(false)
-
-  useEffect(() => {
-    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  }, [])
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
   useEffect(() => {
     if (reducedMotion) return

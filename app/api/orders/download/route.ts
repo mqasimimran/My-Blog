@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const { data: product } = await supabaseAdmin.from('products').select('*').eq('id', order.product_id).maybeSingle()
     const ids: string[] = product?.type === 'bundle' && Array.isArray(product.bundle_items) ? product.bundle_items : []
     if (product?.type === 'wallpaper' && Array.isArray(product.wallpaper_files)) {
-      files = (product.wallpaper_files as any[]).filter((f) => f?.url).map((f) => ({ name: `${product.name}: ${f.label}${f.width && f.height ? ` (${f.width} × ${f.height})` : ''}`, url: f.url }))
+      files = (product.wallpaper_files as { url: string; label: string; width?: number; height?: number }[]).filter((f) => f?.url).map((f) => ({ name: `${product.name}: ${f.label}${f.width && f.height ? ` (${f.width} × ${f.height})` : ''}`, url: f.url }))
     } else if (ids.length) {
       const { data: items } = await supabaseAdmin.from('products').select('id, name, digital_file_url').in('id', ids)
       files = ids

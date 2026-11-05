@@ -19,17 +19,22 @@ export async function POST(request: NextRequest) {
   const ev = readCardWebhook(body)
   if (ev.kind === 'ignore' || !ev.orderId) return NextResponse.json({ ok: true, ignored: true })
 
-  const { data: order } = await supabaseAdmin.from('orders').select('id, status, payment_provider').eq('id', ev.orderId).maybeSingle()
+  const { data: order, error: readError } = await supabaseAdmin.from('orders').select('id, status, payment_provider').eq('id', ev.orderId).maybeSingle()
+  if (readError) return NextResponse.json({ error: 'Could not read order' }, { status: 503 })
   // Unknown orders get a 200 too, so the provider doesn't keep retrying something we can't use.
   if (!order || order.payment_provider !== CARD_PROVIDER) return NextResponse.json({ ok: true, unknownOrder: true })
 
   if (ev.kind === 'refunded') {
-    await supabaseAdmin.from('orders').update({ status: 'refunded', download_token: null }).eq('id', order.id)
+    const { error } = await supabaseAdmin.from('orders').update({ status: 'refunded', download_token: null }).eq('id', order.id)
+    if (error) return NextResponse.json({ error: 'Could not save refund' }, { status: 503 })
     return NextResponse.json({ ok: true, refunded: true })
   }
-  await supabaseAdmin.from('orders').update({ provider_order_id: ev.providerOrderId || null, customer_transaction_id: ev.reference ? `Lemon Squeezy ${ev.reference}` : 'Lemon Squeezy' }).eq('id', order.id)
+  if (['refunded', 'rejected'].includes(order.status)) return NextResponse.json({ ok: true, ignored: true })
+  const { error: updateError } = await supabaseAdmin.from('orders').update({ provider_order_id: ev.providerOrderId || null, customer_transaction_id: ev.reference ? `Lemon Squeezy ${ev.reference}` : 'Lemon Squeezy' }).eq('id', order.id)
+  if (updateError) return NextResponse.json({ error: 'Could not save payment reference' }, { status: 503 })
   const result = await fulfillOrder(order.id)
   if (result.ok && !result.alreadyPaid) await whatsappMe('\u{1F4B3} A card payment just came in. The order was fulfilled automatically.')
+  if (!result.ok && result.status === 409 && result.error === 'Order is no longer pending') return NextResponse.json({ ok: true, ignored: true })
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 }) // provider retries
   return NextResponse.json({ ok: true, alreadyPaid: result.alreadyPaid })
 }

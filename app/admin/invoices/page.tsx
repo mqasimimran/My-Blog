@@ -1,13 +1,13 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useEffect, useState } from 'react'
 import AdminNav from '@/app/admin/AdminNav'
 import { adminApi } from '@/lib/adminApi'
-import { invoiceTotals, money, type Invoice, type InvoiceItem } from '@/lib/invoice'
+import { invoiceTotals, money, nextMonthlyDate, type Invoice, type InvoiceItem } from '@/lib/invoice'
 import { siteConfig } from '@/site.config'
 
 type Draft = Omit<Invoice, 'id' | 'public_token' | 'sent_at' | 'paid_at' | 'created_at'> & { id?: string }
-const nextMonth = (d: string) => { const x = new Date((d || new Date().toISOString().slice(0, 10)) + 'T00:00:00Z'); x.setUTCMonth(x.getUTCMonth() + 1); return x.toISOString().slice(0, 10) }
 
 const field = 'w-full border border-ink-300 bg-paper-raised px-3 py-2.5 text-sm text-ink-900 outline-none focus:border-accent-600'
 const label = 'mb-1.5 block text-[11px] font-medium uppercase tracking-[0.08em] text-ink-500'
@@ -24,9 +24,10 @@ export default function InvoicesPage() {
   const [busy, setBusy] = useState('')
 
   const load = async () => {
-    try { setInvoices(((await adminApi.list('invoices', { orderBy: 'created_at', ascending: false })) as Invoice[]) || []) }
-    catch { setMsg('Could not load invoices. Has the latest SQL update been run?') }
-    setLoading(false)
+    await adminApi.list('invoices', { orderBy: 'created_at', ascending: false })
+      .then((rows: Invoice[]) => setInvoices(rows || []))
+      .catch(() => setMsg('Could not load invoices. Has the latest SQL update been run?'))
+      .finally(() => setLoading(false))
   }
   useEffect(() => { load() }, [])
 
@@ -48,12 +49,13 @@ export default function InvoicesPage() {
     const row = { number: draft.number.trim(), client_name: draft.client_name.trim(), client_email: draft.client_email?.trim() || null, client_address: draft.client_address?.trim() || null,
       currency: draft.currency, items, discount: Number(draft.discount) || 0, tax_percent: Number(draft.tax_percent) || 0, notes: draft.notes?.trim() || null,
       status: draft.status, issue_date: draft.issue_date, due_date: draft.due_date || null,
-      repeat_monthly: !!draft.repeat_monthly, repeat_next: draft.repeat_monthly ? draft.repeat_next || nextMonth(draft.issue_date) : null }
+      repeat_anchor_day: draft.repeat_monthly ? draft.repeat_anchor_day || Number((draft.repeat_next || draft.issue_date || today()).slice(-2)) : null,
+      repeat_monthly: !!draft.repeat_monthly, repeat_next: draft.repeat_monthly ? draft.repeat_next || nextMonthlyDate(draft.issue_date || today()) : null }
     try {
       if (draft.id) await adminApi.update('invoices', draft.id, row)
       else await adminApi.insert('invoices', row)
       setDraft(null); setMsg('Saved.'); await load()
-    } catch (e: any) { setMsg(/duplicate|unique/i.test(e?.message || '') ? 'That invoice number is already used.' : 'Could not save the invoice.') }
+    } catch (cause) { const e = asError(cause); setMsg(/duplicate|unique/i.test(e?.message || '') ? 'That invoice number is already used.' : 'Could not save the invoice.') }
     setBusy('')
   }
 
@@ -117,8 +119,8 @@ export default function InvoicesPage() {
                   <div><label htmlFor="i-dis" className={label}>Discount ({draft.currency === 'PKR' ? 'Rs' : '$'})</label><input id="i-dis" type="number" min="0" step="any" value={draft.discount} onChange={(e) => setDraft({ ...draft, discount: e.target.value as unknown as number })} className={field} /></div>
                   <div><label htmlFor="i-tax" className={label}>Tax (%)</label><input id="i-tax" type="number" min="0" step="any" value={draft.tax_percent} onChange={(e) => setDraft({ ...draft, tax_percent: e.target.value as unknown as number })} className={field} /></div>
                 </div>
-                <div className="border border-ink-100 p-3"><label className="flex items-center gap-2 text-sm text-ink-900"><input type="checkbox" checked={!!draft.repeat_monthly} onChange={(e) => setDraft({ ...draft, repeat_monthly: e.target.checked, repeat_next: draft.repeat_next || nextMonth(draft.issue_date) })} className="h-4 w-4" /> Repeat monthly (retainer)</label>
-                  {draft.repeat_monthly && <label className="mt-2 flex items-center gap-2 text-xs text-ink-500">Next copy is created and emailed on <input type="date" value={draft.repeat_next || ''} onChange={(e) => setDraft({ ...draft, repeat_next: e.target.value })} className="border border-ink-300 bg-paper-raised px-2 py-1 text-sm" /></label>}</div>
+                <div className="border border-ink-100 p-3"><label className="flex items-center gap-2 text-sm text-ink-900"><input type="checkbox" checked={!!draft.repeat_monthly} onChange={(e) => setDraft({ ...draft, repeat_monthly: e.target.checked, repeat_anchor_day: draft.repeat_anchor_day || Number((draft.repeat_next || draft.issue_date || today()).slice(-2)), repeat_next: draft.repeat_next || nextMonthlyDate(draft.issue_date || today()) })} className="h-4 w-4" /> Repeat monthly (retainer)</label>
+                  {draft.repeat_monthly && <label className="mt-2 flex items-center gap-2 text-xs text-ink-500">Next copy is created and emailed on <input type="date" value={draft.repeat_next || ''} onChange={(e) => setDraft({ ...draft, repeat_next: e.target.value, repeat_anchor_day: Number(e.target.value.slice(-2)) || null })} className="border border-ink-300 bg-paper-raised px-2 py-1 text-sm" /></label>}</div>
                 <div><label htmlFor="i-notes" className={label}>Notes (optional)</label><textarea id="i-notes" rows={3} placeholder="e.g. Thanks for your business! Payment within 14 days." value={draft.notes || ''} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} className={`${field} resize-y`} /></div>
               </div>
               <div className="self-end space-y-2 text-sm">

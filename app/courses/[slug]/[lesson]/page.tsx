@@ -21,9 +21,9 @@ export default function LessonPage({ params }: { params: Promise<{ slug: string;
   useEffect(() => {
     supabase.from('courses').select('id, title, course_lessons(id, slug, title, content, quiz, minutes, order_index)').eq('slug', slug).eq('published', true).maybeSingle().then(({ data }) => {
       if (!data) { setMissing(true); return }
-      const lessons = ((data as any).course_lessons as L[]).sort((a, b) => a.order_index - b.order_index)
+      const lessons = (data.course_lessons as L[]).sort((a, b) => a.order_index - b.order_index)
       if (!lessons.some((l) => l.slug === lesson)) { setMissing(true); return }
-      setCourse({ id: (data as any).id, title: (data as any).title, lessons }); setDone(getDone((data as any).id))
+      setCourse({ id: data.id, title: data.title, lessons }); setDone(getDone(data.id))
     })
   }, [slug, lesson])
   if (missing) return <main className="container-page pb-24 pt-20"><h1 className="type-h2 text-ink-900">{tx('Lesson not found')}</h1><Link href={`/courses/${slug}`} className="link-draw mt-6 inline-block">{tx('Back to the course')}</Link></main>

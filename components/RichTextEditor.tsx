@@ -84,15 +84,6 @@ export default function RichTextEditor({
 
   if (!editor) return null
 
-  const HeadingButton = ({ level }: { level: 1 | 2 | 3 | 4 | 5 }) => (
-    <button 
-      type="button" 
-      onClick={() => editor.chain().focus().toggleHeading({ level }).run()} 
-      className={`px-2 py-1.5 text-xs font-bold rounded transition-colors ${editor.isActive('heading', { level }) ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
-    >
-      H{level}
-    </button>
-  )
 
   return (
     <div className="flex flex-col bg-white">
@@ -104,11 +95,16 @@ export default function RichTextEditor({
           
           <div className="w-px h-4 bg-gray-200 mx-2"></div>
           
-          <HeadingButton level={1} />
-          <HeadingButton level={2} />
-          <HeadingButton level={3} />
-          <HeadingButton level={4} />
-          <HeadingButton level={5} />
+          {([1, 2, 3, 4, 5] as const).map((level) => (
+            <button
+              key={level}
+              type="button"
+              onClick={() => editor.chain().focus().toggleHeading({ level }).run()}
+              className={`px-2 py-1.5 text-xs font-bold rounded transition-colors ${editor.isActive('heading', { level }) ? 'bg-gray-900 text-white' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100'}`}
+            >
+              H{level}
+            </button>
+          ))}
           
           <div className="w-px h-4 bg-gray-200 mx-2"></div>
           

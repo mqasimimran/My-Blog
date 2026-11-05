@@ -11,7 +11,7 @@ export default function BundlePicker({ selected, onChange, excludeId }: { select
   const [items, setItems] = useState<P[]>([])
   useEffect(() => {
     adminApi.list('products', { orderBy: 'order_index', ascending: true })
-      .then((rows: any) => setItems(((rows || []) as P[]).filter((p) => p.type === 'digital' && p.id !== excludeId)))
+      .then((rows) => setItems(((rows || []) as P[]).filter((p) => p.type === 'digital' && p.id !== excludeId)))
       .catch(() => setItems([]))
   }, [excludeId])
 

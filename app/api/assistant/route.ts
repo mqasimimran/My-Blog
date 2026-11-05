@@ -25,11 +25,11 @@ export async function POST(request: NextRequest) {
 
   let body: { messages?: unknown }
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Please type a question.' }, { status: 400 }) }
-  const raw = Array.isArray(body.messages) ? body.messages : []
+  const raw = Array.isArray(body?.messages) ? body.messages : []
   const messages: Msg[] = raw
-    .filter((m: any) => (m?.role === 'user' || m?.role === 'assistant') && typeof m?.content === 'string' && m.content.trim())
+    .filter((m: Partial<Msg> | null): m is Msg => Boolean( (m?.role === 'user' || m?.role === 'assistant') && typeof m?.content === 'string' && m.content.trim()))
     .slice(-8)
-    .map((m: any) => ({ role: m.role, content: m.content.trim() }))
+    .map((m: Msg) => ({ role: m.role, content: m.content.trim() }))
   if (!messages.length || messages[messages.length - 1].role !== 'user') return NextResponse.json({ error: 'Please type a question.' }, { status: 400 })
   if (messages.some((m) => m.content.length > 800)) return NextResponse.json({ error: 'Please keep questions under 800 characters.' }, { status: 400 })
   while (messages[0]?.role !== 'user') messages.shift()

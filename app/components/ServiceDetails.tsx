@@ -4,11 +4,11 @@ import { useState } from 'react'
 import { CaretDown, Check } from '@phosphor-icons/react'
 import { useLocale } from '@/app/components/LocaleProvider'
 
-type S = { deliverables?: string | null; ideal_for?: string | null; process?: string | null; tools?: string | null; turnaround?: string | null; faq?: string | null }
+export type ServiceDetailFields = { deliverables?: string | null; ideal_for?: string | null; process?: string | null; tools?: string | null; turnaround?: string | null; faq?: string | null }
 const lines = (t?: string | null) => (t || '').split('\n').map((l) => l.trim().replace(/^[-*•]\s*/, '')).filter(Boolean)
 
 // Detailed sections for a service page (each appears only when filled in, in Admin -> Services).
-export default function ServiceDetails({ service, part }: { service: S; part: 'intro' | 'faq' }) {
+export default function ServiceDetails({ service, part }: { service: ServiceDetailFields; part: 'intro' | 'faq' }) {
   const { tx } = useLocale()
   const [open, setOpen] = useState<number | null>(0)
   if (part === 'faq') {

@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { adminStorage } from '@/lib/adminStorage'
@@ -33,7 +34,7 @@ export default function NewLogoPage() {
       const imageUrl = await uploadImage(file)
       const darkImageUrl = darkFile ? await uploadImage(darkFile) : null
 
-      let dbError: any = null
+      let dbError: Error | null = null
       try { await adminApi.insert('client_logos', {
         name: formData.name,
         slug: formData.slug || slugifyClient(formData.name) || null, role: formData.role || null, period: formData.period || null, summary: formData.summary || null,
@@ -42,13 +43,14 @@ export default function NewLogoPage() {
         order_index: formData.order_index,
         image_url: imageUrl,
         dark_image_url: darkImageUrl,
-      }) } catch (e: any) { dbError = e }
+      }) } catch (cause) { dbError = asError(cause) }
 
       if (dbError) throw dbError
 
       alert('Logo added — it will appear in the homepage "Work Seen At" strip.')
       router.push('/admin/logos')
-    } catch (error: any) {
+    } catch (cause) {
+      const error = asError(cause)
       alert('Error: ' + error.message)
     } finally {
       setLoading(false)

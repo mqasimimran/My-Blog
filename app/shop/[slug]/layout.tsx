@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import { SITE_URL } from '@/site.config'
@@ -8,13 +9,14 @@ import { supabaseAdmin } from '@/lib/supabaseAdmin'
 const db = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 async function get(slug: string) {
-  const { data } = await db().from('products').select('id, name, description, price, images, type, stock_quantity').eq('slug', slug).eq('active', true).maybeSingle()
+  const { data, error } = await db().from('products').select('id, name, description, price, images, type, stock_quantity').eq('slug', slug).eq('active', true).maybeSingle()
+  if (error) throw error
+  if (!data) notFound()
   return data
 }
 // Each product gets its own title, description and share image, plus Product data (price, availability).
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params; const p = await get(slug)
-  if (!p) return { title: 'Product not found', robots: { index: false } }
   const price = Number(p.price) === 0 ? 'Free' : `$${Number(p.price).toFixed(2)}`
   return pageMeta({ title: `${p.name} (${price})`, description: p.description, path: `/shop/${slug}`, image: p.images?.[0] })
 }

@@ -1,8 +1,8 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
 import AdminNav from '@/app/admin/AdminNav'
@@ -21,7 +21,6 @@ interface Article {
 
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   
   // Use the interface instead of any[]
   const [articles, setArticles] = useState<Article[]>([])
@@ -40,7 +39,8 @@ export default function AdminDashboard() {
       try {
         const data = await adminApi.list('articles', { orderBy: 'created_at', ascending: false })
         setArticles((data as Article[]) || [])
-      } catch (err: any) {
+      } catch (cause) {
+        const err = asError(cause)
         console.error('Error fetching articles:', err.message)
       }
       setIsLoading(false)
@@ -50,7 +50,8 @@ export default function AdminDashboard() {
       try {
         const res = await fetch('/api/admin/stats')
         if (res.ok) setStats(await res.json())
-      } catch (err: any) {
+      } catch (cause) {
+        const err = asError(cause)
         console.error('Error fetching stats:', err.message)
       }
     }
@@ -66,7 +67,8 @@ export default function AdminDashboard() {
       await adminApi.update('articles', article.id, { featured: !article.featured })
       setArticles(prev => prev.map(a => a.id === article.id ? { ...a, featured: !a.featured } : a))
       logActivity({ action: article.featured ? 'unfeatured' : 'featured', entityType: 'article', entityLabel: article.title })
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error updating: ' + err.message)
     }
   }
@@ -87,7 +89,8 @@ export default function AdminDashboard() {
       setArticles(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, published } : a))
       logActivity({ action: published ? 'published' : 'unpublished', entityType: 'article', count: selectedIds.length })
       setSelectedIds([])
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error updating articles: ' + err.message)
     }
     setIsBulkWorking(false)
@@ -101,7 +104,8 @@ export default function AdminDashboard() {
       setArticles(prev => prev.map(a => selectedIds.includes(a.id) ? { ...a, featured } : a))
       logActivity({ action: featured ? 'featured' : 'unfeatured', entityType: 'article', count: selectedIds.length })
       setSelectedIds([])
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error updating articles: ' + err.message)
     }
     setIsBulkWorking(false)
@@ -116,7 +120,8 @@ export default function AdminDashboard() {
       setArticles(prev => prev.filter(a => !selectedIds.includes(a.id)))
       logActivity({ action: 'deleted', entityType: 'article', count: selectedIds.length })
       setSelectedIds([])
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error deleting articles: ' + err.message)
     }
     setIsBulkWorking(false)
@@ -186,7 +191,7 @@ export default function AdminDashboard() {
           <div className="bg-paper rounded-none shadow-sm border border-ink-100 overflow-hidden">
             {articles.length === 0 ? (
               <div className="p-10 text-center text-sm text-ink-500">
-                No articles found. Click "+ New Article" to write your first post!
+                No articles found. Click &quot;+ New Article&quot; to write your first post!
               </div>
             ) : (
               <>
@@ -255,7 +260,8 @@ export default function AdminDashboard() {
                               await adminApi.remove('articles', article.id)
                               setArticles(prev => prev.filter(a => a.id !== article.id))
                               logActivity({ action: 'deleted', entityType: 'article', entityLabel: article.title })
-                            } catch (err: any) {
+                            } catch (cause) {
+                              const err = asError(cause)
                               alert('Error deleting article: ' + err.message)
                             }
                           }}>

@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { siteConfig } from '@/site.config'
@@ -8,21 +9,16 @@ import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
 
 // Define the exact shape of your data to satisfy TypeScript
-interface ResumeItem {
-  id: string
-  period?: string
-  date?: string
-  role?: string
-  title?: string
-  degree?: string
-  company?: string
-  issuer?: string
-  institution?: string
-  description?: string
-  tech?: string
-  image_url?: string
-  verify_url?: string
-}
+import type { ResumeItem } from '@/lib/resume'
+
+
+// One resume section: its name on the left, the entries on the right.
+const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+  <section className="grid gap-8 border-t border-ink-100 py-14 md:grid-cols-12 md:gap-10 md:py-16">
+    <h2 className="type-h3 text-ink-900 md:col-span-3">{title}</h2>
+    <div className="md:col-span-9">{children}</div>
+  </section>
+)
 
 export default function Resume() {
   const { tx } = useLocale()
@@ -66,13 +62,6 @@ export default function Resume() {
 
   if (loading) return <div className="min-h-screen bg-paper flex items-center justify-center font-mono text-sm text-ink-500">{tx("Loading Resume...")}</div>
 
-  // One resume section: its name on the left, the entries on the right.
-  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-    <section className="grid gap-8 border-t border-ink-100 py-14 md:grid-cols-12 md:gap-10 md:py-16">
-      <h2 className="type-h3 text-ink-900 md:col-span-3">{title}</h2>
-      <div className="md:col-span-9">{children}</div>
-    </section>
-  )
 
   return (
     <main className="pb-24">
@@ -176,7 +165,7 @@ export default function Resume() {
               <X size={24} aria-hidden />
             </button>
             <div className="flex min-h-[300px] items-center justify-center bg-paper-raised p-2">
-              <img src={selectedImage} alt={tx("Certificate")} className="mx-auto max-h-[80vh] w-auto object-contain" />
+              <SiteImage src={selectedImage} alt={tx("Certificate")} className="mx-auto max-h-[80vh] w-auto object-contain" />
             </div>
           </div>
         </div>

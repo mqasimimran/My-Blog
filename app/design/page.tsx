@@ -1,5 +1,8 @@
 'use client'
 
+import { mediaCover, youtubeClip } from '@/lib/portfolioVideo'
+import PortfolioVideo from '@/app/components/PortfolioVideo'
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
@@ -10,7 +13,6 @@ import EmptyState from '@/app/components/EmptyState'
 import { CaretLeft, CaretRight, X } from '@phosphor-icons/react'
 import SplitText from '@/app/components/ui/SplitText'
 import { useLocale } from '@/app/components/LocaleProvider'
-import { responsive } from '@/lib/img'
 import ClientsRow from '@/app/components/ClientsRow'
 
 type DesignItem = {
@@ -27,38 +29,34 @@ function DesignGalleryInner() {
   const [designPortfolio, setDesignPortfolio] = useState<DesignItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('All')
-  const [selectedItem, setSelectedItem] = useState<DesignItem | null>(null)
+  const linkedId = searchParams.get('item')
+  const [selection, setSelection] = useState<{ link: string | null; item: DesignItem | null }>()
+  const selectedItem = selection && selection.link === linkedId ? selection.item : designPortfolio.find((item) => item.id === linkedId) || null
+  const setSelectedItem = (item: DesignItem | null) => setSelection({ link: linkedId, item })
+  const [previousLink, setPreviousLink] = useState(linkedId)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
   useEffect(() => {
     async function fetchDesigns() {
       const { data, error } = await supabase
         .from('designs')
-        .select('*')
+        .select('id, title, category, images, before_image')
         .eq('published', true)
         .order('created_at', { ascending: false })
 
       if (error) console.error('Error fetching designs:', error)
-      else setDesignPortfolio(data || [])
+      else setDesignPortfolio((data || []).map((item) => ({ ...item, images: item.images || [] })))
       setIsLoading(false)
     }
 
     fetchDesigns()
   }, [])
 
-  // If arriving via a link like /design?item=<id> (e.g. from the homepage's
-  // Featured Design section), open that specific piece's lightbox directly
-  // instead of just landing on the gallery.
-  useEffect(() => {
-    const itemId = searchParams.get('item')
-    if (itemId && designPortfolio.length > 0) {
-      const match = designPortfolio.find((d) => d.id === itemId)
-      if (match) {
-        setSelectedItem(match)
-        setCurrentImageIndex(0)
-      }
-    }
-  }, [searchParams, designPortfolio])
+  if (previousLink !== linkedId) {
+    setPreviousLink(linkedId)
+    setSelection(undefined)
+    setCurrentImageIndex(0)
+  }
 
   const categories = ['All', 'Branding & Identity', 'Logo Design', 'Social Media Posts', 'Print Design', 'Packaging Design', 'Product Design', 'Advertising', 'UI/UX Design', 'Illustration', 'Graphic Design']
 
@@ -93,7 +91,7 @@ function DesignGalleryInner() {
   useEffect(() => {
     if (!selectedItem) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSelectedItem(null)
+      if (e.key === 'Escape') setSelection({ link: linkedId, item: null })
       if (selectedItem.images.length < 2) return
       if (e.key === 'ArrowRight') setCurrentImageIndex((i) => (i === selectedItem.images.length - 1 ? 0 : i + 1))
       if (e.key === 'ArrowLeft') setCurrentImageIndex((i) => (i === 0 ? selectedItem.images.length - 1 : i - 1))
@@ -104,7 +102,7 @@ function DesignGalleryInner() {
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
-  }, [selectedItem])
+  }, [selectedItem, linkedId])
 
   return (
     <main className="pb-24">
@@ -133,8 +131,8 @@ function DesignGalleryInner() {
                 <button key={item.id} type="button" onClick={() => openModal(item)} data-cursor="Open" className="group mb-10 block w-full break-inside-avoid text-left">
                   <div className="overflow-hidden bg-ink-50">
                     {item.images?.[0] && (
-                      <img
-                        src={item.images[0]}
+                      <SiteImage
+                        src={mediaCover(item.images[0])}
                         alt={item.title}
                         loading="lazy"
                         className="h-auto w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
@@ -143,7 +141,9 @@ function DesignGalleryInner() {
                   </div>
                   <div className="mt-3 flex items-baseline justify-between gap-4">
                     <h2 className="text-[15px] font-medium tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{item.title}</h2>
-                    {item.images?.length > 1 && <span className="type-meta shrink-0">{item.images.length} images</span>}
+                    {item.images?.some((src) => youtubeClip(src)) ? (
+                      <span className="type-meta shrink-0">{tx("Video")}</span>
+                    ) : item.images?.length > 1 && <span className="type-meta shrink-0">{item.images.length} images</span>}
                   </div>
                   <p className="type-meta mt-0.5">{item.category}</p>
                 </button>
@@ -174,21 +174,25 @@ function DesignGalleryInner() {
 
             <div className="relative flex w-full items-center justify-center">
               {selectedItem.images.length > 1 && (
-                <button onClick={handlePrev} aria-label={tx("Previous image")} className="absolute left-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-left-14">
+                <button onClick={handlePrev} aria-label={tx("Previous")} className="absolute left-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-left-14">
                   <CaretLeft size={32} aria-hidden />
                 </button>
               )}
 
-              {selectedItem.before_image ? (
+              {youtubeClip(selectedItem.images[currentImageIndex]) ? (
+                <div className="w-full text-white">
+                  <PortfolioVideo src={selectedItem.images[currentImageIndex]} title={selectedItem.title} />
+                </div>
+              ) : selectedItem.before_image ? (
                 <div className="w-full max-w-2xl">
                   <BeforeAfterSlider beforeSrc={selectedItem.before_image} afterSrc={selectedItem.images[currentImageIndex]} alt={selectedItem.title} />
                 </div>
               ) : (
-                <img {...responsive(selectedItem.images[currentImageIndex], '100vw', 85)} alt={`${selectedItem.title}, ${currentImageIndex + 1} of ${selectedItem.images.length}`} className="max-h-[80vh] w-auto object-contain" />
+                <SiteImage src={selectedItem.images[currentImageIndex]} sizes={'100vw'} quality={85} alt={`${selectedItem.title}, ${currentImageIndex + 1} of ${selectedItem.images.length}`} className="max-h-[80vh] w-auto object-contain" />
               )}
 
               {selectedItem.images.length > 1 && (
-                <button onClick={handleNext} aria-label={tx("Next image")} className="absolute right-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-right-14">
+                <button onClick={handleNext} aria-label={tx("Next")} className="absolute right-0 z-10 grid h-12 w-12 place-items-center text-white/60 transition-colors duration-200 hover:text-white md:-right-14">
                   <CaretRight size={32} aria-hidden />
                 </button>
               )}

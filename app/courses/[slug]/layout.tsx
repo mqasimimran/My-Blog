@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import { SITE_URL } from '@/site.config'
@@ -7,12 +8,13 @@ import { JsonLd, absolute, author, clip, pageMeta } from '@/lib/seo'
 const db = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 
 async function get(slug: string) {
-  const { data } = await db().from('courses').select('title, description, cover_image, level').eq('slug', slug).eq('published', true).maybeSingle()
+  const { data, error } = await db().from('courses').select('title, description, cover_image, level').eq('slug', slug).eq('published', true).maybeSingle()
+  if (error) throw error
+  if (!data) notFound()
   return data
 }
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params; const c = await get(slug)
-  if (!c) return { title: 'Course not found', robots: { index: false } }
   return pageMeta({ title: `${c.title} (free course)`, description: c.description, path: `/courses/${slug}`, image: c.cover_image })
 }
 export default async function Layout({ children, params }: { children: React.ReactNode; params: Promise<{ slug: string }> }) {

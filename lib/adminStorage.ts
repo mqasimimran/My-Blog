@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { supabase } from '@/lib/supabase'
 import { optimizeImage } from '@/lib/imageOptimize'
 
@@ -34,7 +35,8 @@ export const adminStorage = {
             .from(bucket)
             .uploadToSignedUrl(json.path, json.token, file)
           return { data, error }
-        } catch (err: any) {
+        } catch (cause) {
+          const err = asError(cause)
           return { data: null, error: err as Error }
         }
       },

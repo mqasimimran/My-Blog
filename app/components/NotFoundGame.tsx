@@ -1,5 +1,6 @@
 'use client'
 
+import { useStoredValue, storeValue } from '@/lib/useStoredValue'
 import { useEffect, useRef, useState } from 'react'
 import { useLocale } from '@/app/components/LocaleProvider'
 
@@ -10,10 +11,9 @@ export default function NotFoundGame() {
   const canvas = useRef<HTMLCanvasElement>(null)
   const [state, setState] = useState<'idle' | 'playing' | 'over'>('idle')
   const [score, setScore] = useState(0)
-  const [best, setBest] = useState(0)
+  const best = Number(useStoredValue('nf-best')) || 0
   const game = useRef({ y: 0, vy: 0, obstacles: [] as { x: number; w: number; h: number }[], speed: 6, t: 0, score: 0, raf: 0 })
 
-  useEffect(() => { try { setBest(Number(localStorage.getItem('nf-best') || 0)) } catch {} }, [])
 
   const jump = () => {
     if (state !== 'playing') { start(); return }
@@ -67,14 +67,15 @@ export default function NotFoundGame() {
       if (g.t % 6 === 0) setScore(g.score)
       if (hit) {
         setScore(g.score); setState('over')
-        setBest((b) => { const nb = Math.max(b, g.score); try { localStorage.setItem('nf-best', String(nb)) } catch {} return nb })
+        storeValue('nf-best', String(Math.max(best, g.score)))
         return
       }
       g.raf = requestAnimationFrame(tick)
     }
-    game.current.raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(game.current.raf)
-  }, [state])
+    const runner = game.current
+    runner.raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(runner.raf)
+  }, [state, best])
 
   return (
     <div className="mt-14 max-w-3xl">

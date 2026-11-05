@@ -50,7 +50,11 @@ export function verifyCardWebhook(rawBody: string, signature: string | null): bo
 
 export type CardEvent = { kind: 'paid' | 'refunded' | 'ignore'; orderId?: string; providerOrderId?: string; reference?: string }
 
-export function readCardWebhook(body: any): CardEvent {
+export function readCardWebhook(input: unknown): CardEvent {
+  const body = input as {
+    meta?: { event_name?: string; custom_data?: { order_id?: unknown } }
+    data?: { id?: string; attributes?: { status?: string; identifier?: string; order_number?: number } }
+  } | null
   const event = body?.meta?.event_name
   const orderId = body?.meta?.custom_data?.order_id
   const attrs = body?.data?.attributes || {}

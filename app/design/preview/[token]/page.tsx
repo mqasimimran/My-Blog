@@ -1,3 +1,5 @@
+import { youtubeClip } from '@/lib/portfolioVideo'
+import PortfolioVideo from '@/app/components/PortfolioVideo'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -40,7 +42,9 @@ export default async function DesignPreviewPage({ params }: { params: Promise<{ 
 
         {design.images && design.images.length > 0 && (
           <section className="space-y-6">
-            {design.images.map((src: string, i: number) => (
+            {design.images.map((src: string, i: number) => youtubeClip(src) ? (
+              <PortfolioVideo key={src} src={src} title={design.title} />
+            ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img key={i} src={src} alt={`${design.title} ${i + 1}`} className="w-full border border-ink-100" />
             ))}

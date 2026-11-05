@@ -36,7 +36,8 @@ const SETUP_MIDDLE = `\n\n-- ===================================================
 function buildSetupSql() {
   const schema = readFileSync(join(ROOT, 'supabase/schema.sql'), 'utf8')
   const lock = readFileSync(join(ROOT, 'supabase/security-lockdown.sql'), 'utf8')
-  return SETUP_HEADER + schema + SETUP_MIDDLE + lock
+  const audit = readFileSync(join(ROOT, 'supabase/migrations/2026-11-audit-fixes.sql'), 'utf8')
+  return SETUP_HEADER + schema + SETUP_MIDDLE + lock + '\n' + audit
 }
 if (args[0] === 'build-sql') {
   writeFileSync(join(ROOT, 'supabase/setup.sql'), buildSetupSql())
@@ -87,7 +88,8 @@ console.log(paint(2, `project: ${ROOT}`))
 // ================================================================== 1. environment
 section('1. Environment')
 const nodeMajor = Number(process.versions.node.split('.')[0])
-nodeMajor >= 18 ? ok(`Node ${process.versions.node}`) : fail(`Node ${process.versions.node} is too old`, 'Install Node 18 or newer (https://nodejs.org).')
+if (nodeMajor >= 18) ok(`Node ${process.versions.node}`)
+else fail(`Node ${process.versions.node} is too old`, 'Install Node 18 or newer (https://nodejs.org).')
 
 if (!envFound && !process.env.NEXT_PUBLIC_SUPABASE_URL) {
   fail(`No env file found at ${envFile}`, ['Copy .env.example to .env.local and fill it in.', 'On Vercel, set the same variables under Settings -> Environment Variables and run this check locally with --env.'])
@@ -128,19 +130,25 @@ const secret = env('NEXTAUTH_SECRET')
 if (!secret) fail('NEXTAUTH_SECRET is not set', 'Generate one:  openssl rand -base64 32   (or any long random string)')
 else if (secret.length < 32 || /dummy|changeme|secret|example|test/i.test(secret)) warn('NEXTAUTH_SECRET looks weak or like a placeholder', 'Use a long random value (32+ characters). It signs your admin login cookie.')
 else ok('NEXTAUTH_SECRET is set')
-env('NEXTAUTH_URL') ? ok(`NEXTAUTH_URL: ${env('NEXTAUTH_URL')}`) : warn('NEXTAUTH_URL is not set', 'Set it to your site\'s public address (http://localhost:3000 locally).')
+if (env('NEXTAUTH_URL')) ok(`NEXTAUTH_URL: ${env('NEXTAUTH_URL')}`)
+else warn('NEXTAUTH_URL is not set', 'Set it to your site\'s public address (http://localhost:3000 locally).')
 
 const hash = env('ADMIN_PASSWORD_HASH'), plain = env('ADMIN_PASSWORD')
 if (hash) {
-  /^scrypt:\d+:\d+:\d+:[\w-]+:[\w-]+$/.test(hash) ? ok('Admin password is stored as a hash') : fail('ADMIN_PASSWORD_HASH is malformed', 'Regenerate it:  node scripts/admin-setup.mjs hash')
+  if (/^scrypt:\d+:\d+:\d+:[\w-]+:[\w-]+$/.test(hash)) ok('Admin password is stored as a hash')
+  else fail('ADMIN_PASSWORD_HASH is malformed', 'Regenerate it:  node scripts/admin-setup.mjs hash')
 } else if (plain) {
   warn('Admin password is stored in plain text (ADMIN_PASSWORD)', 'Switch:  node scripts/admin-setup.mjs hash  ->  set ADMIN_PASSWORD_HASH  ->  delete ADMIN_PASSWORD.')
   if (plain.length < 12) warn(`ADMIN_PASSWORD is only ${plain.length} characters`, 'Use a long passphrase (12+ characters).')
 } else fail('No admin password configured', ['Admin login is refused until one is set.', 'Run:  node scripts/admin-setup.mjs hash'])
-env('ADMIN_TOTP_SECRET') ? ok('Two-factor login is ON') : warn('Two-factor login is OFF', 'Recommended:  node scripts/admin-setup.mjs totp')
+if (env('ADMIN_TOTP_SECRET')) ok('Two-factor login is ON')
+else warn('Two-factor login is OFF', 'Recommended:  node scripts/admin-setup.mjs totp')
 
-env('RESEND_API_KEY') ? ok('Email (Resend) key is set') : warn('RESEND_API_KEY is not set', 'Order, contact and newsletter emails will NOT be sent. Orders are still saved.')
-env('NOTIFY_TO_EMAIL') ? ok(`Notifications go to ${env('NOTIFY_TO_EMAIL')}`) : warn('NOTIFY_TO_EMAIL is not set', 'You will not be emailed about new orders or contact messages.')
+if (env('RESEND_API_KEY')) ok('Email (Resend) key is set')
+
+else warn('RESEND_API_KEY is not set', 'Order, contact and newsletter emails will NOT be sent. Orders are still saved.')
+if (env('NOTIFY_TO_EMAIL')) ok(`Notifications go to ${env('NOTIFY_TO_EMAIL')}`)
+else warn('NOTIFY_TO_EMAIL is not set', 'You will not be emailed about new orders or contact messages.')
 
 // ================================================================== 2. configuration
 section('2. Site configuration')
@@ -155,8 +163,9 @@ else {
   const r = spawnSync(process.execPath, [join(ROOT, 'scripts/check-personalization.mjs')], { encoding: 'utf8' })
   const m = /(\d+) code file\(s\), (\d+) content file\(s\)/.exec(r.stdout || '')
   if (m) {
-    Number(m[1]) === 0 ? ok('No personal details hardcoded outside site.config.ts') : warn(`${m[1]} code file(s) still contain the original owner's details`, 'Run:  node scripts/check-personalization.mjs')
-    Number(m[2]) > 0 && warn(`${m[2]} page(s) still contain the original owner's own writing`, 'Rewrite them — see PERSONALIZE.md (about, tech-stack, resume placeholders).')
+    if (Number(m[1]) === 0) ok('No personal details hardcoded outside site.config.ts')
+    else warn(`${m[1]} code file(s) still contain the original owner's details`, 'Run:  node scripts/check-personalization.mjs')
+    if (Number(m[2]) > 0) warn(`${m[2]} page(s) still contain the original owner's own writing`, 'Rewrite them — see PERSONALIZE.md (about, tech-stack, resume placeholders).')
   }
 }
 
@@ -225,15 +234,17 @@ if (dbReachable) {
     const colCount = names.reduce((n, t) => n + expected[t].size, 0)
     ok(`All ${names.length} tables and ${colCount} columns the site needs are present`)
     const s = await api('/rest/v1/site_settings?select=id&id=eq.1', SVC)
-    Array.isArray(s.json) && s.json.length === 1 ? ok('Site settings row exists') : fail('Site settings row (id = 1) is missing', 'Run supabase/schema.sql — it inserts it.')
+    if (Array.isArray(s.json) && s.json.length === 1) ok('Site settings row exists')
+    else fail('Site settings row (id = 1) is missing', 'Run supabase/schema.sql — it inserts it.')
   }
 
   const b = await api('/storage/v1/bucket', SVC)
   if (b.status === 200 && Array.isArray(b.json)) {
     for (const want of ['blog-images', 'resume-images']) {
       const f = b.json.find((x) => x.name === want || x.id === want)
-      !f ? fail(`Storage bucket "${want}" is missing`, 'Run supabase/schema.sql (it creates both), or create it in Supabase -> Storage and mark it Public.')
-        : f.public ? ok(`Storage bucket "${want}" exists and is public`) : warn(`Storage bucket "${want}" is not public`, 'Images will not show on the site. Supabase -> Storage -> the bucket -> make it Public.')
+      if (!f) fail(`Storage bucket "${want}" is missing`, 'Run supabase/schema.sql (it creates both), or create it in Supabase -> Storage and mark it Public.')
+      else if (f.public) ok(`Storage bucket "${want}" exists and is public`)
+      else warn(`Storage bucket "${want}" is not public`, 'Images will not show on the site. Supabase -> Storage -> the bucket -> make it Public.')
     }
   } else warn('Could not check storage buckets', `HTTP ${b.status}. Make sure "blog-images" and "resume-images" exist and are Public.`)
 }
@@ -255,7 +266,8 @@ else {
 section('5. Repository')
 try {
   const current = readFileSync(join(ROOT, 'supabase/setup.sql'), 'utf8')
-  current === buildSetupSql() ? ok('supabase/setup.sql is up to date') : warn('supabase/setup.sql is out of date', 'Run:  node scripts/setup.mjs build-sql')
+  if (current === buildSetupSql()) ok('supabase/setup.sql is up to date')
+  else warn('supabase/setup.sql is out of date', 'Run:  node scripts/setup.mjs build-sql')
 } catch { warn('supabase/setup.sql not found', 'Run:  node scripts/setup.mjs build-sql') }
 
 // ================================================================== summary

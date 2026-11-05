@@ -1,7 +1,9 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
@@ -25,9 +27,9 @@ export default function AdminShopPage() {
 
   useEffect(() => {
     async function fetchProducts() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.list('products', { select: 'id, name, type, category, price, images, active, featured, order_index', orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.list('products', { select: 'id, name, type, category, price, images, active, featured, order_index', orderBy: 'order_index', ascending: true }) } catch (cause) { error = asError(cause) }
 
       if (error) console.error('Error fetching products:', error)
       else setProducts(data || [])
@@ -42,8 +44,8 @@ export default function AdminShopPage() {
     const current = products[index]
     const target = products[targetIndex]
 
-    try { await adminApi.update('products', current.id, { order_index: target.order_index }) } catch (e: any) { console.error(e) }
-    try { await adminApi.update('products', target.id, { order_index: current.order_index }) } catch (e: any) { console.error(e) }
+    try { await adminApi.update('products', current.id, { order_index: target.order_index }) } catch (e) { console.error(e) }
+    try { await adminApi.update('products', target.id, { order_index: current.order_index }) } catch (e) { console.error(e) }
 
     const reordered = [...products]
     reordered[index] = target
@@ -52,23 +54,23 @@ export default function AdminShopPage() {
   }
 
   async function toggleFeatured(product: Product) {
-    let error: any = null
-    try { await adminApi.update('products', product.id, { featured: !product.featured }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('products', product.id, { featured: !product.featured }) } catch (cause) { error = asError(cause) }
     if (error) alert('Error: ' + error.message)
     else setProducts(prev => prev.map(p => p.id === product.id ? { ...p, featured: !p.featured } : p))
   }
 
   async function toggleActive(product: Product) {
-    let error: any = null
-    try { await adminApi.update('products', product.id, { active: !product.active }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('products', product.id, { active: !product.active }) } catch (cause) { error = asError(cause) }
     if (error) alert('Error: ' + error.message)
     else setProducts(prev => prev.map(p => p.id === product.id ? { ...p, active: !p.active } : p))
   }
 
   async function deleteProduct(product: Product) {
     if (!confirm(`Delete "${product.name}"?`)) return
-    let error: any = null
-    try { await adminApi.remove('products', product.id) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.remove('products', product.id) } catch (cause) { error = asError(cause) }
     if (error) alert('Error: ' + error.message)
     else setProducts(prev => prev.filter(p => p.id !== product.id))
   }
@@ -96,7 +98,7 @@ export default function AdminShopPage() {
 
           {products.length === 0 ? (
             <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
-              No products yet. Click "+ New Product" to add your first one.
+              No products yet. Click &quot;+ New Product&quot; to add your first one.
             </div>
           ) : (
             <div className="space-y-4">
@@ -108,7 +110,7 @@ export default function AdminShopPage() {
                       <button onClick={() => moveItem(index, 'down')} disabled={index === products.length - 1} className="w-6 h-6 bg-ink-100 hover:bg-ink-100 disabled:opacity-30 rounded-none flex items-center justify-center text-[10px] font-bold">▼</button>
                     </div>
                     {product.images?.[0] ? (
-                      <img src={product.images[0]} alt={product.name} className="w-14 h-14 object-cover rounded-none border border-ink-100" />
+                      <SiteImage sizes="56px" src={product.images[0]} alt={product.name} className="w-14 h-14 object-cover rounded-none border border-ink-100" />
                     ) : (
                       <div className="w-14 h-14 rounded-none border border-dashed border-ink-100 bg-paper flex items-center justify-center text-[8px] text-ink-300 uppercase text-center">No photo</div>
                     )}

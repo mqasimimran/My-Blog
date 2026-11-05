@@ -73,7 +73,15 @@ begin
   ] loop
     if to_regclass('public.' || t) is not null then
       execute format('revoke insert, update, delete, truncate, references, trigger on public.%I from anon, authenticated', t);
-      execute format('grant select on public.%I to anon, authenticated', t);
+      if t not in ('projects','articles','designs') then
+        execute format('grant select on public.%I to anon, authenticated', t);
+      else
+        execute format('revoke select on public.%I from anon, authenticated', t);
+        execute format('revoke select (preview_token) on public.%I from anon, authenticated', t);
+        execute format('grant select (%s) on public.%I to anon, authenticated',
+          (select string_agg(quote_ident(column_name), ',') from information_schema.columns
+            where table_schema = 'public' and table_name = t and column_name <> 'preview_token'), t);
+      end if;
     end if;
   end loop;
 

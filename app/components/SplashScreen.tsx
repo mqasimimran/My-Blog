@@ -15,12 +15,15 @@ export default function SplashScreen() {
       return
     }
 
-    setShow(true)
-    sessionStorage.setItem('splash_shown', 'true')
+    const frame = requestAnimationFrame(() => {
+      setShow(true)
+      sessionStorage.setItem('splash_shown', 'true')
+    })
 
     const fadeTimer = setTimeout(() => setFadingOut(true), 650)
     const removeTimer = setTimeout(() => setShow(false), 950)
     return () => {
+      cancelAnimationFrame(frame)
       clearTimeout(fadeTimer)
       clearTimeout(removeTimer)
     }

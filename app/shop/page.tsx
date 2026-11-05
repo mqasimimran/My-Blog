@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ArrowRight, DownloadSimple, Package } from '@phosphor-icons/react'
@@ -91,7 +92,7 @@ export default function ShopPage() {
                       (tall posters get plain space at the sides, wide ones above and below). */}
                   <div className="relative grid aspect-square place-items-center overflow-hidden border-b border-ink-100 bg-ink-50">
                     {product.images?.[0] ? (
-                      <img
+                      <SiteImage
                         src={product.images[0]}
                         alt={product.name}
                         className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"

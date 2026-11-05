@@ -1,15 +1,12 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useMediaQuery } from '@/lib/useMediaQuery'
+import { useRef, useState } from 'react'
 
 export default function MagneticButton({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const ref = useRef<HTMLDivElement>(null)
   const [offset, setOffset] = useState({ x: 0, y: 0 })
-  const [reducedMotion, setReducedMotion] = useState(false)
-
-  useEffect(() => {
-    setReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  }, [])
+  const reducedMotion = useMediaQuery('(prefers-reduced-motion: reduce)')
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     if (reducedMotion || !ref.current) return

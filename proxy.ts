@@ -1,3 +1,4 @@
+import { getToken } from 'next-auth/jwt'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Urdu pages have their own addresses (/ur, /ur/blog, ...) so Google can find and show them.
@@ -6,7 +7,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 // each language at its own address.
 const SKIP = /^\/(admin|api|invoice|proposal|client|feedback|offline|opengraph-image|icon|apple-icon|icons|manifest|sitemap|robots|feed)(\/|\.|$)/
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl
   if (pathname === '/ur' || pathname.startsWith('/ur/')) {
     const rest = pathname.slice(3) || '/'
@@ -16,6 +17,15 @@ export function proxy(request: NextRequest) {
     const res = NextResponse.rewrite(url, { request: { headers } })
     if (request.cookies.get('lang')?.value !== 'ur') res.cookies.set('lang', 'ur', { path: '/', maxAge: 31536000, sameSite: 'lax' })
     return res
+  }
+  if ((pathname === '/admin' || pathname.startsWith('/admin/')) && pathname !== '/admin/login') {
+    const secret = process.env.NEXTAUTH_SECRET
+    const token = secret && await getToken({ req: request, secret, secureCookie: process.env.NODE_ENV === 'production' })
+    if (!token || !token.sub) {
+      const login = new URL('/admin/login', request.url)
+      login.searchParams.set('callbackUrl', pathname + search)
+      return NextResponse.redirect(login)
+    }
   }
   if (SKIP.test(pathname)) return NextResponse.next()
   if (request.cookies.get('lang')?.value === 'ur' && request.method === 'GET') {
@@ -27,4 +37,4 @@ export function proxy(request: NextRequest) {
 }
 
 // Pages only: not Next's own files, images, fonts or other static files.
-export const config = { matcher: ['/((?!_next/|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|txt|xml|js|css|map|woff2?|ttf|pdf|mp4|webm|json)$).*)'] }
+export const config = { matcher: ['/admin/:path*', '/((?!_next/|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|txt|xml|js|css|map|woff2?|ttf|pdf|mp4|webm|json)$).*)'] }

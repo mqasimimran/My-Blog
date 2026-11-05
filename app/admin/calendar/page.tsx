@@ -21,11 +21,16 @@ export default function CalendarAdmin() {
   const [edit, setEdit] = useState<Item | null>(null)
   const [msg, setMsg] = useState('')
   const load = async () => {
-    try { setItems(((await adminApi.list('content_items', { orderBy: 'planned_for', ascending: true })) as Item[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') }
-    const posts = ((await adminApi.list('articles').catch(() => [])) as { title: string; slug: string; created_at: string; publish_at?: string | null; published: boolean }[]) || []
-    const sent = ((await adminApi.list('newsletter_campaigns').catch(() => [])) as { subject: string; sent_at: string }[]) || []
-    setAuto([...posts.filter((p) => p.published).map((p) => ({ date: (p.publish_at || p.created_at).slice(0, 10), title: p.title, kind: 'blog post', href: `/blog/${p.slug}` })),
-      ...sent.map((n) => ({ date: n.sent_at.slice(0, 10), title: n.subject, kind: 'newsletter sent', href: '/admin/newsletter/send' }))])
+    await adminApi.list('content_items', { orderBy: 'planned_for', ascending: true })
+      .then((rows: Item[]) => setItems(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?'))
+    await Promise.all([
+      adminApi.list('articles').catch(() => []),
+      adminApi.list('newsletter_campaigns').catch(() => []),
+    ]).then(([posts, sent]: [{ title: string; slug: string; created_at: string; publish_at?: string | null; published: boolean }[], { subject: string; sent_at: string }[]]) => {
+      setAuto([...posts.filter((p) => p.published).map((p) => ({ date: (p.publish_at || p.created_at).slice(0, 10), title: p.title, kind: 'blog post', href: `/blog/${p.slug}` })),
+        ...sent.map((n) => ({ date: n.sent_at.slice(0, 10), title: n.subject, kind: 'newsletter sent', href: '/admin/newsletter/send' }))])
+    })
   }
   useEffect(() => { load() }, [])
   const days = useMemo(() => {

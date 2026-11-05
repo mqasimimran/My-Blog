@@ -1,5 +1,6 @@
 'use client'
 
+import { useStoredValue, storeValue } from '@/lib/useStoredValue'
 import { useEffect, useState } from 'react'
 import { useLocale } from '@/app/components/LocaleProvider'
 import { dateLocale } from '@/lib/i18n'
@@ -12,16 +13,18 @@ export default function BlogComments({ slug }: { slug: string }) {
   const { tx, locale } = useLocale()
   const [list, setList] = useState<C[]>([])
   const [replyTo, setReplyTo] = useState<C | null>(null)
-  const [f, setF] = useState({ name: '', email: '', body: '', website: '' })
+  const savedName = useStoredValue('comment-name') || ''
+  const [draft, setF] = useState({ name: null as string | null, email: '', body: '', website: '' })
+  const f = { ...draft, name: draft.name ?? savedName }
   const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [error, setError] = useState('')
-  useEffect(() => { fetch(`/api/comments?slug=${encodeURIComponent(slug)}`).then((r) => r.json()).then((d) => setList(d.comments || [])).catch(() => {}); try { setF((x) => ({ ...x, name: localStorage.getItem('comment-name') || '' })) } catch {} }, [slug])
+  useEffect(() => { fetch(`/api/comments?slug=${encodeURIComponent(slug)}`).then((r) => r.json()).then((d) => setList(d.comments || [])).catch(() => {}) }, [slug])
   const top = list.filter((c) => !c.parent_id)
   const when = (d: string) => new Date(d).toLocaleDateString(dateLocale(locale), { year: 'numeric', month: 'short', day: 'numeric' })
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setState('sending'); setError('')
-    try { localStorage.setItem('comment-name', f.name) } catch {}
+    storeValue('comment-name', f.name)
     const res = await fetch('/api/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug, ...f, parentId: replyTo?.id }) })
     const d = await res.json().catch(() => ({}))
     if (res.ok) { setState('sent'); setF({ ...f, body: '' }); setReplyTo(null) } else { setState('error'); setError(d.error || tx('Something went wrong. Try again in a moment.')) }

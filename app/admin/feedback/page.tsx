@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useEffect, useState } from 'react'
 import AdminNav from '@/app/admin/AdminNav'
 import FeedbackCanvas, { type FComment } from '@/app/components/FeedbackCanvas'
@@ -19,8 +20,10 @@ export default function FeedbackAdmin() {
   const [file, setFile] = useState<File | null>(null)
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState(false)
-  const load = async () => { try { setBoards(((await adminApi.list('feedback_boards', { orderBy: 'created_at', ascending: false })) as Board[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') } }
-  const loadComments = async (id: string) => setComments((((await adminApi.list('feedback_comments', { orderBy: 'created_at', ascending: true })) as any[]) || []).filter((c) => c.board_id === id))
+  const load = async () => { await adminApi.list('feedback_boards', { orderBy: 'created_at', ascending: false })
+      .then((rows: Board[]) => setBoards(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?')) }
+  const loadComments = async (id: string) => setComments((((await adminApi.list('feedback_comments', { orderBy: 'created_at', ascending: true })) as (FComment & { board_id: string })[]) || []).filter((c) => c.board_id === id))
   useEffect(() => { load() }, [])
   async function create(e: React.FormEvent) {
     e.preventDefault(); if (!f.title.trim() || !file) return setMsg('Add a title and the design image.')
@@ -51,7 +54,7 @@ export default function FeedbackAdmin() {
               {boards.length === 0 && <li className="py-4 text-sm text-ink-500">No reviews yet.</li>}
               {boards.map((b) => (
                 <li key={b.id} className="flex flex-wrap items-center gap-4 py-3 text-sm">
-                  <img src={b.image_url} alt="" className="h-12 w-16 object-cover" /><span className="flex-1 text-ink-900">{b.title}{b.client_name ? ` \u00b7 ${b.client_name}` : ''}</span>
+                  <SiteImage sizes="64px" src={b.image_url} alt="" className="h-12 w-16 object-cover" /><span className="flex-1 text-ink-900">{b.title}{b.client_name ? ` \u00b7 ${b.client_name}` : ''}</span>
                   <span className={`text-xs uppercase tracking-[0.08em] ${b.status === 'approved' ? 'text-success' : 'text-warning'}`}>{b.status === 'approved' ? `Approved by ${b.approved_name}` : 'Open'}</span>
                   <button onClick={() => { setOpen(b); loadComments(b.id) }} className="text-xs uppercase tracking-[0.08em] text-ink-700">Open</button>
                   <button onClick={() => { navigator.clipboard.writeText(`${siteConfig.url}/feedback/${b.public_token}`); setMsg('Link copied.') }} className="text-xs uppercase tracking-[0.08em] text-ink-700">Copy link</button>

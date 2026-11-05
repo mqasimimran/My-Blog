@@ -1,8 +1,10 @@
 'use client'
 
+import { mediaCover } from '@/lib/portfolioVideo'
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
@@ -19,7 +21,6 @@ type Design = {
 
 export default function AdminDesignsPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const [designs, setDesigns] = useState<Design[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -28,9 +29,9 @@ export default function AdminDesignsPage() {
 
   useEffect(() => {
     async function fetchDesigns() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.list('designs', { orderBy: 'created_at', ascending: false }) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.list('designs', { orderBy: 'created_at', ascending: false }) } catch (cause) { error = asError(cause) }
 
       if (error) {
         console.error('Error fetching designs:', error)
@@ -47,8 +48,8 @@ export default function AdminDesignsPage() {
 
   async function deleteDesign(id: string, title: string) {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) return
-    let error: any = null
-    try { await adminApi.remove('designs', id) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.remove('designs', id) } catch (cause) { error = asError(cause) }
     if (error) {
       alert('Error deleting design')
     } else {
@@ -57,8 +58,8 @@ export default function AdminDesignsPage() {
   }
 
   async function toggleFeatured(design: Design) {
-    let error: any = null
-    try { await adminApi.update('designs', design.id, { featured: !design.featured }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('designs', design.id, { featured: !design.featured }) } catch (cause) { error = asError(cause) }
     if (error) {
       alert('Error updating: ' + error.message)
     } else {
@@ -100,7 +101,7 @@ export default function AdminDesignsPage() {
 
           {designs.length === 0 ? (
             <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
-              No design entries found. Click "+ New Design Entry" to upload your first set!
+              No design entries found. Click &quot;+ New Design Entry&quot; to upload your first set!
             </div>
           ) : (
             <div className="space-y-4">
@@ -108,7 +109,7 @@ export default function AdminDesignsPage() {
                 <div key={design.id} className="bg-paper p-4 border border-ink-100 rounded-none flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between shadow-sm hover:border-ink-100 transition-colors">
                   <div className="flex items-center gap-4">
                     {design.images?.[0] && (
-                      <img src={design.images[0]} alt={design.title} className="w-12 h-12 object-cover rounded-none border" />
+                      <SiteImage sizes="48px" src={mediaCover(design.images[0])} alt={design.title} className="w-12 h-12 object-cover rounded-none border" />
                     )}
                     <div>
                       <div className="flex items-center gap-2 mb-0.5">
@@ -123,7 +124,7 @@ export default function AdminDesignsPage() {
                         </button>
                       </div>
                       <h2 className="text-base font-medium text-ink-900">{design.title}</h2>
-                      <span className="text-[10px] text-ink-300 font-mono">{design.images?.length || 0} image(s) attached</span>
+                      <span className="text-[10px] text-ink-300 font-mono">{design.images?.length || 0} media item(s) attached</span>
                     </div>
                   </div>
                   <div className="flex items-center flex-wrap gap-4">

@@ -11,7 +11,9 @@ export default function ErrorsAdmin() {
   const [list, setList] = useState<E[]>([])
   const [open, setOpen] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
-  const load = async () => { try { setList(((await adminApi.list('error_reports', { orderBy: 'last_seen', ascending: false })) as E[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') } }
+  const load = async () => { await adminApi.list('error_reports', { orderBy: 'last_seen', ascending: false })
+      .then((rows: E[]) => setList(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?')) }
   useEffect(() => { load() }, [])
   const clear = async (id: string) => { try { await adminApi.remove('error_reports', id); setList((l) => l.filter((e) => e.id !== id)) } catch { setMsg('Could not remove it.') } }
   return (

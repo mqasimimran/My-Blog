@@ -1,5 +1,7 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { adminStorage } from '@/lib/adminStorage'
@@ -61,7 +63,7 @@ export default function NewArticle() {
     setIsSubmitting(true)
     const slug = generateSlug(title)
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.insert('articles', {
       title,
       slug,
@@ -76,7 +78,7 @@ export default function NewArticle() {
       feature_image: featureImage,
       published: publishStatus,
       publish_at: publishAt ? new Date(publishAt).toISOString() : null,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       console.error('Error saving article:', error.message)
@@ -116,7 +118,7 @@ export default function NewArticle() {
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Feature Image (Cover)</label>
             {featureImage ? (
               <div className="relative w-full h-48 bg-ink-100 rounded-none overflow-hidden">
-                <img src={featureImage} alt="Feature" className="w-full h-full object-cover" />
+                <SiteImage src={featureImage} alt="Feature" className="w-full h-full object-cover" />
                 <button type="button" onClick={() => setFeatureImage('')} className="absolute top-2 right-2 bg-red-600 text-white text-xs px-2 py-1 rounded-none shadow">Remove</button>
               </div>
             ) : (
@@ -168,7 +170,7 @@ export default function NewArticle() {
 
           <div className="pt-6 border-t border-ink-100">
             <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-1">Quiz (optional)</label>
-            <p className="mb-3 text-xs text-ink-500">Shown at the end of the post. One question per block, blank line between. Start with "Q:", list answers with "- ", put a * after the right one, and optionally add "Why:".</p>
+            <p className="mb-3 text-xs text-ink-500">Shown at the end of the post. One question per block, blank line between. Start with &quot;Q:&quot;, list answers with &quot;- &quot;, put a * after the right one, and optionally add &quot;Why:&quot;.</p>
             <textarea rows={6} value={quiz} onChange={(e) => setQuiz(e.target.value)} placeholder={'Q: What does CNN stand for?\n- Convolutional neural network *\n- Central neural node\nWhy: Convolution layers scan images for patterns.'} className="w-full border border-ink-100 p-3 font-mono text-sm outline-none focus:border-ink-900" />
           </div>
 

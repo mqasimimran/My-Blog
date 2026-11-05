@@ -1,8 +1,8 @@
 import './globals.css'
+import Script from 'next/script'
 import { GeistSans } from 'geist/font/sans'
 import localFont from 'next/font/local'
 import Navbar from './Navbar'
-import Script from 'next/script'
 import ReadingProgress from '@/app/components/ReadingProgress'
 import { Analytics } from '@vercel/analytics/next'
 import ConsoleEasterEgg from '@/app/components/ConsoleEasterEgg'
@@ -117,36 +117,35 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             you've set the relevant env var. Neither requires a cookie
             banner, unlike Google Analytics. See handoff notes for setup. */}
         {process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN && (
-          <script
-            defer
+          <Script
+            strategy="afterInteractive"
             data-domain={process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
             src="https://plausible.io/js/script.js"
-          ></script>
+          />
         )}
         {process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID && (
-          <script
-            defer
+          <Script
+            strategy="afterInteractive"
             src={process.env.NEXT_PUBLIC_UMAMI_SCRIPT_URL || 'https://cloud.umami.is/script.js'}
             data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-          ></script>
+          />
         )}
 
-        {/* Applies the saved theme before first paint, so there's no flash
-            of light mode before React hydrates and DarkModeToggle checks
-            localStorage. Deliberately a plain inline script, not a
-            component — this must run synchronously, before paint. */}
-        <script
+        {/* Restore the saved theme before hydration. */}
+        <Script
+          id="initial-theme"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}
         />
 
         {/* Google AdSense Verification Script */}
-        <script 
-          async 
+        <Script
+          strategy="afterInteractive"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7791595581454811"
           crossOrigin="anonymous"
-        ></script>
+        />
       </head>
       <body
         className="bg-paper text-ink-900 font-sans antialiased"

@@ -1,3 +1,4 @@
+import SiteImage from '@/components/SiteImage'
 import { Play } from '@phosphor-icons/react/dist/ssr'
 import SectionHeader from '@/app/components/ui/SectionHeader'
 import { ButtonLink } from '@/app/components/ui/Button'
@@ -32,7 +33,7 @@ export default async function LatestVideos() {
               className="group flex flex-col border border-ink-100 bg-paper-raised transition-colors duration-300 hover:border-ink-900"
             >
               <div className="relative aspect-video overflow-hidden border-b border-ink-100 bg-ink-900">
-                <img src={`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`} alt={v.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+                <SiteImage src={`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`} alt={v.title} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
                 <span className="absolute inset-0 grid place-items-center" aria-hidden>
                   <span className="grid h-14 w-14 place-items-center rounded-full bg-paper/90 text-ink-900 transition-transform duration-500 group-hover:scale-110">
                     <Play size={22} weight="fill" />

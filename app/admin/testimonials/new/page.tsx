@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -38,10 +39,10 @@ export default function NewTestimonialPage() {
 
     const count = await adminApi.count('testimonials')
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.insert('testimonials', {
       name, role, quote, avatar_url: avatarUrl, active, order_index: count || 0,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error saving testimonial: ' + error.message)

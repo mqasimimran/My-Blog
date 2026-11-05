@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { formatDate, invoiceTotals, money, type Invoice } from '@/lib/invoice'
 import { escapeHtml } from '@/lib/escapeHtml'
-import { nextNumber } from '@/lib/invoiceServer'
 import { emailInvoice } from '@/lib/invoiceSend'
 import { sendEmail } from '@/lib/mail'
 import { siteConfig } from '@/site.config'
@@ -46,13 +45,10 @@ export async function GET(request: NextRequest) {
   const created: string[] = []
   const { data: repeats } = await supabaseAdmin.from('invoices').select('*').eq('repeat_monthly', true).lte('repeat_next', new Date().toISOString().slice(0, 10))
   for (const inv of (repeats || []) as (Invoice & { repeat_next: string })[]) {
-    const next = new Date(inv.repeat_next + 'T00:00:00Z'); next.setUTCMonth(next.getUTCMonth() + 1)
-    // Claim it first (move the date on), so a second run the same day can't create a duplicate.
-    const { data: claimed } = await supabaseAdmin.from('invoices').update({ repeat_next: next.toISOString().slice(0, 10) }).eq('id', inv.id).eq('repeat_next', inv.repeat_next).select('id')
-    if (!claimed?.length) continue
-    const { data: copy } = await supabaseAdmin.from('invoices').insert([{ number: await nextNumber('invoices', 'INV'), client_name: inv.client_name, client_email: inv.client_email, client_address: inv.client_address,
-      currency: inv.currency, items: inv.items, discount: inv.discount, tax_percent: inv.tax_percent, notes: inv.notes, status: 'sent', issue_date: new Date().toISOString().slice(0, 10),
-      due_date: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10), sent_at: new Date().toISOString(), repeated_from: inv.id }]).select('*').single()
+    const { data: copy, error } = await supabaseAdmin.rpc('repeat_invoice', {
+      source_id: inv.id, scheduled: inv.repeat_next,
+    })
+    if (error) return NextResponse.json({ error: 'Could not generate recurring invoice' }, { status: 503 })
     if (copy && copy.client_email) await emailInvoice(copy as Invoice & { client_email: string })
     if (copy) created.push(copy.number)
   }

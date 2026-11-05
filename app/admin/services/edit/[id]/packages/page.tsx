@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import Link from 'next/link'
@@ -27,8 +28,8 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
 
   useEffect(() => {
     async function fetchData() {
-      let service: any = null
-      try { service = await adminApi.get('services', serviceId, 'name') } catch (e: any) { console.error(e) }
+      let service = null
+      try { service = await adminApi.get('services', serviceId, 'name') } catch (e) { console.error(e) }
       if (service) setServiceName(service.name)
 
       try {
@@ -38,7 +39,8 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
           ascending: true,
         })
         setPackages(data || [])
-      } catch (err: any) {
+      } catch (cause) {
+        const err = asError(cause)
         console.error('Error fetching packages:', err.message)
       }
       setIsLoading(false)
@@ -74,8 +76,8 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
     setSavingId(pkg.id)
 
     if (pkg.isNew) {
-      let data: any = null
-      let error: any = null
+      let data = null
+      let error: Error | null = null
       try { const rows = await adminApi.insert('service_packages', {
         service_id: serviceId,
         tier: pkg.tier,
@@ -84,7 +86,7 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
         revisions: pkg.revisions,
         features: pkg.features,
         order_index: pkg.order_index,
-      }); data = rows[0] } catch (e: any) { error = e }
+      }); data = rows[0] } catch (cause) { error = asError(cause) }
 
       if (error) {
         alert('Error saving package: ' + error.message)
@@ -92,14 +94,14 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
         setPackages(prev => prev.map(p => p.id === pkg.id ? { ...data, isNew: false } : p))
       }
     } else {
-      let error: any = null
+      let error: Error | null = null
       try { await adminApi.update('service_packages', pkg.id, {
         tier: pkg.tier,
         price: pkg.price,
         delivery_days: pkg.delivery_days,
         revisions: pkg.revisions,
         features: pkg.features,
-      }) } catch (e: any) { error = e }
+      }) } catch (cause) { error = asError(cause) }
 
       if (error) alert('Error updating package: ' + error.message)
     }
@@ -110,8 +112,8 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
     if (!confirm(`Delete the "${pkg.tier}" package?`)) return
 
     if (!pkg.isNew) {
-      let error: any = null
-      try { await adminApi.remove('service_packages', pkg.id) } catch (e: any) { error = e }
+      let error: Error | null = null
+      try { await adminApi.remove('service_packages', pkg.id) } catch (cause) { error = asError(cause) }
       if (error) {
         alert('Error deleting: ' + error.message)
         return
@@ -167,7 +169,7 @@ export default function ManagePackagesPage({ params }: { params: Promise<{ id: s
 
           {packages.length === 0 ? (
             <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
-              No packages yet. Click "+ Add Package" to create your first tier (e.g. Basic).
+              No packages yet. Click &quot;+ Add Package&quot; to create your first tier (e.g. Basic).
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

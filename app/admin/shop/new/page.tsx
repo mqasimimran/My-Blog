@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -85,7 +86,7 @@ export default function NewProductPage() {
 
     const count = await adminApi.count('products')
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.insert('products', {
       name,
       slug: slug || slugify(name),
@@ -103,7 +104,7 @@ export default function NewProductPage() {
       weight_grams: type === 'physical' && weightGrams ? parseInt(weightGrams) : null,
       active,
       order_index: count || 0,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error saving product: ' + error.message)
@@ -133,7 +134,7 @@ export default function NewProductPage() {
       <main className="flex-1 p-10 overflow-y-auto">
         <div className="max-w-2xl mx-auto bg-paper p-8 rounded-none shadow-sm border border-ink-100">
           <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-2">New Product</h1>
-          <p className="text-xs text-ink-300 mb-8">Browsing only for now — checkout isn't built yet.</p>
+          <p className="text-xs text-ink-300 mb-8">Browsing only for now — checkout isn&apos;t built yet.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -211,7 +212,7 @@ export default function NewProductPage() {
                   className="w-full border-b border-ink-100 py-2 outline-none focus:border-accent-600 text-sm"
                 />
                 <p className="text-[10px] text-ink-300 mt-1">Use this for Canva templates or anything not meant to be downloaded as a file — the buyer gets taken to this link instead.</p>
-                <p className="text-[10px] text-ink-300 mt-1">This file isn't gated behind payment yet — it just gets stored, ready for when checkout is built.</p>
+                <p className="text-[10px] text-ink-300 mt-1">This file isn&apos;t gated behind payment yet — it just gets stored, ready for when checkout is built.</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-4">

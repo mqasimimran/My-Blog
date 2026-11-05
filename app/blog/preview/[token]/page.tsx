@@ -1,3 +1,4 @@
+import SiteImage from '@/components/SiteImage'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -44,7 +45,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ token:
 
         {article.feature_image && (
           <div className="mb-16 w-full">
-            <img
+            <SiteImage
               src={article.feature_image}
               alt={`${article.title} cover`}
               className="w-full h-auto max-h-[600px] object-cover"

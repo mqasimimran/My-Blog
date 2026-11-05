@@ -1,5 +1,7 @@
 'use client'
 
+import { mediaCover } from '@/lib/portfolioVideo'
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -60,8 +62,8 @@ export default function FeaturedDesigns() {
                 <Link href={`/design?item=${item.id}`} key={item.id} data-cursor="View" className="group mb-10 block break-inside-avoid">
                   <div className="overflow-hidden bg-ink-50">
                     {item.images?.[0] && (
-                      <img
-                        src={item.images[0]}
+                      <SiteImage
+                        src={mediaCover(item.images[0])}
                         alt={item.title}
                         loading="lazy"
                         className="h-auto w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"

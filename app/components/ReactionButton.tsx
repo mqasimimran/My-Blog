@@ -1,22 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useStoredValue, storeValue } from '@/lib/useStoredValue'
+import { useState } from 'react'
 import { Fire } from '@phosphor-icons/react'
 
 export default function ReactionButton({ slug, initialCount }: { slug: string; initialCount: number }) {
   const [count, setCount] = useState(initialCount)
-  const [hasReacted, setHasReacted] = useState(false)
-
-  useEffect(() => {
-    setHasReacted(!!localStorage.getItem(`reacted_${slug}`))
-  }, [slug])
+  const key = 'reacted_' + slug
+  const hasReacted = !!useStoredValue(key)
+  const [sending, setSending] = useState(false)
 
   async function handleReact() {
-    if (hasReacted) return
+    if (hasReacted || sending) return
 
-    setHasReacted(true)
-    setCount((c) => c + 1)
-    localStorage.setItem(`reacted_${slug}`, 'true')
+    setSending(true)
 
     try {
       const res = await fetch('/api/reactions', {
@@ -25,18 +22,21 @@ export default function ReactionButton({ slug, initialCount }: { slug: string; i
         body: JSON.stringify({ slug }),
       })
       if (res.ok) {
+        storeValue(key, 'true')
         const data = await res.json()
         if (typeof data.count === 'number') setCount(data.count)
       }
     } catch (err) {
       console.error('Error saving reaction:', err)
+    } finally {
+      setSending(false)
     }
   }
 
   return (
     <button
       onClick={handleReact}
-      disabled={hasReacted}
+      disabled={hasReacted || sending}
       className={`inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-full border transition-colors ${
         hasReacted
           ? 'border-accent-600/30 bg-accent-600/5 text-accent-600 cursor-default'

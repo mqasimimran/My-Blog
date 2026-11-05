@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
 import { adminApi } from '@/lib/adminApi'
 import { useRouter, useParams } from 'next/navigation'
@@ -17,9 +18,9 @@ export default function EditEducation() {
 
   useEffect(() => {
     async function fetchItem() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('education', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('education', id) } catch (cause) { error = asError(cause) }
       if (error) {
         alert('Error loading education: ' + error.message)
       } else if (data) {
@@ -40,8 +41,8 @@ export default function EditEducation() {
     e.preventDefault()
     setSaving(true)
 
-    let error: any = null
-    try { await adminApi.update('education', id, formData) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('education', id, formData) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error updating education: ' + error.message)

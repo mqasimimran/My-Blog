@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useRef, useState } from 'react'
 import { CheckCircle } from '@phosphor-icons/react'
 
@@ -28,7 +29,7 @@ export default function FeedbackCanvas({ imageUrl, comments, canAdd, onAdd, onRe
     <div className="grid gap-8 lg:grid-cols-12">
       <div className="lg:col-span-8">
         <div ref={box} onClick={place} className={`relative select-none border border-ink-100 ${canAdd ? 'cursor-crosshair' : ''}`} role="img" aria-label="Design with comment pins">
-          <img src={imageUrl} alt="Design for review" draggable={false} className="block w-full" />
+          <SiteImage src={imageUrl} alt="Design for review" draggable={false} className="block w-full" />
           {comments.map((c, i) => (
             <button key={c.id} type="button" onClick={(e) => { e.stopPropagation(); setActive(c.id) }} aria-label={`Comment ${i + 1}`}
               style={{ left: `${c.x}%`, top: `${c.y}%` }} className={`absolute grid h-7 w-7 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border-2 border-white text-xs font-bold shadow ${c.resolved ? 'bg-ink-500 text-white' : c.from_owner ? 'bg-ink-900 text-white' : 'bg-accent-600 text-white'} ${active === c.id ? 'ring-2 ring-ink-900' : ''}`}>{i + 1}</button>

@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -11,7 +12,7 @@ import SplitText from '@/app/components/ui/SplitText'
 import { Rss } from '@phosphor-icons/react'
 import { useLocale } from '@/app/components/LocaleProvider'
 import { dateLocale, type Locale } from '@/lib/i18n'
-import { responsive, BLOG_CARD_SIZES } from '@/lib/img'
+import { BLOG_CARD_SIZES } from '@/lib/img'
 
 export type Article = {
   id: string
@@ -43,7 +44,7 @@ const formatDate = (iso: string, locale: Locale = 'en') => new Date(iso).toLocal
 
 // The blog list. The server passes the posts in (app/blog/page.tsx) so they're in the HTML straight
 // away; if it couldn't, the list fetches them in the browser as before.
-export default function BlogList({ initialArticles }: { initialArticles?: Article[] | null }) {
+export default function BlogList({ initialArticles, day }: { initialArticles?: Article[] | null; day: number }) {
   const { tx, locale } = useLocale()
   const { t } = useLocale()
   const [articles, setArticles] = useState<Article[]>(initialArticles || [])
@@ -51,11 +52,9 @@ export default function BlogList({ initialArticles }: { initialArticles?: Articl
   // Urdu visitors see a post's Urdu title and summary when it has them.
   const localized = (list: Article[]) => (locale === 'ur' ? list.map((a) => (a.title_ur ? { ...a, title: a.title_ur, excerpt: a.excerpt_ur || a.excerpt } : a)) : list)
   const [activeCategory, setActiveCategory] = useState('All')
-  const [quote, setQuote] = useState(DAILY_QUOTES[0])
+  const quote = DAILY_QUOTES[day % DAILY_QUOTES.length]
 
   useEffect(() => {
-    const dayOfMonth = new Date().getDate()
-    setQuote(DAILY_QUOTES[dayOfMonth % DAILY_QUOTES.length])
 
     async function fetchPublishedArticles() {
       const query = (cols: string) => supabase
@@ -108,8 +107,8 @@ export default function BlogList({ initialArticles }: { initialArticles?: Articl
                       <div className="relative aspect-video overflow-hidden border-b border-ink-100 bg-ink-50">
                         {/* 16:9 frame. A 16:9 cover (e.g. 1600x900) fills it exactly; any other shape still shows
                             whole, with a soft blurred copy of itself filling the spare space. Never cropped. */}
-                        <img {...responsive(article.feature_image, '384px', 40)} alt="" aria-hidden loading={i === 0 ? 'eager' : 'lazy'} className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
-                        <img {...responsive(article.feature_image, BLOG_CARD_SIZES)} alt={article.title} loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+                        <SiteImage src={article.feature_image} sizes={'384px'} quality={40} alt="" aria-hidden loading={i === 0 ? 'eager' : 'lazy'} className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
+                        <SiteImage src={article.feature_image} sizes={BLOG_CARD_SIZES} alt={article.title} loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
                       </div>
                     )}
                     <div className="flex flex-1 flex-col p-6">

@@ -1,3 +1,4 @@
+import typography from "@tailwindcss/typography";
 import type { Config } from "tailwindcss";
 
 export default {
@@ -5,14 +6,6 @@ export default {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./mdx-components.tsx",
   ],
-  theme: {
-    extend: {},
-  },
-  plugins: [
-    require('@tailwindcss/typography'),
-  ],
-} satisfies Config;
-module.exports = {
   theme: {
     extend: {
       colors: {
@@ -24,4 +17,7 @@ module.exports = {
       },
     },
   },
-}
+  plugins: [
+    typography,
+  ],
+} satisfies Config;

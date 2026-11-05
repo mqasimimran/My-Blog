@@ -20,10 +20,11 @@ const MAX_ATTEMPTS = 5
 const LOCKOUT_WINDOW_MINUTES = 15
 let warnedLegacyPassword = false
 
-function getClientIp(req: any): string {
+function getClientIp(req: { headers?: Record<string, unknown> }): string {
   const forwarded = req?.headers?.['x-forwarded-for']
   if (typeof forwarded === 'string') return forwarded.split(',')[0].trim()
-  return req?.headers?.['x-real-ip'] || 'unknown'
+  const real = req.headers?.['x-real-ip']
+  return typeof real === 'string' ? real : 'unknown'
 }
 
 export const authOptions: NextAuthOptions = {

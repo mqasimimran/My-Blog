@@ -1,8 +1,8 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
@@ -19,7 +19,6 @@ type Project = {
 
 export default function AdminProjectsPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -33,7 +32,8 @@ export default function AdminProjectsPage() {
           ascending: false,
         })
         setProjects(data || [])
-      } catch (err: any) {
+      } catch (cause) {
+        const err = asError(cause)
         console.error('Error fetching projects:', err.message)
       }
       setIsLoading(false)
@@ -48,7 +48,8 @@ export default function AdminProjectsPage() {
     try {
       await adminApi.update('projects', project.id, { featured: !project.featured })
       setProjects(prev => prev.map(p => p.id === project.id ? { ...p, featured: !p.featured } : p))
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error updating: ' + err.message)
     }
   }
@@ -84,7 +85,7 @@ export default function AdminProjectsPage() {
 
           {projects.length === 0 ? (
             <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
-              No projects found. Click "+ New Project" to create your first entry!
+              No projects found. Click &quot;+ New Project&quot; to create your first entry!
             </div>
           ) : (
             <div className="space-y-4">
@@ -115,7 +116,8 @@ export default function AdminProjectsPage() {
                       try {
                         await adminApi.remove('projects', project.id)
                         setProjects(prev => prev.filter(p => p.id !== project.id))
-                      } catch (err: any) {
+                      } catch (cause) {
+                        const err = asError(cause)
                         alert(`Error deleting project: ${err.message}`)
                       }
                     }}>

@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { requireAdminSession } from '@/lib/requireAdminSession'
-import { siteConfig } from '@/site.config'
 import { buildBackup } from '@/lib/backup'
 
 // Everything on the site as one JSON file: a backup, or a way to move hosts. Admin only.

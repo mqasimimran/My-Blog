@@ -15,8 +15,8 @@ export async function complete(system: string, messages: { role: 'user' | 'assis
         messages: messages.map((m, i) => (image && i === messages.length - 1 ? { role: m.role, content: [{ type: 'image', source: { type: 'base64', media_type: image.mime, data: image.data } }, { type: 'text', text: m.content }] } : m)) }),
     })
     if (!res.ok) throw new AssistantError(res.status, 'Claude', await res.text())
-    const data = await res.json()
-    return (data.content || []).filter((b: any) => b.type === 'text').map((b: any) => b.text).join('\n').trim()
+    const data: { content?: { type: string; text?: string }[] } = await res.json()
+    return (data.content || []).filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim()
   }
   const callGemini = (model: string) =>
     fetch(`${process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com'}/v1beta/models/${model}:generateContent`, {
@@ -38,8 +38,8 @@ export async function complete(system: string, messages: { role: 'user' | 'assis
     res = await callGemini(next)
   }
   if (!res.ok) throw new AssistantError(res.status, 'Gemini', await res.text())
-  const data = await res.json()
-  return (data.candidates?.[0]?.content?.parts || []).filter((part: any) => !part.thought).map((part: any) => part.text || '').join('').trim()
+  const data: { candidates?: { content?: { parts?: { thought?: boolean; text?: string }[] } }[] } = await res.json()
+  return (data.candidates?.[0]?.content?.parts || []).filter((part) => !part.thought).map((part) => part.text || '').join('').trim()
 }
 
 // A provider error with Google's or Anthropic's own explanation, kept for the logs (and, while

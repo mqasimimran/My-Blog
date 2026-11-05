@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -18,10 +19,10 @@ export default function NewRoadmapItemPage() {
     e.preventDefault()
     setIsSubmitting(true)
     const count = await adminApi.count('roadmap_items')
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.insert('roadmap_items', {
       title, description, status: itemStatus, order_index: count || 0,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
     if (error) {
       alert('Error saving: ' + error.message)
       setIsSubmitting(false)

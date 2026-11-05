@@ -59,7 +59,7 @@ export const adminApi = {
     return data // already a single row, since GET with id uses .single()
   },
 
-  async insert(table: string, row: Record<string, any>) {
+  async insert(table: string, row: Record<string, unknown>) {
     const res = await fetch(`/api/admin/${table}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -68,7 +68,7 @@ export const adminApi = {
     return handle(res)
   },
 
-  async update(table: string, id: Id, fields: Record<string, any>) {
+  async update(table: string, id: Id, fields: Record<string, unknown>) {
     const res = await fetch(`/api/admin/${table}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -77,7 +77,7 @@ export const adminApi = {
     return handle(res)
   },
 
-  async updateMany(table: string, ids: (string | number)[], fields: Record<string, any>) {
+  async updateMany(table: string, ids: (string | number)[], fields: Record<string, unknown>) {
     const res = await fetch(`/api/admin/${table}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

@@ -9,7 +9,7 @@ import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
 // column, including content). Now the increment happens here, server-side,
 // and nothing else about the article is touchable from the browser.
 export async function POST(request: NextRequest) {
-  let body: any
+  let body: Record<string, unknown>
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid request' }, { status: 400 }) }
 
   const slug = String(body?.slug || '')

@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState, useRef, useEffect } from 'react'
 import { useLocale } from '@/app/components/LocaleProvider'
 
@@ -38,13 +39,13 @@ export default function BeforeAfterSlider({ beforeSrc, afterSrc, alt }: { before
       onTouchMove={(e) => updatePosition(e.touches[0].clientX)}
     >
       {/* After (full, underneath) */}
-      <img src={afterSrc} alt={`${alt}, after`} className="absolute inset-0 w-full h-full object-contain pointer-events-none" draggable={false} />
+      <SiteImage src={afterSrc} alt={`${alt}, after`} className="absolute inset-0 w-full h-full object-contain pointer-events-none" draggable={false} />
 
       {/* Before (clipped to slider position, on top) — the image itself is
           pinned to the container's full width so it stays aligned with the
           "after" image beneath as the clip width changes */}
       <div className="absolute inset-y-0 left-0 overflow-hidden pointer-events-none" style={{ width: `${position}%` }}>
-        <img
+        <SiteImage
           src={beforeSrc}
           alt={`${alt}, before`}
           className="absolute inset-y-0 left-0 h-full object-contain"

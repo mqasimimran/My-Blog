@@ -47,17 +47,17 @@ function bad(message: string, status = 400) {
   return NextResponse.json({ error: message }, { status })
 }
 
-async function readJsonObject(request: NextRequest): Promise<{ body: Record<string, any> } | { error: NextResponse }> {
+async function readJsonObject(request: NextRequest): Promise<{ body: Record<string, unknown> } | { error: NextResponse }> {
   if (Number(request.headers.get('content-length') || 0) > MAX_BODY_BYTES) return { error: bad('Request too large', 413) }
   const text = await request.text()
   if (text.length > MAX_BODY_BYTES) return { error: bad('Request too large', 413) }
   let parsed: unknown
   try { parsed = JSON.parse(text) } catch { return { error: bad('Invalid JSON') } }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return { error: bad('Body must be a JSON object') }
-  return { body: parsed as Record<string, any> }
+  return { body: parsed as Record<string, unknown> }
 }
 
-function cleanContent(table: string, obj: Record<string, any>) {
+function cleanContent(table: string, obj: Record<string, unknown>) {
   if (HTML_CONTENT_TABLES.has(table) && typeof obj.content === 'string') {
     obj.content = sanitizeRichHtml(obj.content)
   }
@@ -108,14 +108,14 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   // Row count only (used e.g. to work out the next display order).
   if (wantCount) {
-    let cq: any = supabaseAdmin.from(table).select('*', { count: 'exact', head: true })
+    let cq = supabaseAdmin.from(table).select('*', { count: 'exact', head: true })
     if (eq) cq = cq.eq(eq[0], eq[1])
     const { count, error } = await cq
     if (error) return bad(error.message, 500)
     return NextResponse.json({ count: count || 0 })
   }
 
-  let q: any = supabaseAdmin.from(table).select(select)
+  let q = supabaseAdmin.from(table).select(select)
   if (eq) q = q.eq(eq[0], eq[1])
   if (id) {
     const { data, error } = await q.eq('id', id).single()
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const { data, error } = await supabaseAdmin.from(table).insert([row]).select()
   if (error) return bad(error.message, 500)
-  await logSecurityEvent({ event: 'admin_write', ...g.meta, detail: { table, op: 'insert', ids: (data || []).map((r: any) => r.id), fields: Object.keys(row) } })
+  await logSecurityEvent({ event: 'admin_write', ...g.meta, detail: { table, op: 'insert', ids: (data || []).map((r) => r.id), fields: Object.keys(row) } })
   return NextResponse.json({ data })
 }
 
@@ -163,12 +163,13 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
   if (Object.keys(fields).length === 0) return bad('Nothing to update.')
 
+  const targetIds = id !== undefined ? [String(id)] : Array.isArray(ids) ? ids.map(String) : []
   let query = supabaseAdmin.from(table).update(fields)
-  query = id !== undefined ? query.eq('id', String(id)) : query.in('id', ids.map(String))
+  query = id !== undefined ? query.eq('id', String(id)) : query.in('id', targetIds)
 
   const { data, error } = await query.select()
   if (error) return bad(error.message, 500)
-  await logSecurityEvent({ event: 'admin_write', ...g.meta, detail: { table, op: 'update', ids: id !== undefined ? [String(id)] : ids.map(String), fields: Object.keys(fields) } })
+  await logSecurityEvent({ event: 'admin_write', ...g.meta, detail: { table, op: 'update', ids: targetIds, fields: Object.keys(fields) } })
   return NextResponse.json({ data })
 }
 
@@ -193,6 +194,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   const { data, error } = await query.select()
   if (error) return bad(error.message, 500)
   if (!data || data.length === 0) return bad('Nothing was deleted — the row may not exist.', 404)
-  await logSecurityEvent({ event: 'admin_write', ...g.meta, detail: { table, op: 'delete', ids: data.map((r: any) => r.id) } })
+  await logSecurityEvent({ event: 'admin_write', ...g.meta, detail: { table, op: 'delete', ids: data.map((r) => r.id) } })
   return NextResponse.json({ data })
 }

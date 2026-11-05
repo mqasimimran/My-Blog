@@ -9,7 +9,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 // to allow anonymous writes (and reads, to detect duplicates). Now the
 // table can stay fully private and this route is the only way in.
 export async function POST(request: NextRequest) {
-  let body: any
+  let body: Record<string, unknown>
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid request' }, { status: 400 }) }
 
   const email = String(body?.email || '').trim().toLowerCase()

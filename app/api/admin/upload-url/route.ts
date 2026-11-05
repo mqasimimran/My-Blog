@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   const unauthorized = await requireAdminSession()
   if (unauthorized) return unauthorized
 
-  let body: any
+  let body: Record<string, unknown>
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Invalid request' }, { status: 400 }) }
 
   const { bucket, path, size } = body || {}
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status })
   }
 
-  if (!ALLOWED_BUCKETS.has(bucket)) {
+  if (typeof bucket !== 'string' || !ALLOWED_BUCKETS.has(bucket)) {
     return refuse('Bucket not allowed', 403)
   }
   if (typeof path !== 'string' || path.length > 200 || !SAFE_PATH.test(path) || path.includes('..')) {

@@ -1,6 +1,7 @@
 'use client'
 
-import { Suspense, useEffect, useState } from 'react'
+import { asError } from '@/lib/asError'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import AdminNav from '@/app/admin/AdminNav'
 import { adminApi } from '@/lib/adminApi'
@@ -13,26 +14,31 @@ const field = 'w-full border border-ink-300 bg-paper-raised px-3 py-2.5 text-sm 
 const label = 'mb-1.5 block text-[11px] font-medium uppercase tracking-[0.08em] text-ink-500'
 const COLOUR: Record<string, string> = { draft: 'text-ink-500', sent: 'text-warning', accepted: 'text-success', declined: 'text-ink-500 line-through' }
 
+async function prepareDraft(leadId?: string): Promise<Draft> {
+  let number = `PRO-${new Date().getFullYear()}-001`
+  try { number = (await (await fetch('/api/admin/proposals/next-number')).json()).number || number } catch {}
+  let client_name = '', client_email = '', items: InvoiceItem[] = [{ description: '', quantity: 1, unit_price: 0 }]
+  // A package request from the service page brings its chosen options as ready-made line items.
+  if (leadId) { try { const l = await adminApi.get('messages', leadId); client_name = l?.name || ''; client_email = l?.email || ''; if (Array.isArray(l?.request_items) && l.request_items.length) items = l.request_items } catch {} }
+  return { number, client_name, client_email, title: '', summary: '', scope: '', timeline: '', currency: 'USD', items, discount: 0, tax_percent: 0,
+    terms: DEFAULT_TERMS, valid_until: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10), status: 'draft' as const, lead_id: leadId || null }
+}
+
 function ProposalsAdmin() {
   const params = useSearchParams()
   const [list, setList] = useState<Proposal[]>([])
   const [draft, setDraft] = useState<Draft | null>(null)
   const [msg, setMsg] = useState('')
   const [busy, setBusy] = useState('')
-  const load = async () => { try { setList(((await adminApi.list('proposals', { orderBy: 'created_at', ascending: false })) as Proposal[]) || []) } catch { setMsg('Could not load proposals. Has the latest SQL update been run?') } }
+  const load = async () => { await adminApi.list('proposals', { orderBy: 'created_at', ascending: false })
+      .then((rows: Proposal[]) => setList(rows || []))
+      .catch(() => setMsg('Could not load proposals. Has the latest SQL update been run?')) }
   useEffect(() => { load() }, [])
 
-  async function startNew(leadId?: string) {
-    setMsg('')
-    let number = `PRO-${new Date().getFullYear()}-001`
-    try { number = (await (await fetch('/api/admin/proposals/next-number')).json()).number || number } catch {}
-    let client_name = '', client_email = '', summary = '', items: InvoiceItem[] = [{ description: '', quantity: 1, unit_price: 0 }]
-    // A package request from the service page brings its chosen options as ready-made line items.
-    if (leadId) { try { const l: any = await adminApi.get('messages', leadId); client_name = l?.name || ''; client_email = l?.email || ''; if (Array.isArray(l?.request_items) && l.request_items.length) items = l.request_items } catch {} }
-    setDraft({ number, client_name, client_email, title: '', summary, scope: '', timeline: '', currency: 'USD', items, discount: 0, tax_percent: 0,
-      terms: DEFAULT_TERMS, valid_until: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10), status: 'draft', lead_id: leadId || null })
-  }
-  useEffect(() => { const lead = params.get('lead'); if (lead) startNew(lead) }, [params])
+  const startNew = useCallback((leadId?: string) => {
+    return prepareDraft(leadId).then((draft) => { setMsg(''); setDraft(draft) })
+  }, [])
+  useEffect(() => { const lead = params.get('lead'); if (lead) startNew(lead) }, [params, startNew])
   const setItem = (i: number, patch: Partial<InvoiceItem>) => draft && setDraft({ ...draft, items: draft.items.map((it, k) => (k === i ? { ...it, ...patch } : it)) })
 
   async function save() {
@@ -45,7 +51,7 @@ function ProposalsAdmin() {
       scope: draft.scope?.trim() || null, timeline: draft.timeline?.trim() || null, currency: draft.currency, items, discount: Number(draft.discount) || 0, tax_percent: Number(draft.tax_percent) || 0,
       terms: draft.terms?.trim() || null, valid_until: draft.valid_until || null, lead_id: draft.lead_id || null }
     try { if (draft.id) await adminApi.update('proposals', draft.id, row); else await adminApi.insert('proposals', row); setDraft(null); setMsg('Saved.'); load() }
-    catch (e: any) { setMsg(/duplicate|unique/i.test(e?.message || '') ? 'That proposal number is already used.' : 'Could not save.') }
+    catch (cause) { const e = asError(cause); setMsg(/duplicate|unique/i.test(e?.message || '') ? 'That proposal number is already used.' : 'Could not save.') }
     setBusy('')
   }
   async function send(p: Proposal) {
@@ -55,7 +61,7 @@ function ProposalsAdmin() {
   }
   async function copyLink(p: Proposal) {
     // Sharing the link yourself counts as sending it (a draft can't be opened by the client).
-    if (p.status === 'draft') { await adminApi.update('proposals', p.id, { status: 'sent', sent_at: new Date().toISOString() }); if (p.lead_id) { const lead: any = await adminApi.get('messages', p.lead_id).catch(() => null); if (lead && ['new', 'contacted'].includes(lead.stage)) await adminApi.update('messages', p.lead_id, { stage: 'proposal' }) } }
+    if (p.status === 'draft') { await adminApi.update('proposals', p.id, { status: 'sent', sent_at: new Date().toISOString() }); if (p.lead_id) { const lead = await adminApi.get('messages', p.lead_id).catch(() => null); if (lead && ['new', 'contacted'].includes(lead.stage)) await adminApi.update('messages', p.lead_id, { stage: 'proposal' }) } }
     navigator.clipboard.writeText(`${siteConfig.url}/proposal/${p.public_token}`); setMsg(`Link to ${p.number} copied${p.status === 'draft' ? ' and marked as sent' : ''}.`); load()
   }
   async function remove(p: Proposal) { if (confirm(`Delete ${p.number}?`)) { await adminApi.remove('proposals', p.id); load() } }

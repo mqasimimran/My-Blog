@@ -1,5 +1,7 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -41,9 +43,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     async function fetchProduct() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('products', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('products', id) } catch (cause) { error = asError(cause) }
       if (error) {
         console.error(error)
       } else if (data) {
@@ -77,7 +79,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     }
     setIsSubmitting(true)
 
-    let finalImages = [...existingImages]
+    const finalImages = [...existingImages]
     for (const file of newImageFiles) {
       const fileExt = file.name.split('.').pop()
       const fileName = `product_${Math.random().toString(36).substring(2)}.${fileExt}`
@@ -107,7 +109,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       finalDigitalFileUrl = publicUrlData.publicUrl
     }
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.update('products', id, {
       name,
       slug: slug || slugify(name),
@@ -124,7 +126,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       stock_quantity: type === 'physical' && stockQuantity ? parseInt(stockQuantity) : null,
       weight_grams: type === 'physical' && weightGrams ? parseInt(weightGrams) : null,
       active,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error updating product: ' + error.message)
@@ -203,7 +205,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-4 gap-2 mb-3">
                   {existingImages.map((src, i) => (
                     <div key={i} className="relative group">
-                      <img src={src} alt="" className="w-full h-16 object-cover rounded-none border border-ink-100" />
+                      <SiteImage src={src} alt="" className="w-full h-16 object-cover rounded-none border border-ink-100" />
                       <button type="button" onClick={() => setExistingImages(prev => prev.filter((_, idx) => idx !== i))} className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity">×</button>
                     </div>
                   ))}

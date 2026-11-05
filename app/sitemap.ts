@@ -63,11 +63,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Shop products and free courses (with their lessons). Missing tables (before an SQL update) are skipped.
   const productRoutes: MetadataRoute.Sitemap = (productsRes.data || []).filter((p) => p.slug).map((p) => ({ url: `${SITE_URL}/shop/${p.slug}`, lastModified: p.created_at ? new Date(p.created_at) : undefined, changeFrequency: 'monthly', priority: 0.6 }))
-  const courseRoutes: MetadataRoute.Sitemap = (coursesRes.data || []).flatMap((c: any) => [
+  const courseRoutes: MetadataRoute.Sitemap = (coursesRes.data || []).flatMap((c) => [
     { url: `${SITE_URL}/courses/${c.slug}`, lastModified: c.created_at ? new Date(c.created_at) : undefined, changeFrequency: 'monthly' as const, priority: 0.7 },
     ...((c.course_lessons || []) as { slug: string }[]).map((l) => ({ url: `${SITE_URL}/courses/${c.slug}/${l.slug}`, changeFrequency: 'monthly' as const, priority: 0.5 })),
   ])
-  const clientRoutes: MetadataRoute.Sitemap = (clientsRes.data || []).map((c: any) => ({ url: `${SITE_URL}/design/clients/${c.slug}`, changeFrequency: 'monthly' as const, priority: 0.6 }))
+  const clientRoutes: MetadataRoute.Sitemap = (clientsRes.data || []).map((c) => ({ url: `${SITE_URL}/design/clients/${c.slug}`, changeFrequency: 'monthly' as const, priority: 0.6 }))
   // Every page in both languages; each entry names its twin so Google pairs them (hreflang).
   const all = [...staticRoutes, ...projectRoutes, ...articleRoutes, ...serviceRoutes, ...productRoutes, ...courseRoutes, ...clientRoutes]
   const urOf = (u: string) => { const p = u.slice(SITE_URL.length) || '/'; return `${SITE_URL}${p === '/' ? '/ur' : `/ur${p}`}` }

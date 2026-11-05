@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import IdleLogout from '@/app/components/IdleLogout'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -79,6 +80,7 @@ export default function AdminNav() {
   return (
     <>
       {/* Desktop sidebar: boxed rows, stays in view while the page scrolls */}
+      <IdleLogout />
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-ink-100 bg-paper text-ink-900 md:flex">
         <div className="border-b border-ink-100 px-5 py-6">
           <p className="font-display text-4xl uppercase leading-none text-ink-900">Admin</p>

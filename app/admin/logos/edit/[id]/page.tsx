@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { adminStorage } from '@/lib/adminStorage'
@@ -21,9 +22,9 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
 
   useEffect(() => {
     async function fetchLogo() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('client_logos', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('client_logos', id) } catch (cause) { error = asError(cause) }
       if (error) {
         alert('Error loading logo: ' + error.message)
       } else if (data) {
@@ -52,7 +53,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
       const imageUrl = file ? await uploadImage(file) : currentImageUrl
       const darkImageUrl = darkFile ? await uploadImage(darkFile) : currentDarkImageUrl
 
-      let dbError: any = null
+      let dbError: Error | null = null
       try { await adminApi.update('client_logos', id, {
         name: formData.name,
         slug: formData.slug || slugifyClient(formData.name) || null, role: formData.role || null, period: formData.period || null, summary: formData.summary || null,
@@ -61,12 +62,13 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
         order_index: formData.order_index,
         image_url: imageUrl,
         dark_image_url: darkImageUrl,
-      }) } catch (e: any) { dbError = e }
+      }) } catch (cause) { dbError = asError(cause) }
 
       if (dbError) throw dbError
 
       router.push('/admin/logos')
-    } catch (error: any) {
+    } catch (cause) {
+      const error = asError(cause)
       alert('Error: ' + error.message)
     } finally {
       setLoading(false)

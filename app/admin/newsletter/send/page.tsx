@@ -22,8 +22,9 @@ export default function NewsletterSend() {
   const [busy, setBusy] = useState('')
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
   const load = async () => {
-    try { setCount(((await adminApi.list('newsletter_subscribers')) as unknown[] || []).length) } catch { setCount(null) }
-    try { setHistory(((await adminApi.list('newsletter_campaigns', { orderBy: 'sent_at', ascending: false })) as Campaign[]) || []) } catch { /* table appears after the SQL update */ }
+    await adminApi.count('newsletter_subscribers').then(setCount).catch(() => setCount(null))
+    await adminApi.list('newsletter_campaigns', { orderBy: 'sent_at', ascending: false })
+      .then((rows: Campaign[]) => setHistory(rows || [])).catch(() => {})
   }
   useEffect(() => { load() }, [])
 

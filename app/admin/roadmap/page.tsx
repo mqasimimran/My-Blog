@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import Link from 'next/link'
@@ -22,9 +23,9 @@ export default function AdminRoadmapPage() {
 
   useEffect(() => {
     async function fetchItems() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.list('roadmap_items', { select: 'id, title, status, order_index', orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.list('roadmap_items', { select: 'id, title, status, order_index', orderBy: 'order_index', ascending: true }) } catch (cause) { error = asError(cause) }
 
       if (error) console.error('Error fetching roadmap:', error)
       else setItems(data || [])
@@ -39,8 +40,8 @@ export default function AdminRoadmapPage() {
     const current = items[index]
     const target = items[targetIndex]
 
-    try { await adminApi.update('roadmap_items', current.id, { order_index: target.order_index }) } catch (e: any) { console.error(e) }
-    try { await adminApi.update('roadmap_items', target.id, { order_index: current.order_index }) } catch (e: any) { console.error(e) }
+    try { await adminApi.update('roadmap_items', current.id, { order_index: target.order_index }) } catch (e) { console.error(e) }
+    try { await adminApi.update('roadmap_items', target.id, { order_index: current.order_index }) } catch (e) { console.error(e) }
 
     const reordered = [...items]
     reordered[index] = target
@@ -51,16 +52,16 @@ export default function AdminRoadmapPage() {
   async function cycleStatus(item: RoadmapItem) {
     const order: RoadmapItem['status'][] = ['planned', 'in_progress', 'shipped']
     const next = order[(order.indexOf(item.status) + 1) % order.length]
-    let error: any = null
-    try { await adminApi.update('roadmap_items', item.id, { status: next }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('roadmap_items', item.id, { status: next }) } catch (cause) { error = asError(cause) }
     if (error) alert('Error: ' + error.message)
     else setItems(prev => prev.map(i => i.id === item.id ? { ...i, status: next } : i))
   }
 
   async function deleteItem(item: RoadmapItem) {
     if (!confirm(`Delete "${item.title}"?`)) return
-    let error: any = null
-    try { await adminApi.remove('roadmap_items', item.id) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.remove('roadmap_items', item.id) } catch (cause) { error = asError(cause) }
     if (error) alert('Error: ' + error.message)
     else setItems(prev => prev.filter(i => i.id !== item.id))
   }

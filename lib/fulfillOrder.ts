@@ -6,7 +6,7 @@ import { logSecurityEvent } from '@/lib/audit'
 import { siteConfig, SITE_URL } from '@/site.config'
 
 export type FulfilResult =
-  | { ok: true; alreadyPaid: boolean; downloadUrl: string | null; emailSent: boolean; emailError: string | null; order: any }
+  | { ok: true; alreadyPaid: boolean; downloadUrl: string | null; emailSent: boolean; emailError: string | null; order: Record<string, unknown> }
   | { ok: false; status: number; error: string }
 
 const downloadUrlFor = (token: string | null | undefined) => (token ? `${SITE_URL}/shop/download/${token}` : null)
@@ -22,36 +22,13 @@ const downloadUrlFor = (token: string | null | undefined) => (token ? `${SITE_UR
  * second email. That matters because an admin can double-click "verify".
  */
 export async function fulfillOrder(orderId: string): Promise<FulfilResult> {
-  const { data: order, error } = await supabaseAdmin.from('orders').select('*').eq('id', orderId).maybeSingle()
-  if (error) return { ok: false, status: 500, error: error.message }
-  if (!order) return { ok: false, status: 404, error: 'Order not found' }
+  const { data: claim, error } = await supabaseAdmin.rpc('claim_shop_order', { order_id: orderId })
+  if (error || !claim) return { ok: false, status: 500, error: error?.message || 'Could not verify order' }
+  if (claim.error) return { ok: false, status: claim.status, error: claim.error }
+  const order = claim.order
+  const downloadUrl = downloadUrlFor(order.download_token)
+  if (claim.alreadyPaid) return { ok: true, alreadyPaid: true, downloadUrl, emailSent: false, emailError: null, order }
 
-  if (order.status === 'paid') {
-    return { ok: true, alreadyPaid: true, downloadUrl: downloadUrlFor(order.download_token), emailSent: false, emailError: null, order }
-  }
-
-  const downloadToken = crypto.randomUUID()
-  const { data: claimed, error: claimError } = await supabaseAdmin
-    .from('orders')
-    .update({ status: 'paid', download_token: downloadToken, verified_at: new Date().toISOString() })
-    .eq('id', orderId)
-    .neq('status', 'paid')
-    .select()
-  if (claimError) return { ok: false, status: 500, error: claimError.message }
-
-  if (!claimed || claimed.length === 0) {
-    // Lost a race: another request fulfilled it between our read and our update.
-    const { data: fresh } = await supabaseAdmin.from('orders').select('*').eq('id', orderId).maybeSingle()
-    return { ok: true, alreadyPaid: true, downloadUrl: downloadUrlFor(fresh?.download_token), emailSent: false, emailError: null, order: fresh || order }
-  }
-
-  // From here on we are the ONE caller that fulfils this order.
-  const { data: product } = await supabaseAdmin.from('products').select('type, stock_quantity').eq('id', order.product_id).maybeSingle()
-  if (product?.type === 'physical' && product.stock_quantity !== null) {
-    await supabaseAdmin.from('products').update({ stock_quantity: Math.max(0, product.stock_quantity - 1) }).eq('id', order.product_id)
-  }
-
-  const downloadUrl = downloadUrlFor(downloadToken)!
   const mail = await sendEmail({
     from: siteConfig.mail.ordersFrom,
     to: [order.customer_email],
@@ -75,5 +52,5 @@ export async function fulfillOrder(orderId: string): Promise<FulfilResult> {
     detail: { order_number: order.order_number, method: order.payment_method },
   })
 
-  return { ok: true, alreadyPaid: false, downloadUrl, emailSent: mail.ok, emailError: mail.ok ? null : mail.error || 'Email failed', order: claimed[0] }
+  return { ok: true, alreadyPaid: false, downloadUrl, emailSent: mail.ok, emailError: mail.ok ? null : mail.error || 'Email failed', order }
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState } from 'react'
 import ExperienceTimeline from '@/app/components/ExperienceTimeline'
 import { useLocale } from '@/app/components/LocaleProvider'
@@ -178,7 +179,7 @@ export default function Resume() {
               {tx("Close")}
             </button>
             <div className="bg-gray-100 rounded-none overflow-hidden flex items-center justify-center min-h-[300px] relative">
-              <img 
+              <SiteImage
                 src={selectedImage} 
                 alt={tx("Certificate Credential")} 
                 className="max-h-[80vh] w-auto object-contain mx-auto rounded-none"

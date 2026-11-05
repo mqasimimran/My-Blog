@@ -40,12 +40,12 @@ export function estimate(basePrice: number, baseLabel: string, options: ServiceO
 /** Keeps only well-formed options (used when saving from admin and when reading from the database). */
 export function cleanOptions(raw: unknown): ServiceOption[] {
   if (!Array.isArray(raw)) return []
-  return raw.slice(0, 30).flatMap((o: any): ServiceOption[] => {
+  return raw.slice(0, 30).flatMap((o: Record<string, unknown> | null): ServiceOption[] => {
     const id = String(o?.id || '').slice(0, 40), label = String(o?.label || '').trim().slice(0, 120)
-    if (!id || !label) return []
+    if (!o || !id || !label) return []
     if (o.type === 'addon') return [{ id, type: 'addon', label, price: Math.max(0, Number(o.price) || 0), ...(o.note ? { note: String(o.note).slice(0, 160) } : {}) }]
     if (o.type === 'quantity') { const min = Math.max(0, Math.round(Number(o.min) || 0)), max = Math.max(min, Math.round(Number(o.max) || min)); return [{ id, type: 'quantity', label, unitPrice: Math.max(0, Number(o.unitPrice) || 0), min, max, default: Math.min(max, Math.max(min, Math.round(Number(o.default) || min))), ...(o.unit ? { unit: String(o.unit).slice(0, 30) } : {}) }] }
-    if (o.type === 'choice') { const choices = (Array.isArray(o.choices) ? o.choices : []).slice(0, 10).map((c: any) => ({ label: String(c?.label || '').slice(0, 80), ...(Number(c?.price) ? { price: Number(c.price) } : {}), ...(Number(c?.percent) ? { percent: Number(c.percent) } : {}) })).filter((c: Choice) => c.label); return choices.length ? [{ id, type: 'choice', label, choices }] : [] }
+    if (o.type === 'choice') { const choices = (Array.isArray(o.choices) ? o.choices : []).slice(0, 10).map((c: Partial<Choice> | null) => ({ label: String(c?.label || '').slice(0, 80), ...(Number(c?.price) ? { price: Number(c?.price) } : {}), ...(Number(c?.percent) ? { percent: Number(c?.percent) } : {}) })).filter((c: Choice) => c.label); return choices.length ? [{ id, type: 'choice', label, choices }] : [] }
     if (o.type === 'question') return [{ id, type: 'question', label, required: !!o.required }]
     return []
   })

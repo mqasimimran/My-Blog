@@ -10,7 +10,7 @@ type Row = { term: string; searches: number; no_results: number }
 export default function SearchesPage() {
   const [data, setData] = useState<{ total: number; top: Row[]; missing: Row[]; links?: { label: string; clicks: number }[] } | null>(null)
   const [error, setError] = useState('')
-  useEffect(() => { fetch('/api/admin/searches').then(async (r) => { const d = await r.json(); r.ok ? setData(d) : setError(d.error || 'Could not load.') }).catch(() => setError('Could not load.')) }, [])
+  useEffect(() => { fetch('/api/admin/searches').then(async (r) => { const d = await r.json(); if (r.ok) setData(d); else setError(d.error || 'Could not load.') }).catch(() => setError('Could not load.')) }, [])
   const table = (rows: Row[], col: 'searches' | 'no_results', empty: string) => rows.length === 0 ? <p className="mt-4 text-sm text-ink-500">{empty}</p> : (
     <table className="mt-4 w-full text-left text-sm"><tbody>
       {rows.map((r) => <tr key={r.term} className="border-b border-ink-100"><td className="py-2.5 text-ink-900">{r.term}</td><td className="py-2.5 text-right font-mono tabular-nums text-ink-700">{r[col]}</td></tr>)}

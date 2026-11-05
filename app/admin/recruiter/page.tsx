@@ -21,8 +21,11 @@ export default function RecruiterAdmin() {
   const [open, setOpen] = useState<string | null>(null)
   const [msg, setMsg] = useState('')
   const load = async () => {
-    try { setPacks(((await adminApi.list('recruiter_packs', { orderBy: 'created_at', ascending: false })) as Pack[]) || []); setEvents(((await adminApi.list('recruiter_events', { orderBy: 'created_at', ascending: false })) as Ev[]) || []) }
-    catch { setMsg('Could not load. Has the latest SQL update been run?') }
+    await Promise.all([
+      adminApi.list('recruiter_packs', { orderBy: 'created_at', ascending: false }),
+      adminApi.list('recruiter_events', { orderBy: 'created_at', ascending: false }),
+    ]).then(([packs, events]) => { setPacks(packs || []); setEvents(events || []) })
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?'))
   }
   useEffect(() => { load(); adminApi.list('projects', { orderBy: 'created_at', ascending: false }).then((p) => setProjects(((p as (Proj & { published: boolean })[]) || []).filter((x) => x.published))).catch(() => {}) }, [])
   async function save() {

@@ -1,8 +1,9 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import AdminNav from '@/app/admin/AdminNav'
 import { logActivity } from '@/lib/logActivity'
 import { adminApi } from '@/lib/adminApi'
@@ -37,7 +38,8 @@ export default function AdminOrdersPage() {
       try {
         const data = await adminApi.list('orders', { orderBy: 'created_at', ascending: false })
         setOrders(data || [])
-      } catch (err: any) {
+      } catch (cause) {
+        const err = asError(cause)
         console.error('Error fetching orders:', err.message)
       }
       setIsLoading(false)
@@ -78,7 +80,7 @@ export default function AdminOrdersPage() {
       } else {
         alert('Error: ' + data.error)
       }
-    } catch (err) {
+    } catch {
       alert('Something went wrong verifying this order.')
     } finally {
       setVerifyingId(null)
@@ -91,7 +93,8 @@ export default function AdminOrdersPage() {
     try {
       await adminApi.update('orders', order.id, { status: 'rejected' })
       setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: 'rejected' } : o))
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error: ' + err.message)
     }
   }
@@ -191,7 +194,7 @@ export default function AdminOrdersPage() {
           )}
         </div>
       </main>
-      {proofOpen && <div role="dialog" aria-modal="true" aria-label="Payment screenshot" onClick={() => setProofOpen(null)} className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4"><img src={proofOpen} alt="Payment screenshot" className="max-h-[90vh] max-w-full object-contain" /></div>}
+      {proofOpen && <div role="dialog" aria-modal="true" aria-label="Payment screenshot" onClick={() => setProofOpen(null)} className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4"><SiteImage src={proofOpen} alt="Payment screenshot" className="max-h-[90vh] max-w-full object-contain" /></div>}
     </div>
   )
 }

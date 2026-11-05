@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useRef, useState } from 'react'
 import { ArrowsOut, Play } from '@phosphor-icons/react'
 import { useLocale } from '@/app/components/LocaleProvider'
@@ -28,7 +29,7 @@ export default function GamePlayer({ src, title, poster }: { src: string; title:
           />
         ) : (
           <button type="button" onClick={() => { setPlaying(true); window.dispatchEvent(new Event('blur')) }} data-cursor="Play" className="group absolute inset-0 grid place-items-center text-paper">
-            {poster && <img src={poster} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-40 transition-opacity duration-500 group-hover:opacity-30" />}
+            {poster && <SiteImage src={poster} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover opacity-40 transition-opacity duration-500 group-hover:opacity-30" />}
             <span className="relative flex flex-col items-center gap-4">
               <span className="grid h-20 w-20 place-items-center rounded-full bg-paper text-ink-900 transition-transform duration-500 ease-[var(--ease-smooth)] group-hover:scale-110">
                 <Play size={30} weight="fill" aria-hidden />

@@ -1,9 +1,8 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 import AdminNav from '@/app/admin/AdminNav'
 import { adminApi } from '@/lib/adminApi'
 
@@ -19,7 +18,6 @@ type Message = {
 
 export default function AdminMessagesPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -29,7 +27,8 @@ export default function AdminMessagesPage() {
       try {
         const data = await adminApi.list('messages', { orderBy: 'created_at', ascending: false })
         setMessages(data || [])
-      } catch (err: any) {
+      } catch (cause) {
+        const err = asError(cause)
         console.error('Error fetching messages:', err.message)
       }
       setIsLoading(false)
@@ -44,7 +43,8 @@ export default function AdminMessagesPage() {
     try {
       await adminApi.update('messages', id, { is_read: !currentStatus })
       setMessages(prev => prev.map(msg => msg.id === id ? { ...msg, is_read: !currentStatus } : msg))
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert(`Error: ${err.message}`)
     }
   }
@@ -53,7 +53,8 @@ export default function AdminMessagesPage() {
     try {
       await adminApi.remove('messages', id)
       setMessages(prev => prev.filter(msg => msg.id !== id))
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert(`Error deleting message: ${err.message}`)
     }
   }

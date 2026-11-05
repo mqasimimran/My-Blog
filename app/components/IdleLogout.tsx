@@ -9,7 +9,13 @@ const WARNING_BEFORE_MS = 60 * 1000 // warn 60 seconds before logging out
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'] as const
 
 export default function IdleLogout() {
-  const { status } = useSession()
+  const { status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      const target = window.location.pathname + window.location.search
+      window.location.replace('/admin/login?callbackUrl=' + encodeURIComponent(target))
+    },
+  })
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const warningTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 

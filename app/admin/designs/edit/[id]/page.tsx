@@ -1,5 +1,9 @@
 'use client'
 
+import VideoLinksField from '@/app/components/admin/VideoLinksField'
+import { parseVideoLinks, youtubeClip } from '@/lib/portfolioVideo'
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import PreviewLinkField from '@/app/components/admin/PreviewLinkField'
 import { useSession, signOut } from 'next-auth/react'
@@ -13,6 +17,7 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
   const { data: session, status } = useSession()
   const router = useRouter()
 
+  const [videoLinks, setVideoLinks] = useState('')
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('Graphic Design')
   const [clientId, setClientId] = useState('')
@@ -31,16 +36,18 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
 
   useEffect(() => {
     async function fetchDesign() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('designs', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('designs', id) } catch (cause) { error = asError(cause) }
       if (error) {
         console.error('Error fetching design:', error)
       } else if (data) {
         setTitle(data.title)
         setCategory(data.category)
         setClientId(data.client_id || '')
-        setImages(data.images || [])
+        const media: string[] = data.images || []
+        setImages(media.filter((src) => !youtubeClip(src)))
+        setVideoLinks(media.filter((src) => youtubeClip(src)).join('\n'))
         setFeatured(data.featured || false)
         setPublished(data.published ?? true)
         setPreviewToken(data.preview_token || '')
@@ -55,8 +62,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
   }, [id, status])
 
   const removeImage = (index: number) => {
-    if (images.length === 1 && newImageFiles.length === 0) {
-      alert('A design entry must have at least one image.')
+    if (images.length === 1 && newImageFiles.length === 0 && !parseVideoLinks(videoLinks)?.length) {
+      alert('Add a video or another image before removing the last image.')
       return
     }
     setImages(images.filter((_, idx) => idx !== index))
@@ -73,9 +80,14 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const clips = parseVideoLinks(videoLinks)
+    if (!clips) {
+      alert('Enter a valid YouTube video or Shorts link on each line.')
+      return
+    }
     setIsSubmitting(true)
 
-    let finalImages = [...images]
+    const finalImages = [...images]
 
     if (newImageFiles.length > 0) {
       for (let i = 0; i < newImageFiles.length; i++) {
@@ -95,8 +107,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
       }
     }
 
-    if (finalImages.length === 0) {
-      alert('You must have at least one image.')
+    if (finalImages.length === 0 && clips.length === 0) {
+      alert('Add at least one image or YouTube video.')
       setIsSubmitting(false)
       return
     }
@@ -115,8 +127,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
       finalBeforeImage = publicUrlData.publicUrl
     }
 
-    let error: any = null
-    try { await adminApi.update('designs', id, { title, category, client_id: clientId || null, images: finalImages, before_image: finalBeforeImage, featured, published }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('designs', id, { title, category, client_id: clientId || null, images: [...finalImages, ...clips], before_image: finalBeforeImage, featured, published }) } catch (cause) { error = asError(cause) }
     if (error) {
       alert('Error updating design: ' + error.message)
       setIsSubmitting(false)
@@ -181,13 +193,15 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
               </label>
             </div>
 
+            <VideoLinksField value={videoLinks} onChange={setVideoLinks} />
+
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Current Images (<span className="text-accent-600">First image is cover</span>)</label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
                 {images.map((img, idx) => (
                   <div key={idx} className="relative bg-paper border border-ink-100 rounded-none p-2 flex flex-col items-center">
                     <div className="relative w-full h-32 mb-2 rounded-none overflow-hidden bg-paper border border-ink-100">
-                      <img src={img} alt="Design asset" className="w-full h-full object-contain" />
+                      <SiteImage src={img} alt="Design asset" className="w-full h-full object-contain" />
                       {idx === 0 && (
                         <span className="absolute bottom-1 left-1 bg-accent-600 text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-none">Cover</span>
                       )}
@@ -210,10 +224,10 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
-                "Before" Image (optional — enables a drag-to-compare slider)
+                &quot;Before&quot; Image (optional — enables a drag-to-compare slider)
               </label>
               {beforeImage && !beforeImageFile && (
-                <img src={beforeImage} alt="Current before-image" className="w-32 h-24 object-cover rounded-none mb-2 border border-ink-100" />
+                <SiteImage sizes="128px" src={beforeImage} alt="Current before-image" className="w-32 h-24 object-cover rounded-none mb-2 border border-ink-100" />
               )}
               <input type="file" accept="image/*" onChange={(e) => setBeforeImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>

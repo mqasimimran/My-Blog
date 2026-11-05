@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -57,8 +58,8 @@ export default function NewServicePage() {
     // Put this new service at the end of the current order
     const count = await adminApi.count('services')
 
-    let inserted: any = null
-    let error: any = null
+    let inserted = null
+    let error: Error | null = null
     try { const rows = await adminApi.insert('services', {
       name,
       slug: slug || slugify(name),
@@ -72,7 +73,7 @@ export default function NewServicePage() {
       starting_price: startingPrice,
       active,
       order_index: count || 0,
-    }); inserted = rows[0] } catch (e: any) { error = e }
+    }); inserted = rows[0] } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error saving service: ' + error.message)
@@ -112,7 +113,7 @@ export default function NewServicePage() {
             ← Back to Services
           </Link>
           <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-2">New Service</h1>
-          <p className="text-xs text-ink-300 mb-8">After saving, you'll add Basic/Standard/Premium packages on the next screen.</p>
+          <p className="text-xs text-ink-300 mb-8">After saving, you&apos;ll add Basic/Standard/Premium packages on the next screen.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-[1fr_auto] gap-4">
@@ -149,7 +150,7 @@ export default function NewServicePage() {
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">
-                What's Included (one per line) — only shown if you don't add packages below
+                What&apos;s Included (one per line) — only shown if you don&apos;t add packages below
               </label>
               <textarea
                 value={includes}
@@ -173,7 +174,7 @@ export default function NewServicePage() {
                 <textarea rows={2} value={details.ideal_for} onChange={(e) => setDetails({ ...details, ideal_for: e.target.value })} placeholder={"Small businesses and startups that need a clear, professional identity."} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">How it works (one step per line, "Step: detail")</label>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">How it works (one step per line, &quot;Step: detail&quot;)</label>
                 <textarea rows={4} value={details.process} onChange={(e) => setDetails({ ...details, process: e.target.value })} placeholder={"Discovery: we talk about your goals\nConcepts: I design three directions\nRefine: two rounds of revisions\nDeliver: final files and guidelines"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
               <div>
@@ -185,7 +186,7 @@ export default function NewServicePage() {
                 <textarea rows={1} value={details.turnaround} onChange={(e) => setDetails({ ...details, turnaround: e.target.value })} placeholder={"Usually 1 to 2 weeks"} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">FAQs ("Q:" then "A:", blank line between)</label>
+                <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">FAQs (&quot;Q:&quot; then &quot;A:&quot;, blank line between)</label>
                 <textarea rows={6} value={details.faq} onChange={(e) => setDetails({ ...details, faq: e.target.value })} placeholder={"Q: How many revisions are included?\nA: Two rounds, and more can be added.\n\nQ: Do I own the files?\nA: Yes, once paid in full."} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
               </div>
             </div>

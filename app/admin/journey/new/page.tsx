@@ -1,5 +1,7 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -37,14 +39,14 @@ export default function NewJourneyEntryPage() {
 
     const count = await adminApi.count('journey_entries')
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.insert('journey_entries', {
       date_label: dateLabel,
       title,
       body,
       image_url: imageUrl,
       order_index: count || 0,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error saving entry: ' + error.message)
@@ -105,7 +107,7 @@ export default function NewJourneyEntryPage() {
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Photo</label>
               <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
               {imageFile && (
-                <img src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-40 object-cover rounded-none mt-3 border border-ink-100" />
+                <SiteImage src={URL.createObjectURL(imageFile)} alt="Preview" className="w-full h-40 object-cover rounded-none mt-3 border border-ink-100" />
               )}
             </div>
 

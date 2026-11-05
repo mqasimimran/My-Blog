@@ -1,15 +1,16 @@
 'use client'
 
+import type { ResumeItem } from '@/lib/resume'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { siteConfig } from '@/site.config'
 
 export default function ResumeDownloadBuilder() {
  const [data, setData] = useState<{
-  experiences: any[];
-  projects: any[];
-  education: any[];
-  certifications: any[];
+  experiences: ResumeItem[];
+  projects: ResumeItem[];
+  education: ResumeItem[];
+  certifications: ResumeItem[];
 }>({
   experiences: [],
   projects: [],
@@ -66,10 +67,10 @@ export default function ResumeDownloadBuilder() {
 
   if (loading) return <div className="p-10 font-mono text-sm">Loading Resume Builder...</div>
 
-  const filteredExperiences = data.experiences.filter((item: any) => selectedIds[item.id])
-  const filteredProjects = data.projects.filter((item: any) => selectedIds[item.id])
-  const filteredEducation = data.education.filter((item: any) => selectedIds[item.id])
-  const filteredCertifications = data.certifications.filter((item: any) => selectedIds[item.id])
+  const filteredExperiences = data.experiences.filter((item) => selectedIds[item.id])
+  const filteredProjects = data.projects.filter((item) => selectedIds[item.id])
+  const filteredEducation = data.education.filter((item) => selectedIds[item.id])
+  const filteredCertifications = data.certifications.filter((item) => selectedIds[item.id])
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-6 font-sans grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -91,7 +92,7 @@ export default function ResumeDownloadBuilder() {
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2 text-xs">
           <div>
             <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Education</h3>
-            {data.education.map((item: any) => (
+            {data.education.map((item) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -105,7 +106,7 @@ export default function ResumeDownloadBuilder() {
 
           <div>
             <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Experience & Leadership</h3>
-            {data.experiences.map((item: any) => (
+            {data.experiences.map((item) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -119,7 +120,7 @@ export default function ResumeDownloadBuilder() {
 
           <div>
             <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Projects</h3>
-            {data.projects.map((item: any) => (
+            {data.projects.map((item) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -133,7 +134,7 @@ export default function ResumeDownloadBuilder() {
 
           <div>
             <h3 className="font-bold uppercase tracking-wider text-ink-300 mb-2">Certifications</h3>
-            {data.certifications.map((item: any) => (
+            {data.certifications.map((item) => (
               <label key={item.id} className="flex items-center gap-2 mb-1.5 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -186,7 +187,7 @@ export default function ResumeDownloadBuilder() {
                 Education
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {filteredEducation.map((item: any) => (
+                {filteredEducation.map((item) => (
                   <div key={item.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700' }}>
                       <span>{item.institution}</span>
@@ -207,7 +208,7 @@ export default function ResumeDownloadBuilder() {
                 Professional Experience & Leadership
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {filteredExperiences.map((item: any) => (
+                {filteredExperiences.map((item) => (
                   <div key={item.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700' }}>
                       <span>{item.company}</span>
@@ -228,7 +229,7 @@ export default function ResumeDownloadBuilder() {
                 Technical Projects
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {filteredProjects.map((item: any) => (
+                {filteredProjects.map((item) => (
                   <div key={item.id}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: '700' }}>
                       <span>{item.title}</span>
@@ -248,7 +249,7 @@ export default function ResumeDownloadBuilder() {
                 Certifications and Online Courses
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3px 12px' }}>
-                {filteredCertifications.map((item: any) => (
+                {filteredCertifications.map((item) => (
                   <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span>• {item.title} ({item.issuer})</span>
                     <span style={{ fontFamily: 'monospace', color: '#555555', fontSize: '9px' }}>{item.date}</span>

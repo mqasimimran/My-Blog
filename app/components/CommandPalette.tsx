@@ -68,11 +68,9 @@ export default function CommandPalette() {
     router.push(url)
     setIsOpen(false)
     setQuery('')
+    setActiveIndex(0)
   }
 
-  useEffect(() => {
-    setActiveIndex(0)
-  }, [query])
 
   function handleKeyNav(e: React.KeyboardEvent) {
     if (e.key === 'ArrowDown') {
@@ -101,7 +99,7 @@ export default function CommandPalette() {
           type="text"
           autoFocus
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => { setQuery(e.target.value); setActiveIndex(0) }}
           onKeyDown={handleKeyNav}
           placeholder={tx("Jump to a page, project, or post...")}
           className="w-full px-5 py-4 text-base outline-none border-b border-ink-100"

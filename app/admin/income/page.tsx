@@ -12,7 +12,7 @@ export default function IncomePage() {
   const [d, setD] = useState<Data | null>(null)
   const [error, setError] = useState('')
   const [cur, setCur] = useState<'USD' | 'PKR'>('USD')
-  useEffect(() => { fetch('/api/admin/income').then(async (r) => { const j = await r.json(); r.ok ? setD(j) : setError(j.error || 'Could not load.') }).catch(() => setError('Could not load.')) }, [])
+  useEffect(() => { fetch('/api/admin/income').then(async (r) => { const j = await r.json(); if (r.ok) setD(j); else setError(j.error || 'Could not load.') }).catch(() => setError('Could not load.')) }, [])
   const both = (v: Record<'USD' | 'PKR', number>) => [v.USD ? money(v.USD, 'USD') : '', v.PKR ? money(v.PKR, 'PKR') : ''].filter(Boolean).join(' + ') || money(0, cur)
   const max = d ? Math.max(1, ...d.months.map((m) => d.series[cur][m])) : 1
 

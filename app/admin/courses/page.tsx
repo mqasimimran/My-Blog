@@ -1,5 +1,7 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useEffect, useState } from 'react'
 import AdminNav from '@/app/admin/AdminNav'
 import RichTextEditor from '@/components/RichTextEditor'
@@ -19,7 +21,9 @@ export default function CoursesAdmin() {
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [lesson, setLesson] = useState<Lesson | null>(null)
   const [msg, setMsg] = useState('')
-  const loadCourses = async () => { try { setCourses(((await adminApi.list('courses', { orderBy: 'order_index', ascending: true })) as Course[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') } }
+  const loadCourses = async () => { await adminApi.list('courses', { orderBy: 'order_index', ascending: true })
+      .then((rows: Course[]) => setCourses(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?')) }
   const loadLessons = async (courseId: string) => setLessons((((await adminApi.list('course_lessons', { orderBy: 'order_index', ascending: true })) as Lesson[]) || []).filter((l) => l.course_id === courseId))
   useEffect(() => { loadCourses() }, [])
   const open = async (c: Course) => { setCourse(c); setLesson(null); setMsg(''); if (c.id) await loadLessons(c.id); else setLessons([]) }
@@ -29,15 +33,15 @@ export default function CoursesAdmin() {
     const row = { slug: course.slug.trim() || slugify(course.title), title: course.title.trim(), description: course.description?.trim() || null, cover_image: course.cover_image, level: course.level?.trim() || null, published: course.published, order_index: course.order_index }
     try {
       if (course.id) await adminApi.update('courses', course.id, row)
-      else { const created: any = await adminApi.insert('courses', row); const id = Array.isArray(created) ? created[0]?.id : created?.id; setCourse({ ...course, ...row, id }) }
+      else { const created = await adminApi.insert('courses', row); const id = Array.isArray(created) ? created[0]?.id : created?.id; setCourse({ ...course, ...row, id }) }
       setMsg('Course saved.'); loadCourses()
-    } catch (e: any) { setMsg(/duplicate|unique/i.test(e?.message || '') ? 'That address (slug) is already used.' : 'Could not save the course.') }
+    } catch (cause) { const e = asError(cause); setMsg(/duplicate|unique/i.test(e?.message || '') ? 'That address (slug) is already used.' : 'Could not save the course.') }
   }
   async function saveLesson() {
     if (!course?.id || !lesson?.title.trim()) return setMsg(course?.id ? 'Add a lesson title.' : 'Save the course first.')
     const row = { course_id: course.id, slug: lesson.slug.trim() || slugify(lesson.title), title: lesson.title.trim(), content: lesson.content || null, quiz: lesson.quiz.trim() || null, minutes: lesson.minutes === '' ? null : Number(lesson.minutes), order_index: lesson.order_index }
     try { if (lesson.id) await adminApi.update('course_lessons', lesson.id, row); else await adminApi.insert('course_lessons', row); setLesson(null); setMsg('Lesson saved.'); loadLessons(course.id) }
-    catch (e: any) { setMsg(/duplicate|unique/i.test(e?.message || '') ? 'Another lesson in this course already uses that address.' : 'Could not save the lesson.') }
+    catch (cause) { const e = asError(cause); setMsg(/duplicate|unique/i.test(e?.message || '') ? 'Another lesson in this course already uses that address.' : 'Could not save the lesson.') }
   }
   async function move(i: number, dir: -1 | 1) {
     const j = i + dir; if (!course?.id || j < 0 || j >= lessons.length) return
@@ -75,7 +79,7 @@ export default function CoursesAdmin() {
             </div>
             <div className="flex flex-wrap items-center gap-6">
               <label className="cursor-pointer text-xs font-medium uppercase tracking-[0.08em] text-ink-900">{course.cover_image ? 'Replace cover image' : 'Add cover image'}<input type="file" accept="image/*" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadCover(f); e.target.value = '' }} /></label>
-              {course.cover_image && <img src={course.cover_image} alt="" className="h-12 w-20 object-cover" />}
+              {course.cover_image && <SiteImage sizes="80px" src={course.cover_image} alt="" className="h-12 w-20 object-cover" />}
               <label className="flex items-center gap-2 text-sm text-ink-900"><input type="checkbox" checked={course.published} onChange={(e) => setCourse({ ...course, published: e.target.checked })} className="h-4 w-4" /> Published (visible at /courses)</label>
               <button onClick={saveCourse} className="bg-ink-900 px-5 py-2.5 text-xs font-medium uppercase tracking-[0.08em] text-paper hover:bg-accent-600">Save course</button>
             </div>

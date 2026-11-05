@@ -13,5 +13,5 @@ export default async function BlogPage() {
     if (error && /_ur/.test(error.message)) ({ data, error } = await query('id, title, slug, category, excerpt, created_at, feature_image'))
     if (!error) initial = (data as unknown as Article[]) || []
   } catch { /* the list fetches in the browser instead */ }
-  return <BlogList initialArticles={initial} />
+  return <BlogList initialArticles={initial} day={new Date().getUTCDate()} />
 }

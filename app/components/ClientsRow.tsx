@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -22,7 +23,7 @@ export default function ClientsRow() {
       <ul className="mt-4 flex flex-wrap gap-3">
         {clients.map((c) => (
           <li key={c.id}><Link href={`/design/clients/${c.slug}`} className="group flex h-16 items-center gap-3 border border-ink-100 bg-paper-raised px-4 transition-colors hover:border-ink-900">
-            {c.image_url && <span className="grid h-9 w-9 place-items-center"><img src={c.image_url} alt="" aria-hidden className="max-h-full max-w-full object-contain dark:hidden" /><img src={c.dark_image_url || c.image_url} alt="" aria-hidden className="hidden max-h-full max-w-full object-contain dark:block" /></span>}
+            {c.image_url && <span className="grid h-9 w-9 place-items-center"><SiteImage src={c.image_url} alt="" aria-hidden className="max-h-full max-w-full object-contain dark:hidden" /><SiteImage src={c.dark_image_url || c.image_url} alt="" aria-hidden className="hidden max-h-full max-w-full object-contain dark:block" /></span>}
             <span className="text-sm font-medium text-ink-900 group-hover:text-accent-600" dir="auto">{c.name}</span>
           </Link></li>
         ))}

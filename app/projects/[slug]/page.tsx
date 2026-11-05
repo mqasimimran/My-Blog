@@ -1,5 +1,8 @@
 'use client'
 
+import { youtubeClip } from '@/lib/portfolioVideo'
+import PortfolioVideo from '@/app/components/PortfolioVideo'
+import SiteImage from '@/components/SiteImage'
 import { useEffect, useState, use } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -42,6 +45,13 @@ type RelatedProject = {
   feature_image: string | null
 }
 
+const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <section className="grid gap-4 border-t border-ink-100 py-12 md:grid-cols-12 md:gap-10 md:py-16">
+    <h2 className="type-h3 text-ink-900 md:col-span-4">{label}</h2>
+    <div className="md:col-span-8">{children}</div>
+  </section>
+)
+
 export default function ProjectDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { tx } = useLocale()
   const { slug } = use(params)
@@ -53,7 +63,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
     async function fetchProjectDetails() {
       const { data, error } = await supabase
         .from('projects')
-        .select('*')
+        .select('title, category, tech_stack, description, status, feature_image, live_url, github_url, play_url, content, problem, approach, outcome, screenshots, stats')
         .eq('slug', slug)
         .eq('published', true)
         .single()
@@ -123,12 +133,6 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
   }
 
   // One row of the case study: the section name on the left, the text on the right.
-  const Row = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <section className="grid gap-4 border-t border-ink-100 py-12 md:grid-cols-12 md:gap-10 md:py-16">
-      <h2 className="type-h3 text-ink-900 md:col-span-4">{label}</h2>
-      <div className="md:col-span-8">{children}</div>
-    </section>
-  )
   const bodyText = 'whitespace-pre-line text-lg leading-[1.75] text-ink-700 max-w-[62ch]'
   const proseClass =
     'prose prose-lg max-w-[62ch] prose-headings:font-semibold prose-headings:tracking-[-0.025em] prose-headings:text-ink-900 prose-p:text-ink-700 prose-li:text-ink-700 prose-strong:text-ink-900 prose-a:text-ink-900 prose-a:decoration-accent-600 prose-a:underline-offset-4 hover:prose-a:text-accent-600 prose-pre:rounded-none prose-pre:bg-ink-900 prose-pre:text-paper'
@@ -161,11 +165,18 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       {project.feature_image && (
         <figure className="container-page mt-14 md:mt-20">
           <div className="overflow-hidden bg-ink-50">
-            <img src={project.feature_image} alt={project.title} className="h-auto max-h-[80vh] w-full object-cover" />
+            <SiteImage src={project.feature_image} alt={project.title} className="h-auto max-h-[80vh] w-full object-cover" />
           </div>
         </figure>
       )}
 
+      {project.screenshots?.some((src) => youtubeClip(src)) && (
+        <section className="container-page space-y-6 py-10" aria-label={tx("Project videos")}>
+          {project.screenshots.filter((src) => youtubeClip(src)).map((src, index) => (
+            <PortfolioVideo key={src} src={src} title={project.title + ' · ' + tx("Video") + ' ' + (index + 1)} />
+          ))}
+        </section>
+      )}
       {project.play_url && (
         <section className="container-page mt-14 md:mt-20" aria-label={tx("Play the game")}>
           <h2 className="type-h2 text-ink-900"><SplitText text={tx("Play it in your browser")} /></h2>
@@ -208,11 +219,11 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                 </ul>
               </Row>
             )}
-            {project.screenshots && project.screenshots.length > 0 && (
+            {project.screenshots?.some((src) => !youtubeClip(src)) && (
               <div className="grid grid-cols-1 gap-6 border-t border-ink-100 py-12 sm:grid-cols-2 md:py-16">
-                {project.screenshots.map((src, i) => (
+                {project.screenshots.filter((src) => !youtubeClip(src)).map((src, i) => (
                   <div key={i} className="overflow-hidden bg-ink-50">
-                    <img src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="h-auto w-full" />
+                    <SiteImage src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="h-auto w-full" />
                   </div>
                 ))}
               </div>

@@ -1,3 +1,5 @@
+import { mediaCover } from '@/lib/portfolioVideo'
+import SiteImage from '@/components/SiteImage'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -17,7 +19,7 @@ async function get(slug: string) {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const r = await get((await params).slug)
   if (!r) return { title: 'Client not found', robots: { index: false } }
-  return pageMeta({ title: `Design work for ${r.c.name}`, description: r.c.summary || `${r.c.role ? r.c.role + ' at ' : 'Design work for '}${r.c.name}.`, path: `/design/clients/${r.c.slug}`, image: r.designs[0]?.images?.[0] || r.c.image_url })
+  return pageMeta({ title: `Design work for ${r.c.name}`, description: r.c.summary || `${r.c.role ? r.c.role + ' at ' : 'Design work for '}${r.c.name}.`, path: `/design/clients/${r.c.slug}`, image: mediaCover(r.designs[0]?.images?.[0]) || r.c.image_url })
 }
 
 // A client's own page: a short case study (role, period, what I did, their testimonial) and only their designs.
@@ -30,10 +32,10 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
     <main className="container-page pb-24 pt-12 md:pt-20">
       <JsonLd data={{ '@type': 'CollectionPage', name: `Design work for ${c.name}`, description: clip(c.summary), url: `${SITE_URL}/design/clients/${c.slug}`, author,
         about: { '@type': 'Organization', name: c.name, ...(c.link_url ? { url: c.link_url } : {}), ...(c.image_url ? { logo: absolute(c.image_url) } : {}) },
-        hasPart: designs.slice(0, 20).map((d) => ({ '@type': 'CreativeWork', name: d.title, image: absolute(d.images?.[0]) })) }} />
+        hasPart: designs.slice(0, 20).map((d) => ({ '@type': 'CreativeWork', name: d.title, image: absolute(mediaCover(d.images?.[0])) })) }} />
       <Link href="/design" className="type-meta hover:text-ink-900">&larr; All design work</Link>
       <div className="mt-6 flex flex-wrap items-center gap-6">
-        {c.image_url && <div className="grid h-20 w-20 place-items-center border border-ink-100 bg-paper-raised p-3"><img src={c.image_url} alt={`${c.name} logo`} className="max-h-full max-w-full object-contain dark:hidden" />{c.dark_image_url ? <img src={c.dark_image_url} alt={`${c.name} logo`} className="hidden max-h-full max-w-full object-contain dark:block" /> : <img src={c.image_url} alt="" aria-hidden className="hidden max-h-full max-w-full object-contain dark:block" />}</div>}
+        {c.image_url && <div className="grid h-20 w-20 place-items-center border border-ink-100 bg-paper-raised p-3"><SiteImage src={c.image_url} alt={`${c.name} logo`} className="max-h-full max-w-full object-contain dark:hidden" />{c.dark_image_url ? <SiteImage src={c.dark_image_url} alt={`${c.name} logo`} className="hidden max-h-full max-w-full object-contain dark:block" /> : <SiteImage src={c.image_url} alt="" aria-hidden className="hidden max-h-full max-w-full object-contain dark:block" />}</div>}
         <div><h1 className="type-display text-ink-900" dir="auto">{c.name}</h1>
           <p className="mt-2 text-ink-500" dir="auto">{[c.role, c.period].filter(Boolean).join(' \u00b7 ')}</p></div>
       </div>

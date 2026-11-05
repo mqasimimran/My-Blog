@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState } from 'react'
 import { adminApi } from '@/lib/adminApi'
 import { useRouter } from 'next/navigation'
@@ -15,8 +16,8 @@ export default function AddExperience() {
     e.preventDefault()
     setLoading(true)
 
-    let error: any = null
-    try { await adminApi.insert('experiences', formData) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.insert('experiences', formData) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error adding experience: ' + error.message)

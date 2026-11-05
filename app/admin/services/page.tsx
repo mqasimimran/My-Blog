@@ -1,8 +1,8 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
@@ -18,15 +18,14 @@ type Service = {
 
 export default function AdminServicesPage() {
   const { data: session, status } = useSession()
-  const router = useRouter()
   const [services, setServices] = useState<Service[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function fetchServices() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.list('services', { select: 'id, name, tagline, order_index, active', orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.list('services', { select: 'id, name, tagline, order_index, active', orderBy: 'order_index', ascending: true }) } catch (cause) { error = asError(cause) }
 
       if (error) {
         console.error('Error fetching services:', error)
@@ -48,10 +47,10 @@ export default function AdminServicesPage() {
     const current = services[index]
     const target = services[targetIndex]
 
-    let err1: any = null
-    try { await adminApi.update('services', current.id, { order_index: target.order_index }) } catch (e: any) { err1 = e }
-    let err2: any = null
-    try { await adminApi.update('services', target.id, { order_index: current.order_index }) } catch (e: any) { err2 = e }
+    let err1: Error | null = null
+    try { await adminApi.update('services', current.id, { order_index: target.order_index }) } catch (cause) { err1 = asError(cause) }
+    let err2: Error | null = null
+    try { await adminApi.update('services', target.id, { order_index: current.order_index }) } catch (cause) { err2 = asError(cause) }
 
     if (err1 || err2) {
       alert('Error updating order')
@@ -64,8 +63,8 @@ export default function AdminServicesPage() {
   }
 
   async function toggleActive(service: Service) {
-    let error: any = null
-    try { await adminApi.update('services', service.id, { active: !service.active }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('services', service.id, { active: !service.active }) } catch (cause) { error = asError(cause) }
     if (error) {
       alert('Error updating: ' + error.message)
     } else {
@@ -104,7 +103,7 @@ export default function AdminServicesPage() {
 
           {services.length === 0 ? (
             <div className="bg-paper rounded-none shadow-sm border border-ink-100 p-10 text-center text-sm text-ink-500">
-              No services found. Click "+ New Service" to add your first offering!
+              No services found. Click &quot;+ New Service&quot; to add your first offering!
             </div>
           ) : (
             <div className="space-y-4">
@@ -156,8 +155,8 @@ export default function AdminServicesPage() {
                       e.preventDefault()
                       if (!confirm(`Are you sure you want to delete "${service.name}"?`)) return
 
-                      let error: any = null
-                      try { await adminApi.remove('services', service.id) } catch (e: any) { error = e }
+                      let error: Error | null = null
+                      try { await adminApi.remove('services', service.id) } catch (cause) { error = asError(cause) }
                       if (error) {
                         alert('Error deleting: ' + error.message)
                       } else {

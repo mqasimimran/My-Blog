@@ -1,18 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 import { Moon, Sun } from '@phosphor-icons/react'
 
-export default function DarkModeToggle() {
-  const [isDark, setIsDark] = useState(false)
+function subscribe(notify: () => void) {
+  const observer = new MutationObserver(notify)
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+  return () => observer.disconnect()
+}
 
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'))
-  }, [])
+export default function DarkModeToggle() {
+  const isDark = useSyncExternalStore(subscribe, () => document.documentElement.classList.contains('dark'), () => false)
 
   const toggle = () => {
     const next = !isDark
-    setIsDark(next)
     document.documentElement.classList.toggle('dark', next)
     localStorage.setItem('theme', next ? 'dark' : 'light')
   }

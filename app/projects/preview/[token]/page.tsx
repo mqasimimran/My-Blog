@@ -1,3 +1,5 @@
+import { youtubeClip } from '@/lib/portfolioVideo'
+import PortfolioVideo from '@/app/components/PortfolioVideo'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
@@ -61,7 +63,9 @@ export default async function ProjectPreviewPage({ params }: { params: Promise<{
 
         {project.screenshots && project.screenshots.length > 0 && (
           <section className="mb-10 space-y-6">
-            {project.screenshots.map((src: string, i: number) => (
+            {project.screenshots.map((src: string, i: number) => youtubeClip(src) ? (
+              <PortfolioVideo key={src} src={src} title={project.title} />
+            ) : (
               <div key={i} className="relative w-full aspect-video border border-ink-100">
                 <Image src={src} alt={`${project.title} screenshot ${i + 1}`} fill className="object-cover" />
               </div>

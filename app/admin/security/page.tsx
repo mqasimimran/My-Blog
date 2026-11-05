@@ -10,7 +10,7 @@ type AuditEvent = {
   event: string
   ip: string | null
   user_agent: string | null
-  detail: Record<string, any> | null
+  detail: Record<string, unknown> | null
 }
 
 type HealthCheck = { id: string; label: string; status: 'ok' | 'warn' | 'fail'; hint?: string }
@@ -33,7 +33,7 @@ function describe(e: AuditEvent): string {
   const d = e.detail || {}
   if (e.event === 'admin_write') {
     const n = Array.isArray(d.ids) ? d.ids.length : 0
-    return `${d.op} on ${d.table}${n > 1 ? ` (${n} rows)` : ''}${d.fields ? ` — ${d.fields.join(', ')}` : ''}`
+    return `${d.op} on ${d.table}${n > 1 ? ` (${n} rows)` : ''}${Array.isArray(d.fields) ? ` — ${d.fields.join(', ')}` : ''}`
   }
   if (e.event === 'login_failed') {
     const why = String(d.reason || 'unknown')
@@ -48,6 +48,7 @@ function describe(e: AuditEvent): string {
 
 export default function SecurityPage() {
   const { data: session, status } = useSession()
+  const [loadedAt, setLoadedAt] = useState(0)
   const [events, setEvents] = useState<AuditEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -60,6 +61,7 @@ export default function SecurityPage() {
       .then(async (r) => {
         const j = await r.json()
         if (!r.ok) throw new Error(j.error || 'Failed to load')
+        setLoadedAt(Date.now())
         setEvents(j.data || [])
       })
       .catch((e) => setError(e.message))
@@ -72,14 +74,14 @@ export default function SecurityPage() {
   }, [status])
 
   const stats = useMemo(() => {
-    const dayAgo = Date.now() - 24 * 60 * 60 * 1000
+    const dayAgo = loadedAt - 24 * 60 * 60 * 1000
     const recent = events.filter((e) => new Date(e.created_at).getTime() > dayAgo)
     return {
       failed: recent.filter((e) => e.event === 'login_failed' || e.event === 'login_blocked').length,
       blocked: recent.filter((e) => ['admin_unauthorized', 'admin_cross_site_blocked', 'admin_table_blocked', 'upload_refused'].includes(e.event)).length,
       lastLogin: events.find((e) => e.event === 'login_success'),
     }
-  }, [events])
+  }, [events, loadedAt])
 
   const shown = events.filter((e) =>
     filter === 'all' ? true :
@@ -142,7 +144,7 @@ export default function SecurityPage() {
           </div>
 
           {loading && <p className="text-sm text-ink-500 font-mono">Loading events...</p>}
-          {error && <p className="text-sm text-red-500">{error}. If this says the table doesn't exist, run supabase/migrations/security-audit-log.sql.</p>}
+          {error && <p className="text-sm text-red-500">{error}. If this says the table doesn&apos;t exist, run supabase/migrations/security-audit-log.sql.</p>}
           {!loading && !error && shown.length === 0 && <p className="text-sm text-ink-500">Nothing to show for this filter.</p>}
 
           <div className="space-y-2">

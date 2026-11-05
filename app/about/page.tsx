@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect } from 'react'
 import { ButtonLink } from '@/app/components/ui/Button'
 import EmptyState from '@/app/components/EmptyState'
@@ -15,17 +16,6 @@ type JourneyEntry = {
   body: string | null
   image_url: string | null
   order_index: number
-}
-
-function ImagePlaceholder() {
-  const { tx } = useLocale()
-  return (
-    <div className="w-full aspect-[4/3] border-2 border-dashed border-ink-100 bg-paper/70 rounded-none flex items-center justify-center p-6 text-center">
-      <p className="text-xs text-ink-300 leading-relaxed">
-        {tx("No photo added yet")}
-      </p>
-    </div>
-  )
 }
 
 export default function AboutJourneyPage() {
@@ -84,7 +74,7 @@ export default function AboutJourneyPage() {
                     )}
                     {entry.image_url && (
                       <div className="mt-10 overflow-hidden bg-ink-50">
-                        <img src={entry.image_url} alt={entry.title} loading="lazy" className="h-auto max-h-[560px] w-full object-cover" />
+                        <SiteImage src={entry.image_url} alt={entry.title} loading="lazy" className="h-auto max-h-[560px] w-full object-cover" />
                       </div>
                     )}
                   </article>

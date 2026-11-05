@@ -23,7 +23,9 @@ function SearchResults() {
   const router = useRouter()
   const initialQuery = searchParams.get('q') || ''
 
-  const [query, setQuery] = useState(initialQuery)
+  const [draft, setDraft] = useState({ urlQuery: initialQuery, value: initialQuery })
+  const query = draft.urlQuery === initialQuery ? draft.value : initialQuery
+  if (draft.urlQuery !== initialQuery) setDraft({ urlQuery: initialQuery, value: initialQuery })
   const [results, setResults] = useState<Result[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeType, setActiveType] = useState<'All' | Result['type']>('All')
@@ -96,7 +98,7 @@ function SearchResults() {
             id="site-search"
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => setDraft({ urlQuery: initialQuery, value: e.target.value })}
             placeholder={tx("Projects, posts, design work, services")}
             autoFocus
             className="w-full border-b-2 border-ink-900 bg-transparent py-3 text-2xl font-semibold tracking-[-0.03em] text-ink-900 outline-none transition-colors duration-200 placeholder:text-ink-300 focus:border-accent-600 md:text-4xl"

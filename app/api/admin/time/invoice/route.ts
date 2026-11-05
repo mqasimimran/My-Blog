@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const g = groups.get(key) || { minutes: 0, rate: Number(e.rate) }; g.minutes += e.minutes; groups.set(key, g)
   }
   const items = [...groups].map(([key, g]) => ({ description: `${key.split('|')[0]}: ${(g.minutes / 60).toFixed(2)} hours`, quantity: Math.round((g.minutes / 60) * 100) / 100, unit_price: g.rate }))
-  const { data: inv, error } = await supabaseAdmin.from('invoices').insert([{ number: await nextNumber('invoices', 'INV'), client_name: client, currency, items, status: 'draft',
+  const { data: inv, error } = await supabaseAdmin.from('invoices').insert([{ number: await nextNumber('INV'), client_name: client, currency, items, status: 'draft',
     due_date: new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10), notes: 'Hours worked, from time tracking.' }]).select('id, number').single()
   if (error || !inv) return NextResponse.json({ error: 'Could not create the invoice.' }, { status: 500 })
   await supabaseAdmin.from('time_entries').update({ invoice_id: inv.id }).in('id', entries.map((e) => e.id)).is('invoice_id', null)

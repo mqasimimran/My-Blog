@@ -8,7 +8,7 @@
 | `security-rollback.sql` | **Emergency only.** Re-opens the database. Insecure — anyone with your public key can read and write everything. | — |
 | `demo-data.sql` | Optional sample content for a new site. | Yes |
 | `demo-data-remove.sql` | Removes exactly the samples above, nothing else. | Yes |
-| `migrations/` | History of how the original site's database grew. **Superseded by `schema.sql`** — you don't need these. | — |
+| `migrations/2026-11-audit-fixes.sql` | **Existing site.** Run this in the Supabase SQL Editor when deploying the admin, checkout and billing fixes. The first run rotates all draft preview links. Copy fresh links from the admin when sharing drafts again. | Yes |
 
-`setup.sql` is generated: edit `schema.sql` / `security-lockdown.sql`, then run `node scripts/setup.mjs build-sql`.
+`setup.sql` includes the schema, security policies and the audit migration. After editing any of these, run `node scripts/setup.mjs build-sql`.
 `node scripts/setup.mjs` warns if `setup.sql` is stale.

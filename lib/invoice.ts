@@ -5,7 +5,14 @@ export type Invoice = {
   currency: 'USD' | 'PKR'; items: InvoiceItem[]; discount: number; tax_percent: number; notes: string | null
   status: 'draft' | 'sent' | 'paid' | 'cancelled'; issue_date: string; due_date: string | null; public_token: string
   sent_at: string | null; paid_at: string | null; created_at: string
-  repeat_monthly?: boolean; repeat_next?: string | null; repeated_from?: string | null
+  repeat_monthly?: boolean; repeat_next?: string | null; repeat_anchor_day?: number | null; repeated_from?: string | null
+}
+
+export function nextMonthlyDate(date: string) {
+  const start = new Date(date + 'T00:00:00Z')
+  const last = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 2, 0))
+  last.setUTCDate(Math.min(start.getUTCDate(), last.getUTCDate()))
+  return last.toISOString().slice(0, 10)
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100

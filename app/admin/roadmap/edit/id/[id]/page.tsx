@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -18,9 +19,9 @@ export default function EditRoadmapItemPage({ params }: { params: Promise<{ id: 
 
   useEffect(() => {
     async function fetchItem() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('roadmap_items', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('roadmap_items', id) } catch (cause) { error = asError(cause) }
       if (data) {
         setTitle(data.title)
         setDescription(data.description || '')
@@ -36,8 +37,8 @@ export default function EditRoadmapItemPage({ params }: { params: Promise<{ id: 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    let error: any = null
-    try { await adminApi.update('roadmap_items', id, { title, description, status: itemStatus }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('roadmap_items', id, { title, description, status: itemStatus }) } catch (cause) { error = asError(cause) }
     if (error) {
       alert('Error saving: ' + error.message)
       setIsSubmitting(false)

@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
 import { adminApi } from '@/lib/adminApi'
 import Link from 'next/link'
@@ -39,7 +40,8 @@ export default function ResumeManagerHub() {
     try {
       const data = await adminApi.list(table, { orderBy: 'order_index', ascending: true })
       setItems((data as ResumeItem[]) || [])
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       console.error('Error fetching data:', err.message)
     }
     setLoading(false)
@@ -66,7 +68,8 @@ export default function ResumeManagerHub() {
     try {
       await adminApi.remove(activeTab, id)
       fetchData(activeTab)
-    } catch (err: any) {
+    } catch (cause) {
+      const err = asError(cause)
       alert('Error deleting: ' + err.message)
     }
   }
@@ -123,7 +126,7 @@ export default function ResumeManagerHub() {
         <div className="py-20 text-center font-mono text-xs text-ink-300">Loading section data...</div>
       ) : items.length === 0 ? (
         <div className="py-20 text-center text-sm text-ink-500 bg-paper border rounded-none">
-          No entries found in this section. Click "+ Add New Entry" above.
+          No entries found in this section. Click &quot;+ Add New Entry&quot; above.
         </div>
       ) : (
         <div className="space-y-4">

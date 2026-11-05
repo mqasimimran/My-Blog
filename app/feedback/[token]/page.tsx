@@ -1,6 +1,7 @@
 'use client'
 
-import { use, useEffect, useState } from 'react'
+import { useStoredValue, storeValue } from '@/lib/useStoredValue'
+import { use, useCallback, useEffect, useState } from 'react'
 import { CheckCircle } from '@phosphor-icons/react'
 import FeedbackCanvas, { type FComment } from '@/app/components/FeedbackCanvas'
 import { siteConfig } from '@/site.config'
@@ -13,15 +14,17 @@ export default function FeedbackPage({ params }: { params: Promise<{ token: stri
   const [board, setBoard] = useState<Board | null>(null)
   const [comments, setComments] = useState<FComment[]>([])
   const [missing, setMissing] = useState(false)
-  const [name, setName] = useState('')
+  const savedName = useStoredValue('feedback-name') || ''
+  const [draftName, setName] = useState<string | null>(null)
+  const name = draftName ?? savedName
   const [approveName, setApproveName] = useState('')
   const [error, setError] = useState('')
-  const load = () => fetch(`/api/feedback/${token}/comments`).then(async (r) => { if (!r.ok) { setMissing(true); return } const d = await r.json(); setBoard(d.board); setComments(d.comments) })
-  useEffect(() => { load(); try { setName(localStorage.getItem('feedback-name') || '') } catch {} }, [token])
+  const load = useCallback(() => fetch(`/api/feedback/${token}/comments`).then(async (r) => { if (!r.ok) { setMissing(true); return } const d = await r.json(); setBoard(d.board); setComments(d.comments) }), [token])
+  useEffect(() => { load() }, [load])
   if (missing) return <main className="container-page pb-24 pt-20"><h1 className="type-h2 text-ink-900">This review link isn&rsquo;t working</h1></main>
   if (!board) return <main className="container-page pb-24 pt-20"><div className="h-96 bg-ink-50 motion-safe:animate-pulse" /></main>
   const add = async (x: number, y: number, body: string) => {
-    setError(''); try { localStorage.setItem('feedback-name', name) } catch {}
+    setError(''); storeValue('feedback-name', name)
     const res = await fetch(`/api/feedback/${token}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ x, y, body, name }) })
     const d = await res.json(); if (res.ok) { setComments(d.comments); return true } setError(d.error || 'Could not save.'); return false
   }

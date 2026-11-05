@@ -1,25 +1,16 @@
 'use client'
 
+import { useMediaQuery } from '@/lib/useMediaQuery'
 import { useEffect, useRef, useState } from 'react'
 
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null)
   const [isHovering, setIsHovering] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
-  const [isTouchDevice, setIsTouchDevice] = useState(false)
+  const disabled = useMediaQuery('(pointer: coarse), (prefers-reduced-motion: reduce)')
 
   useEffect(() => {
-    // Skip entirely on touch devices — a custom cursor has no meaning there
-    if (window.matchMedia('(pointer: coarse)').matches) {
-      setIsTouchDevice(true)
-      return
-    }
-    // Respect motion preferences — a cursor that snaps around the screen
-    // is exactly the kind of motion this setting exists to avoid
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return
-    }
-
+    if (disabled) return
     function handleMouseMove(e: MouseEvent) {
       setIsVisible(true)
       if (dotRef.current) {
@@ -39,9 +30,9 @@ export default function CustomCursor() {
       window.removeEventListener('mousemove', handleMouseMove)
       document.removeEventListener('mouseleave', handleMouseLeave)
     }
-  }, [])
+  }, [disabled])
 
-  if (isTouchDevice) return null
+  if (disabled) return null
 
   return (
     <div

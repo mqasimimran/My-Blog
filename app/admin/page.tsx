@@ -27,7 +27,7 @@ const both = (v: { USD: number; PKR: number }) => [v.USD ? money(v.USD, 'USD') :
 export default function AdminOverview() {
   const [d, setD] = useState<Data | null>(null)
   const [error, setError] = useState('')
-  useEffect(() => { fetch('/api/admin/overview').then(async (r) => (r.ok ? setD(await r.json()) : setError('Could not load the overview.'))).catch(() => setError('Could not load the overview.')) }, [])
+  useEffect(() => { fetch('/api/admin/overview').then(async (r) => (r.status === 401 ? window.location.replace('/admin/login') : r.ok ? setD(await r.json()) : setError('Could not load the overview.'))).catch(() => setError('Could not load the overview.')) }, [])
   const waiting = d ? NEEDS.filter((n) => d.needs[n.key] > 0).length : 0
   const hour = new Date().getHours()
   return (
@@ -35,7 +35,7 @@ export default function AdminOverview() {
       <AdminNav />
       <main className="flex-1 px-6 py-10 md:px-12">
         <h1 className="text-4xl text-ink-900">Good {hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening'}, {siteConfig.firstName}</h1>
-        <p className="mt-2 text-sm text-ink-500">{!d ? 'Loading...' : waiting ? `${waiting} thing${waiting > 1 ? 's' : ''} need${waiting > 1 ? '' : 's'} your attention.` : 'You\u2019re all caught up.'}</p>
+        <p className="mt-2 text-sm text-ink-500">{error ? '' : !d ? 'Loading...' : waiting ? `${waiting} thing${waiting > 1 ? 's' : ''} need${waiting > 1 ? '' : 's'} your attention.` : 'You\u2019re all caught up.'}</p>
         {error && <p role="alert" className="mt-4 text-sm text-error">{error}</p>}
         {d && (
           <>

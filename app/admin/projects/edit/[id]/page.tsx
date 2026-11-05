@@ -1,5 +1,9 @@
 'use client'
 
+import VideoLinksField from '@/app/components/admin/VideoLinksField'
+import { parseVideoLinks, youtubeClip } from '@/lib/portfolioVideo'
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import PreviewLinkField from '@/app/components/admin/PreviewLinkField'
 import { useSession, signOut } from 'next-auth/react'
@@ -14,6 +18,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
   const { data: session, status } = useSession()
   const router = useRouter()
   
+  const [videoLinks, setVideoLinks] = useState('')
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [category, setCategory] = useState('Game Dev')
@@ -44,9 +49,9 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     async function fetchProject() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('projects', id) } catch (e) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('projects', id) } catch (e) { error = asError(e) }
       if (error) {
         console.error('Error fetching project:', error)
       } else if (data) {
@@ -61,7 +66,9 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
         setApproach(data.approach || '')
         setOutcome(data.outcome || '')
         setStats(data.stats || '')
-        setExistingScreenshots(data.screenshots || [])
+        const media: string[] = data.screenshots || []
+        setExistingScreenshots(media.filter((src) => !youtubeClip(src)))
+        setVideoLinks(media.filter((src) => youtubeClip(src)).join('\n'))
         setFeatureImageUrl(data.feature_image || null)
         setPreviewVideoUrl(data.preview_video_url || null)
         setLiveUrl(data.live_url || '')
@@ -81,6 +88,11 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const clips = parseVideoLinks(videoLinks)
+    if (!clips) {
+      alert('Enter a valid YouTube video or Shorts link on each line.')
+      return
+    }
     setIsSubmitting(true)
 
     let screenshotUrls = existingScreenshots
@@ -115,7 +127,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       finalPreviewVideoUrl = publicUrlData.publicUrl
     }
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.update('projects', id, {
       title,
       slug,
@@ -128,7 +140,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       approach,
       outcome,
       stats,
-      screenshots: screenshotUrls,
+      screenshots: [...screenshotUrls, ...clips],
       feature_image: featureImageUrl,
       preview_video_url: finalPreviewVideoUrl,
       live_url: liveUrl,
@@ -136,7 +148,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
       github_url: githubUrl,
       featured,
       published
-    }) } catch (e) { error = e }
+    }) } catch (e) { error = asError(e) }
 
     if (error) {
       alert('Error updating project: ' + error.message)
@@ -237,11 +249,13 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Stat Callouts (optional, one "value|label" per line)</label>
+              <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Stat Callouts (optional, one &quot;value|label&quot; per line)</label>
               <textarea value={stats} onChange={(e) => setStats(e.target.value)} rows={3} className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm font-mono" />
             </div>
 
             <CoverImageField value={featureImageUrl} onChange={setFeatureImageUrl} screenshots={existingScreenshots} />
+
+            <VideoLinksField value={videoLinks} onChange={setVideoLinks} />
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Screenshots</label>
@@ -249,7 +263,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
                 <div className="grid grid-cols-4 gap-2 mb-3">
                   {existingScreenshots.map((src, i) => (
                     <div key={i} className="relative group">
-                      <img src={src} alt="" className="w-full h-16 object-cover rounded-none border border-ink-100" />
+                      <SiteImage src={src} alt="" className="w-full h-16 object-cover rounded-none border border-ink-100" />
                       <button
                         type="button"
                         onClick={() => setExistingScreenshots(prev => prev.filter((_, idx) => idx !== i))}

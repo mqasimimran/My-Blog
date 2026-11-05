@@ -1,5 +1,6 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
@@ -8,7 +9,6 @@ import SectionHeader from '@/app/components/ui/SectionHeader'
 import { ButtonLink } from '@/app/components/ui/Button'
 import { useLocale } from '@/app/components/LocaleProvider'
 import { dateLocale, type Locale } from '@/lib/i18n'
-import { responsive } from '@/lib/img'
 
 type Article = {
   id: string
@@ -56,7 +56,7 @@ export default function FeaturedBlogPosts() {
   // Nothing marked as featured yet: don't show an empty section on the homepage
   if (!isLoading && articles.length === 0) return null
 
-  const [lead, ...rest] = articles
+  const [lead] = articles
 
   return (
     <section className="border-t border-ink-100">
@@ -79,8 +79,8 @@ export default function FeaturedBlogPosts() {
                     <div className="relative aspect-video overflow-hidden border-b border-ink-100 bg-ink-50">
                         {/* 16:9 frame. A 16:9 cover (e.g. 1600x900) fills it exactly; any other shape still shows
                             whole, with a soft blurred copy of itself filling the spare space. Never cropped. */}
-                        <img {...responsive(article.feature_image, '384px', 40)} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
-                        <img {...responsive(article.feature_image, '(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw')} alt={article.title} loading="lazy" className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+                        <SiteImage src={article.feature_image} sizes={'384px'} quality={40} alt="" aria-hidden loading="lazy" className="absolute inset-0 h-full w-full scale-125 object-cover opacity-70 blur-2xl" />
+                        <SiteImage src={article.feature_image} sizes={'(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw'} alt={article.title} loading="lazy" className="absolute inset-0 h-full w-full object-contain transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
                       </div>
                   )}
                   <div className="flex flex-1 flex-col p-6">

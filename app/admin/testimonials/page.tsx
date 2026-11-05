@@ -1,7 +1,9 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
@@ -24,9 +26,9 @@ export default function AdminTestimonialsPage() {
 
   useEffect(() => {
     async function fetchTestimonials() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.list('testimonials', { orderBy: 'order_index', ascending: true }) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.list('testimonials', { orderBy: 'order_index', ascending: true }) } catch (cause) { error = asError(cause) }
 
       if (error) console.error('Error fetching testimonials:', error)
       else setTestimonials(data || [])
@@ -43,10 +45,10 @@ export default function AdminTestimonialsPage() {
     const current = testimonials[index]
     const target = testimonials[targetIndex]
 
-    let err1: any = null
-    try { await adminApi.update('testimonials', current.id, { order_index: target.order_index }) } catch (e: any) { err1 = e }
-    let err2: any = null
-    try { await adminApi.update('testimonials', target.id, { order_index: current.order_index }) } catch (e: any) { err2 = e }
+    let err1: Error | null = null
+    try { await adminApi.update('testimonials', current.id, { order_index: target.order_index }) } catch (cause) { err1 = asError(cause) }
+    let err2: Error | null = null
+    try { await adminApi.update('testimonials', target.id, { order_index: current.order_index }) } catch (cause) { err2 = asError(cause) }
 
     if (err1 || err2) {
       alert('Error updating order')
@@ -59,16 +61,16 @@ export default function AdminTestimonialsPage() {
   }
 
   async function toggleActive(t: Testimonial) {
-    let error: any = null
-    try { await adminApi.update('testimonials', t.id, { active: !t.active }) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.update('testimonials', t.id, { active: !t.active }) } catch (cause) { error = asError(cause) }
     if (error) alert('Error updating: ' + error.message)
     else setTestimonials(prev => prev.map(x => x.id === t.id ? { ...x, active: !x.active } : x))
   }
 
   async function deleteTestimonial(t: Testimonial) {
     if (!confirm(`Delete the testimonial from "${t.name}"?`)) return
-    let error: any = null
-    try { await adminApi.remove('testimonials', t.id) } catch (e: any) { error = e }
+    let error: Error | null = null
+    try { await adminApi.remove('testimonials', t.id) } catch (cause) { error = asError(cause) }
     if (error) alert('Error deleting: ' + error.message)
     else setTestimonials(prev => prev.filter(x => x.id !== t.id))
   }
@@ -111,7 +113,7 @@ export default function AdminTestimonialsPage() {
                       <button onClick={() => moveItem(index, 'down')} disabled={index === testimonials.length - 1} className="w-6 h-6 bg-ink-100 hover:bg-ink-100 disabled:opacity-30 rounded-none flex items-center justify-center text-[10px] font-bold transition-colors cursor-pointer">▼</button>
                     </div>
                     {t.avatar_url ? (
-                      <img src={t.avatar_url} alt={t.name} className="w-12 h-12 rounded-full object-cover" />
+                      <SiteImage sizes="48px" src={t.avatar_url} alt={t.name} className="w-12 h-12 rounded-full object-cover" />
                     ) : (
                       <div className="w-12 h-12 rounded-full bg-ink-100 flex items-center justify-center text-ink-300 text-sm font-bold uppercase">{t.name.charAt(0)}</div>
                     )}
@@ -121,7 +123,7 @@ export default function AdminTestimonialsPage() {
                         <h2 className="text-base font-medium text-ink-900">{t.name}</h2>
                       </div>
                       {t.role && <p className="text-xs text-ink-500">{t.role}</p>}
-                      <p className="text-xs text-ink-300 italic mt-1 max-w-md truncate">"{t.quote}"</p>
+                      <p className="text-xs text-ink-300 italic mt-1 max-w-md truncate">&quot;{t.quote}&quot;</p>
                     </div>
                   </div>
                   <div className="flex items-center flex-wrap gap-4">

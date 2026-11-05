@@ -1,12 +1,12 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useLocale } from '@/app/components/LocaleProvider'
 import SplitText from '@/app/components/ui/SplitText'
 import FilterTabs from '@/app/components/ui/FilterTabs'
-import { responsive } from '@/lib/img'
 
 type W = { id: string; name: string; slug: string; price: number; images: string[] | null; category: string | null }
 type F = 'All' | 'Free' | 'Premium'
@@ -34,7 +34,7 @@ export default function WallpapersPage() {
             <li key={w.id}>
               <Link href={`/shop/${w.slug}`} data-cursor={tx('View')} className="group block border border-ink-100 bg-paper-raised transition-colors hover:border-ink-900">
                 <div className="relative aspect-[4/5] overflow-hidden bg-ink-50">
-                  {w.images?.[0] && <img {...responsive(w.images[0], '(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw')} alt={w.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.03]" />}
+                  {w.images?.[0] && <SiteImage src={w.images[0]} sizes={'(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw'} alt={w.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] group-hover:scale-[1.03]" />}
                   <span className={`absolute start-3 top-3 px-2 py-1 text-[11px] font-medium uppercase tracking-[0.08em] ${Number(w.price) === 0 ? 'bg-paper text-ink-900' : 'bg-ink-900 text-paper'}`}>{Number(w.price) === 0 ? tx('Free') : `$${Number(w.price).toFixed(2)}`}</span>
                 </div>
                 <p className="px-4 py-3 text-[15px] font-medium text-ink-900 group-hover:text-accent-600" dir="auto">{w.name}</p>

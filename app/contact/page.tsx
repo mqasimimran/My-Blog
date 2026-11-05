@@ -1,5 +1,6 @@
 'use client'
 
+import { asError } from '@/lib/asError'
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import CalendlyEmbed from '@/app/components/CalendlyEmbed'
@@ -46,7 +47,8 @@ function ContactForm() {
       } else {
         setSubmitStatus({ type: 'error', message: data.error || 'Something went wrong.' })
       }
-    } catch (error: any) {
+    } catch (cause) {
+      const error = asError(cause)
       console.error('Caught Exception:', error)
       setSubmitStatus({ type: 'error', message: `Error: ${error?.message || 'Check console for details'}` })
     } finally {

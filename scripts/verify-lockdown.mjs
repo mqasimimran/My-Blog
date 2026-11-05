@@ -131,6 +131,9 @@ for (const [name, path] of [
   ['read security audit log', 'security_audit_log?select=*'],
   ['read used 2FA codes', 'admin_totp_used?select=*'],
   ['read paid file URLs', 'products?select=digital_file_url'],
+  ['read article preview tokens', 'articles?select=preview_token&limit=1'],
+  ['read design preview tokens', 'designs?select=preview_token&limit=1'],
+  ['read project preview tokens', 'projects?select=preview_token&limit=1'],
 ]) await blocked(name, 'GET', `${R}/${path}`, baseHeaders)
 
 console.log('\n== PUBLIC SITE (must still work) ==')

@@ -1,5 +1,7 @@
 'use client'
 
+import SiteImage from '@/components/SiteImage'
+import { asError } from '@/lib/asError'
 import { useState, useEffect, use } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -24,9 +26,9 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
 
   useEffect(() => {
     async function fetchTestimonial() {
-      let data: any = null
-      let error: any = null
-      try { data = await adminApi.get('testimonials', id) } catch (e: any) { error = e }
+      let data = null
+      let error: Error | null = null
+      try { data = await adminApi.get('testimonials', id) } catch (cause) { error = asError(cause) }
       if (error) {
         console.error('Error fetching testimonial:', error)
       } else if (data) {
@@ -60,10 +62,10 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
       finalAvatarUrl = publicUrlData.publicUrl
     }
 
-    let error: any = null
+    let error: Error | null = null
     try { await adminApi.update('testimonials', id, {
       name, role, quote, avatar_url: finalAvatarUrl, active,
-    }) } catch (e: any) { error = e }
+    }) } catch (cause) { error = asError(cause) }
 
     if (error) {
       alert('Error updating testimonial: ' + error.message)
@@ -117,7 +119,7 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Photo</label>
               {avatarUrl && !avatarFile && (
-                <img src={avatarUrl} alt="Current" className="w-16 h-16 rounded-full object-cover mb-2 border border-ink-100" />
+                <SiteImage sizes="64px" src={avatarUrl} alt="Current" className="w-16 h-16 rounded-full object-cover mb-2 border border-ink-100" />
               )}
               <input type="file" accept="image/*" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} className="w-full text-xs text-ink-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-xs file:font-bold file:bg-ink-100 file:text-ink-900 hover:file:bg-ink-100 cursor-pointer" />
             </div>

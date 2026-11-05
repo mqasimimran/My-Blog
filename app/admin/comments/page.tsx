@@ -13,7 +13,9 @@ export default function CommentsAdmin() {
   const [tab, setTab] = useState<'pending' | 'approved'>('pending')
   const [reply, setReply] = useState<{ to: C; text: string } | null>(null)
   const [msg, setMsg] = useState('')
-  const load = async () => { try { setList(((await adminApi.list('post_comments', { orderBy: 'created_at', ascending: false })) as C[]) || []) } catch { setMsg('Could not load. Has the latest SQL update been run?') } }
+  const load = async () => { await adminApi.list('post_comments', { orderBy: 'created_at', ascending: false })
+      .then((rows: C[]) => setList(rows || []))
+      .catch(() => setMsg('Could not load. Has the latest SQL update been run?')) }
   useEffect(() => { load() }, [])
   const shown = list.filter((c) => c.status === tab)
   const pending = list.filter((c) => c.status === 'pending').length
