@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { timingSafeEqual } from 'node:crypto'
+import { matchesInvite } from '@/lib/testimonialInvite'
+import { loadWorks, workColumns } from '@/lib/testimonialWork'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
 import { escapeHtml, oneLine } from '@/lib/escapeHtml'
@@ -10,7 +11,7 @@ import { siteConfig } from '@/site.config'
 // HIDDEN; it only appears on the site after you press Show in the admin.
 const TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
 
-const sameCode = (a: string, b: string) => a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b))
+
 
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request)
@@ -29,8 +30,13 @@ export async function POST(request: NextRequest) {
   const code = String(form.get('code') || '')
   const { data: settings } = await supabaseAdmin.from('private_settings').select('testimonial_invite_code').eq('id', 1).maybeSingle()
   const current = settings?.testimonial_invite_code || ''
-  if (!current || !code || !sameCode(code, current)) {
+  const work = String(form.get('work') || '')
+  if (!matchesInvite(code, current, work)) {
     return NextResponse.json({ error: 'This link is no longer active. Please ask for a new one.' }, { status: 403 })
+  }
+
+  if (work && !(await loadWorks(supabaseAdmin, work)).length) {
+    return NextResponse.json({ error: 'This work is no longer available. Please ask for a new link.' }, { status: 400 })
   }
 
   const name = oneLine(String(form.get('name') || '')).trim().slice(0, 80)
@@ -53,7 +59,7 @@ export async function POST(request: NextRequest) {
     avatarUrl = supabaseAdmin.storage.from('blog-images').getPublicUrl(path).data.publicUrl
   }
 
-  const { error } = await supabaseAdmin.from('testimonials').insert([{ name, role: role || null, quote, avatar_url: avatarUrl, active: false, order_index: 1000 }])
+  const { error } = await supabaseAdmin.from('testimonials').insert([{ ...(work ? workColumns(work) : {}), name, role: role || null, quote, avatar_url: avatarUrl, active: false, order_index: 1000 }])
   if (error) return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   await recordEvent(ip, 'testimonial')
 

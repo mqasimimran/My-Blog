@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import useStackShrink from '@/app/components/ui/useStackShrink'
 import Image from '@/components/SafeImage'
+import Link from 'next/link'
+import { describeWork, type WorkRow } from '@/lib/testimonialWork'
 import { supabase } from '@/lib/supabase'
 import SectionHeader from '@/app/components/ui/SectionHeader'
 import { useLocale } from '@/app/components/LocaleProvider'
@@ -12,6 +14,10 @@ type Testimonial = {
   name: string
   role: string | null
   quote: string
+  project?: WorkRow | null
+  design?: WorkRow | null
+  client?: WorkRow | null
+  campaign?: WorkRow | null
   avatar_url: string | null
 }
 
@@ -44,12 +50,15 @@ export default function Testimonials() {
     async function fetchTestimonials() {
       const { data, error } = await supabase
         .from('testimonials')
-        .select('id, name, role, quote, avatar_url')
+        .select('id, name, role, quote, avatar_url, project:projects!project_id(id,title,slug,published), design:designs!design_id(id,title,published), client:client_logos!client_id(id,name,slug,show_on_design), campaign:design_campaigns!campaign_id(id,title,published,client:client_logos(id,name,slug,show_on_design))')
         .eq('active', true)
         .order('order_index', { ascending: true })
 
-      if (error) console.error('Error fetching testimonials:', error)
-      else setTestimonials(data || [])
+      // Keep existing reviews visible while the work-link migration is being rolled out.
+      if (error) {
+        const fallback = await supabase.from('testimonials').select('id,name,role,quote,avatar_url').eq('active',true).order('order_index')
+        setTestimonials(fallback.data || [])
+      } else setTestimonials((data || []) as unknown as Testimonial[])
       setIsLoading(false)
     }
 
@@ -69,7 +78,9 @@ export default function Testimonials() {
 
         {/* Each card sticks under the navbar; the next one slides up and covers it. */}
         <ul ref={listRef} className="mt-12">
-          {testimonials.map((t) => (
+          {testimonials.map((t) => {
+            const work = describeWork('project',t.project) || describeWork('design',t.design) || describeWork('client',t.client) || describeWork('campaign',t.campaign)
+            return (
             <li data-no-animate key={t.id} className="sticky top-[72px] bg-paper pb-6">
               <figure className="grid border border-ink-100 bg-paper md:min-h-[400px] md:grid-cols-12">
                 <div className="relative aspect-[4/3] border-b border-ink-100 bg-ink-50 md:col-span-4 md:aspect-auto md:border-b-0 md:border-r">
@@ -83,10 +94,11 @@ export default function Testimonials() {
                   <p className="type-meta text-ink-900">{t.name}</p>
                   <blockquote className="mt-5 max-w-[44ch] text-[clamp(1.25rem,1.05rem+0.8vw,1.75rem)] font-medium leading-[1.35] tracking-[-0.02em] text-ink-900">&ldquo;{t.quote}&rdquo;</blockquote>
                   {t.role && <figcaption className="mt-6 text-sm text-ink-500">{t.name}, {t.role}</figcaption>}
+                  {work && <Link href={work.href} className="mt-6 self-start underline underline-offset-4">{work.label}: {work.title}</Link>}
                 </div>
               </figure>
             </li>
-          ))}
+          )})}
         </ul>
       </div>
     </section>

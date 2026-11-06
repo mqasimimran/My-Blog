@@ -1,5 +1,7 @@
 'use client'
 
+import { DESIGN_NEEDS } from '@/lib/designNeeds'
+import SaveDesign, { BriefLink } from '@/app/components/SaveDesign'
 import { mediaCover, youtubeClip } from '@/lib/portfolioVideo'
 import PortfolioVideo from '@/app/components/PortfolioVideo'
 import SiteImage from '@/components/SiteImage'
@@ -19,6 +21,7 @@ type DesignItem = {
   id: string
   title: string
   category: string
+  needs?: string[]
   images: string[]
   before_image?: string | null
 }
@@ -29,6 +32,7 @@ function DesignGalleryInner() {
   const [designPortfolio, setDesignPortfolio] = useState<DesignItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeCategory, setActiveCategory] = useState('All')
+  const [activeNeed, setActiveNeed] = useState('All')
   const linkedId = searchParams.get('item')
   const [selection, setSelection] = useState<{ link: string | null; item: DesignItem | null }>()
   const selectedItem = selection && selection.link === linkedId ? selection.item : designPortfolio.find((item) => item.id === linkedId) || null
@@ -40,7 +44,7 @@ function DesignGalleryInner() {
     async function fetchDesigns() {
       const { data, error } = await supabase
         .from('designs')
-        .select('id, title, category, images, before_image')
+        .select('id, title, category, images, before_image, needs')
         .eq('published', true)
         .order('created_at', { ascending: false })
 
@@ -60,9 +64,10 @@ function DesignGalleryInner() {
 
   const categories = ['All', 'Branding & Identity', 'Logo Design', 'Social Media Posts', 'Print Design', 'Packaging Design', 'Product Design', 'Advertising', 'UI/UX Design', 'Illustration', 'Graphic Design']
 
-  const filteredDesigns = activeCategory === 'All'
-    ? designPortfolio
-    : designPortfolio.filter(item => item.category === activeCategory)
+  const filteredDesigns = designPortfolio.filter(item =>
+    (activeCategory === 'All' || item.category === activeCategory) &&
+    (activeNeed === 'All' || item.needs?.includes(activeNeed))
+  )
 
   const handleNext = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -118,6 +123,8 @@ function DesignGalleryInner() {
       </div>
 
       <section className="container-page">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4"><h2 className="type-h2">{tx('What do you need?')}</h2><BriefLink /></div>
+        <div className="mb-8"><FilterTabs label={tx('Browse by need')} options={[{key:'All',label:tx('All')}, ...DESIGN_NEEDS.map(need => ({key:need.id,label:tx(need.label)}))]} value={activeNeed} onChange={setActiveNeed} /></div>
         <FilterTabs label={tx("Filter designs by category")} options={categories.map((c) => ({ key: c, label: c }))} value={activeCategory} onChange={setActiveCategory} />
 
         <div className="mt-12">
@@ -128,7 +135,7 @@ function DesignGalleryInner() {
           ) : (
             <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
               {filteredDesigns.map((item) => (
-                <button key={item.id} type="button" onClick={() => openModal(item)} data-cursor="Open" className="group mb-10 block w-full break-inside-avoid text-left">
+                <div key={item.id} className="mb-10 break-inside-avoid"><button type="button" onClick={() => openModal(item)} data-cursor="Open" className="group block w-full text-left">
                   <div className="overflow-hidden bg-ink-50">
                     {item.images?.[0] && (
                       <SiteImage
@@ -146,7 +153,7 @@ function DesignGalleryInner() {
                     ) : item.images?.length > 1 && <span className="type-meta shrink-0">{item.images.length} images</span>}
                   </div>
                   <p className="type-meta mt-0.5">{item.category}</p>
-                </button>
+                </button><SaveDesign id={item.id} /></div>
               ))}
             </div>
           )}

@@ -1,5 +1,7 @@
 'use client'
 
+import BriefExamples from '@/app/components/BriefExamples'
+import { useDesignBrief } from '@/lib/designBrief'
 import { asError } from '@/lib/asError'
 import { useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -12,7 +14,9 @@ import { useLocale } from '@/app/components/LocaleProvider'
 function ContactForm() {
   const { tx, locale } = useLocale()
   const searchParams = useSearchParams()
-  const prefillSubject = searchParams.get('subject') || ''
+  const {ids: briefIds} = useDesignBrief()
+  const [includeBrief,setIncludeBrief] = useState(true)
+  const prefillSubject = searchParams.get('subject') || (searchParams.get('brief') ? 'Project design brief' : '')
   const prefillMessage = searchParams.get('message') || ''
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -37,7 +41,7 @@ function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, subject, message, website }),
+        body: JSON.stringify({ name, email, subject, message, website, brief_ids: includeBrief ? briefIds : [] }),
       })
       const data = await res.json()
 
@@ -125,6 +129,7 @@ function ContactForm() {
               <textarea id="message" name="message" rows={6} required defaultValue={prefillMessage} suppressHydrationWarning className={`resize-y py-3 ${fieldClass}`} />
             </div>
 
+            <BriefExamples include={includeBrief} onInclude={setIncludeBrief} />
             <div className="flex flex-col items-start gap-4 pt-2">
               <button
                 type="submit"

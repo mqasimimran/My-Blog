@@ -6,7 +6,7 @@ import { siteConfig } from '@/site.config'
 export const BACKUP_TABLES = [
   'articles', 'projects', 'designs', 'services', 'service_packages', 'testimonials', 'products',
   'journey_entries', 'certifications', 'experiences', 'education', 'projects_resume', 'roadmap_items',
-  'client_logos', 'site_settings', 'messages', 'newsletter_subscribers', 'orders',
+  'design_campaigns', 'client_logos', 'site_settings', 'messages', 'newsletter_subscribers', 'orders',
   'discount_codes', 'invoices', 'proposals', 'time_entries', 'client_projects', 'courses', 'course_lessons',
   'feedback_boards', 'feedback_comments', 'post_comments', 'newsletter_campaigns', 'site_searches',
 ]

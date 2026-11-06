@@ -7,6 +7,8 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminStorage } from '@/lib/adminStorage'
+import WorkField from '@/app/admin/testimonials/WorkField'
+import { workColumns } from '@/lib/testimonialWork'
 import { adminApi } from '@/lib/adminApi'
 
 export default function EditTestimonialPage({ params }: { params: Promise<{ id: string }> }) {
@@ -14,6 +16,7 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
   const { data: session, status } = useSession()
   const router = useRouter()
 
+  const [work, setWork] = useState('')
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [quote, setQuote] = useState('')
@@ -32,6 +35,7 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
       if (error) {
         console.error('Error fetching testimonial:', error)
       } else if (data) {
+        setWork(data.campaign_id ? 'campaign:'+data.campaign_id : data.project_id ? 'project:'+data.project_id : data.design_id ? 'design:'+data.design_id : data.client_id ? 'client:'+data.client_id : '')
         setName(data.name)
         setRole(data.role || '')
         setQuote(data.quote)
@@ -64,7 +68,7 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
 
     let error: Error | null = null
     try { await adminApi.update('testimonials', id, {
-      name, role, quote, avatar_url: finalAvatarUrl, active,
+      ...workColumns(work), name, role, quote, avatar_url: finalAvatarUrl, active,
     }) } catch (cause) { error = asError(cause) }
 
     if (error) {
@@ -101,6 +105,7 @@ export default function EditTestimonialPage({ params }: { params: Promise<{ id: 
           <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-8">Edit Testimonial</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <WorkField value={work} onChange={setWork} />
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />

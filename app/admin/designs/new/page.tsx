@@ -1,10 +1,11 @@
 'use client'
 
+import DesignAssignment from '@/app/components/admin/DesignAssignment'
 import VideoLinksField from '@/app/components/admin/VideoLinksField'
 import { parseVideoLinks } from '@/lib/portfolioVideo'
 import SiteImage from '@/components/SiteImage'
 import { asError } from '@/lib/asError'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -18,8 +19,8 @@ export default function NewDesignPage() {
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('Graphic Design')
   const [clientId, setClientId] = useState('')
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([])
-  useEffect(() => { adminApi.list('client_logos', { orderBy: 'order_index', ascending: true }).then((d) => setClients((d as { id: string; name: string }[]) || [])).catch(() => {}) }, [])
+  const [campaignId, setCampaignId] = useState('')
+  const [needs, setNeeds] = useState<string[]>([])
   const [imageFiles, setImageFiles] = useState<File[]>([])
   const [beforeImageFile, setBeforeImageFile] = useState<File | null>(null)
   const [featured, setFeatured] = useState(false)
@@ -98,7 +99,7 @@ export default function NewDesignPage() {
     try { await adminApi.insert('designs', {
       title,
       category,
-      client_id: clientId || null,
+      client_id: clientId || null, campaign_id: campaignId || null, needs,
       images: [...uploadedImageUrls, ...clips],
       before_image: beforeImageUrl,
       featured,
@@ -164,9 +165,8 @@ export default function NewDesignPage() {
                 <option value="Illustration">Illustration</option>
                 <option value="Graphic Design">Graphic Design (Other)</option>
               </select>
-              <label className="mt-4 block text-[10px] font-bold tracking-widest uppercase text-ink-500">Client (optional)
-                <select value={clientId} onChange={(e) => setClientId(e.target.value)} className="mt-1 block w-full border-b border-ink-100 bg-transparent py-2 text-sm normal-case tracking-normal text-ink-900 outline-none"><option value="">Personal work (no client)</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-              </label>
+              <DesignAssignment clientId={clientId} campaignId={campaignId} needs={needs}
+                onChange={(client, campaign, purposes) => { setClientId(client); setCampaignId(campaign); setNeeds(purposes) }} />
             </div>
 
             <VideoLinksField value={videoLinks} onChange={setVideoLinks} />

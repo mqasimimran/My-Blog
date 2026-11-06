@@ -37,7 +37,10 @@ function buildSetupSql() {
   const schema = readFileSync(join(ROOT, 'supabase/schema.sql'), 'utf8')
   const lock = readFileSync(join(ROOT, 'supabase/security-lockdown.sql'), 'utf8')
   const audit = readFileSync(join(ROOT, 'supabase/migrations/2026-11-audit-fixes.sql'), 'utf8')
-  return SETUP_HEADER + schema + SETUP_MIDDLE + lock + '\n' + audit
+  const reviews = readFileSync(join(ROOT, 'supabase/migrations/2026-11-testimonial-work.sql'), 'utf8')
+  const campaigns = readFileSync(join(ROOT, 'supabase/migrations/2026-11-design-campaigns.sql'), 'utf8')
+  const caseReviews = readFileSync(join(ROOT, 'supabase/migrations/2026-11-case-study-testimonials.sql'), 'utf8')
+  return SETUP_HEADER + schema + SETUP_MIDDLE + lock + '\n' + audit + '\n' + reviews + '\n' + campaigns + '\n' + caseReviews
 }
 if (args[0] === 'build-sql') {
   writeFileSync(join(ROOT, 'supabase/setup.sql'), buildSetupSql())

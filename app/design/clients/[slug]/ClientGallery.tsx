@@ -1,5 +1,6 @@
 'use client'
 
+import SaveDesign, { BriefLink } from '@/app/components/SaveDesign'
 import { mediaCover, youtubeClip } from '@/lib/portfolioVideo'
 import PortfolioVideo from '@/app/components/PortfolioVideo'
 import SiteImage from '@/components/SiteImage'
@@ -20,15 +21,16 @@ export default function ClientGallery({ designs }: { designs: D[] }) {
   if (!items.length) return <p className="mt-10 text-ink-500">Designs for this client are coming soon.</p>
   return (
     <>
-      <ul className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3">
+      <div className="mt-6"><BriefLink /></div>
+      <ul className="mt-10 columns-1 gap-4 sm:columns-2 md:columns-3">
         {items.map(({ src, d, index }, i) => index === 0 && (
-          <li key={d.id}><button type="button" onClick={() => setOpen(i)} className="group block w-full text-start" aria-label={`Open ${d.title}`}>
-            <div className="relative aspect-[4/5] overflow-hidden border border-ink-100 bg-ink-50">
-              <SiteImage src={mediaCover(src)} sizes={'(min-width: 768px) 33vw, 50vw'} alt={d.title} loading={i < 3 ? 'eager' : 'lazy'} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]" />
+          <li key={d.id} className="mb-4 break-inside-avoid"><button type="button" onClick={() => setOpen(i)} className="group block w-full text-start" aria-label={`Open ${d.title}`}>
+            <div className="border border-ink-100 bg-ink-50">
+              <SiteImage src={mediaCover(src)} sizes={'(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw'} alt={d.title} loading={i < 3 ? 'eager' : 'lazy'} className="block h-auto w-full object-contain" />
             </div>
             <p className="mt-2 text-[15px] font-medium text-ink-900 group-hover:text-accent-600" dir="auto">{d.title}</p>
             {d.category && <p className="text-xs text-ink-500">{d.category}</p>}
-          </button></li>
+          </button><SaveDesign id={d.id} /></li>
         ))}
       </ul>
       {open !== null && (

@@ -6,12 +6,15 @@ import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { adminStorage } from '@/lib/adminStorage'
+import WorkField from '@/app/admin/testimonials/WorkField'
+import { workColumns } from '@/lib/testimonialWork'
 import { adminApi } from '@/lib/adminApi'
 
 export default function NewTestimonialPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
 
+  const [work, setWork] = useState('')
   const [name, setName] = useState('')
   const [role, setRole] = useState('')
   const [quote, setQuote] = useState('')
@@ -41,7 +44,7 @@ export default function NewTestimonialPage() {
 
     let error: Error | null = null
     try { await adminApi.insert('testimonials', {
-      name, role, quote, avatar_url: avatarUrl, active, order_index: count || 0,
+      ...workColumns(work), name, role, quote, avatar_url: avatarUrl, active, order_index: count || 0,
     }) } catch (cause) { error = asError(cause) }
 
     if (error) {
@@ -78,6 +81,7 @@ export default function NewTestimonialPage() {
           <h1 className="text-3xl font-light tracking-wide uppercase text-ink-900 mb-8">New Testimonial</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            <WorkField value={work} onChange={setWork} />
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">Name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} required placeholder="e.g. Ayesha Binte Hamid" className="w-full border-b border-ink-100 py-2 outline-none focus:border-ink-900 text-sm" />

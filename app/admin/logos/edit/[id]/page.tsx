@@ -7,7 +7,7 @@ import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
 import AdminNav from '@/app/admin/AdminNav'
 
-const slugifyClient = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9\\s-]/g, '').trim().replace(/\\s+/g, '-').slice(0, 60)
+const slugifyClient = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 60)
 
 export default function EditLogoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -18,7 +18,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
   const [darkFile, setDarkFile] = useState<File | null>(null)
   const [currentImageUrl, setCurrentImageUrl] = useState('')
   const [currentDarkImageUrl, setCurrentDarkImageUrl] = useState<string | null>(null)
-  const [formData, setFormData] = useState({ name: '', link_url: '', order_index: 0, slug: '', role: '', period: '', summary: '', testimonial_quote: '', testimonial_author: '', show_on_design: true })
+  const [formData, setFormData] = useState({ name: '', link_url: '', order_index: 0, slug: '', role: '', period: '', summary: '', share_image_url: '', testimonial_quote: '', testimonial_author: '', show_on_design: true })
 
   useEffect(() => {
     async function fetchLogo() {
@@ -28,7 +28,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
       if (error) {
         alert('Error loading logo: ' + error.message)
       } else if (data) {
-        setFormData({ name: data.name, link_url: data.link_url || '', order_index: data.order_index, slug: data.slug || '', role: data.role || '', period: data.period || '', summary: data.summary || '', testimonial_quote: data.testimonial_quote || '', testimonial_author: data.testimonial_author || '', show_on_design: data.show_on_design !== false })
+        setFormData({ name: data.name, link_url: data.link_url || '', order_index: data.order_index, slug: data.slug || '', role: data.role || '', period: data.period || '', summary: data.summary || '', share_image_url: data.share_image_url || '', testimonial_quote: data.testimonial_quote || '', testimonial_author: data.testimonial_author || '', show_on_design: data.show_on_design !== false })
         setCurrentImageUrl(data.image_url)
         setCurrentDarkImageUrl(data.dark_image_url)
       }
@@ -56,7 +56,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
       let dbError: Error | null = null
       try { await adminApi.update('client_logos', id, {
         name: formData.name,
-        slug: formData.slug || slugifyClient(formData.name) || null, role: formData.role || null, period: formData.period || null, summary: formData.summary || null,
+        slug: formData.slug || slugifyClient(formData.name) || null, role: formData.role || null, period: formData.period || null, summary: formData.summary || null, share_image_url: formData.share_image_url || null,
         testimonial_quote: formData.testimonial_quote || null, testimonial_author: formData.testimonial_author || null, show_on_design: formData.show_on_design,
         link_url: formData.link_url || null,
         order_index: formData.order_index,
@@ -88,7 +88,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
       <AdminNav />
       <main className="flex-1 p-10 overflow-y-auto">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-light tracking-wide uppercase text-ink-900 mb-6">Edit Client Logo</h1>
+          <h1 className="text-2xl font-light tracking-wide uppercase text-ink-900 mb-6">Edit client &amp; case study</h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             <input
               type="text" value={formData.name} required
@@ -117,6 +117,8 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
               <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
             </div>
             <div className="space-y-4 border-t border-ink-100 pt-6">
+              <label className="block text-sm">Share image URL (optional)<input type="url" value={formData.share_image_url} onChange={e => setFormData({...formData,share_image_url:e.target.value})} placeholder="https://…" className="mt-1 block w-full border border-ink-100 p-3" /></label>
+              <p className="text-xs text-ink-500">Use an uploaded artwork URL. Leave blank for an automatic case-study title card.</p>
               <p className="text-[10px] font-bold tracking-widest uppercase text-ink-900">Client page (optional): /design/clients/{formData.slug || '...'}</p>
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500">Address<input value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: slugifyClient(e.target.value) })} placeholder="e.g. tedxumt" className="mt-1 block w-full border-b border-ink-100 py-2 font-mono text-sm normal-case tracking-normal text-ink-900 outline-none focus:border-ink-900" /></label>

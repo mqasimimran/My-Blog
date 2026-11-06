@@ -32,6 +32,9 @@ export async function GET() {
   add('Database', 'Core tables', missing.length === 0, 'required', `Run supabase/setup.sql in the Supabase SQL editor. Missing: ${missing.join(', ')}.`)
   const latest = (await probe('projects', 'play_url')) && (await probe('private_settings')) && (await probe('discount_codes')) && (await probe('products', 'bundle_items'))
   add('Database', 'Latest features (games, testimonials, discounts, bundles)', latest, 'required', 'Run the newest supabase/update-*.sql files (or supabase/setup.sql) in the Supabase SQL editor.')
+  add('Database', 'Testimonials linked to clients, designs and campaigns',
+    await probe('testimonials', 'project_id,design_id,client_id,campaign_id'), 'required',
+    'Run supabase/migrations/2026-11-case-study-testimonials.sql in the Supabase SQL editor. It also adds any missing testimonial link columns from earlier updates.')
 
   // Security, tested the way a visitor would: with the public key only.
   let lockedDown = false

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import Image from '@/components/SafeImage'
 import { supabase } from '@/lib/supabase'
 import { useLocale } from '@/app/components/LocaleProvider'
@@ -10,6 +11,8 @@ type ClientLogo = {
   name: string
   image_url: string
   dark_image_url: string | null
+  slug?: string | null
+  show_on_design?: boolean
   link_url: string | null
 }
 
@@ -22,7 +25,7 @@ export default function LogosStrip() {
     async function fetchLogos() {
       const { data, error } = await supabase
         .from('client_logos')
-        .select('id, name, image_url, dark_image_url, link_url')
+        .select('*')
         .order('order_index', { ascending: true })
 
       if (error) console.error('Error fetching client logos:', error)
@@ -56,7 +59,9 @@ export default function LogosStrip() {
                 const cell = 'flex h-12 shrink-0 items-center opacity-70 grayscale transition-[opacity,filter] duration-300 hover:opacity-100 hover:grayscale-0'
                 return (
                   <li key={`${logo.id}-${i}`}>
-                    {logo.link_url ? (
+                    {logo.show_on_design ? (
+                      <Link href={`/design/clients/${encodeURIComponent(logo.slug || logo.id)}`} tabIndex={copy === 1 || i >= logos.length ? -1 : undefined} className={cell}>{images}</Link>
+                    ) : logo.link_url ? (
                       <a href={logo.link_url} target="_blank" rel="noopener noreferrer" tabIndex={copy === 1 || i >= logos.length ? -1 : undefined} className={cell}>{images}</a>
                     ) : (
                       <div className={cell}>{images}</div>

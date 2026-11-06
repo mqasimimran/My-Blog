@@ -1213,3 +1213,162 @@ revoke all on function public.place_shop_order(jsonb), public.claim_shop_order(u
 grant execute on function public.place_shop_order(jsonb), public.claim_shop_order(uuid), public.next_billing_number(text),
   public.accept_proposal(text,text,text), public.repeat_invoice(uuid,date) to service_role;
 commit;
+
+-- Apply once before deploying work-linked testimonials. Existing reviews stay general.
+begin;
+alter table public.testimonials
+  add column if not exists project_id uuid references public.projects(id) on delete set null,
+  add column if not exists design_id uuid references public.designs(id) on delete set null,
+  add column if not exists client_id uuid references public.client_logos(id) on delete set null;
+do $$
+begin
+  if not exists (select from pg_constraint where conrelid='public.testimonials'::regclass and conname='testimonials_one_work') then
+    alter table public.testimonials add constraint testimonials_one_work check (num_nonnulls(project_id, design_id, client_id) <= 1);
+  end if;
+end $$;
+
+-- Reuse the portfolio's UES client, keeping its ID, existing slug, artwork and custom copy.
+do $$
+declare
+  client_uuid uuid;
+  study text := $copy$## UMT Business Fest 2026
+For UMT Business Fest 2026, I designed the event graphics for the UMT Entrepreneurial Society (UES). My work covered two places people would encounter the fest: on Instagram before and around the event, and in print at the venue.
+
+## Designing for the venue
+At the venue, I designed ID cards, flexes, banners and standees. Those formats pose different reading problems: an ID card is read up close, while a banner or standee has to communicate from several steps away. That difference in scale is a useful way to look at the print work in this collection.
+
+## From grid to Story
+For Instagram, I designed social posts, grid posts and Stories. A grid can be viewed as a whole or one square at a time; a Story has the width of a phone screen and only a moment to catch the eye. Together with the print pieces, these designs show how the same event takes shape across a venue and a feed.$copy$;
+begin
+  select id into client_uuid from public.client_logos
+    where slug='ues' or lower(trim(name)) in ('ues','umt entrepreneurial society')
+    order by (slug='ues') desc nulls last, created_at limit 1;
+  if client_uuid is null then
+    insert into public.client_logos(name,slug,image_url,dark_image_url,role,summary,show_on_design,order_index)
+    values ('UMT Entrepreneurial Society','ues','/logos/umt-entrepreneurial-society-dark.png','/logos/umt-entrepreneurial-society-light.png','Graphic designer · UMT Business Fest 2026',study,true,2);
+  else
+    update public.client_logos set slug=coalesce(nullif(slug,''),'ues'),
+      role=coalesce(nullif(role,''),'Graphic designer · UMT Business Fest 2026'),
+      summary=case when nullif(trim(summary),'') is null then study
+        when position(study in summary)>0 then summary
+        else summary || E'\n\n' || study end,
+      show_on_design=true where id=client_uuid;
+  end if;
+end $$;
+commit;
+
+begin;
+create table if not exists public.design_campaigns (
+  id uuid primary key default gen_random_uuid(),
+  client_id uuid not null references public.client_logos(id) on delete cascade,
+  title text not null check (length(trim(title)) between 1 and 160),
+  summary text not null default '',
+  role text,
+  share_image_url text,
+  published boolean not null default false,
+  created_at timestamptz not null default now(),
+  unique (id, client_id)
+);
+alter table public.design_campaigns enable row level security;
+revoke all on public.design_campaigns from anon, authenticated;
+grant select on public.design_campaigns to anon, authenticated;
+grant all on public.design_campaigns to service_role;
+drop policy if exists campaign_public_read on public.design_campaigns;
+create policy campaign_public_read on public.design_campaigns for select to anon, authenticated
+  using (published and exists (select 1 from public.client_logos c where c.id=client_id and c.show_on_design));
+
+alter table public.designs add column if not exists campaign_id uuid references public.design_campaigns(id) on delete set null;
+alter table public.designs add column if not exists needs text[] not null default '{}';
+alter table public.client_logos add column if not exists share_image_url text;
+grant select (campaign_id, needs) on public.designs to anon, authenticated;
+create index if not exists designs_campaign_idx on public.designs(campaign_id);
+create index if not exists design_campaigns_client_idx on public.design_campaigns(client_id);
+
+-- Enforce the association on every write, including the existing generic admin endpoint.
+create or replace function public.check_design_campaign() returns trigger
+language plpgsql set search_path=public as $$
+begin
+  if TG_OP='UPDATE' and new.client_id is distinct from old.client_id
+     and new.campaign_id is not distinct from old.campaign_id then
+    new.campaign_id := null;
+  end if;
+  if new.campaign_id is not null and new.client_id is null then
+    raise exception 'Choose a client for this campaign';
+  end if;
+  return new;
+end $$;
+drop trigger if exists design_campaign_guard on public.designs;
+create trigger design_campaign_guard before insert or update on public.designs
+  for each row execute function public.check_design_campaign();
+do $$ begin
+  if not exists(select 1 from pg_constraint where conname='design_campaign_client_match' and conrelid='public.designs'::regclass) then
+    alter table public.designs add constraint design_campaign_client_match
+      foreign key(campaign_id,client_id) references public.design_campaigns(id,client_id);
+  end if;
+end $$;
+
+-- Create the requested campaign as a draft. The owner chooses which designs belong to it.
+insert into public.design_campaigns(client_id,title,role,summary)
+select id, 'UMT Business Fest 2026', 'Graphic designer',
+'For UMT Business Fest 2026, I designed event graphics for the UMT Entrepreneurial Society.
+
+The print work included ID cards, flexes, banners and standees. These pieces brought the event into the venue, from identification worn by participants to larger displays.
+
+The digital work included social media posts, Instagram grid posts and Stories. This collection brings the print and digital pieces together as one event portfolio.'
+from public.client_logos c
+where (c.slug='ues' or lower(trim(c.name)) in ('ues','umt entrepreneurial society'))
+and not exists(select 1 from public.design_campaigns d where d.client_id=c.id and d.title='UMT Business Fest 2026');
+notify pgrst, 'reload schema';
+commit;
+
+-- Run after 2026-11-design-campaigns.sql.
+begin;
+alter table public.testimonials
+  add column if not exists project_id uuid references public.projects(id) on delete set null,
+  add column if not exists design_id uuid references public.designs(id) on delete set null,
+  add column if not exists client_id uuid references public.client_logos(id) on delete set null;
+alter table public.testimonials add column if not exists campaign_id uuid
+  references public.design_campaigns(id) on delete set null;
+alter table public.testimonials drop constraint if exists testimonials_one_work;
+alter table public.testimonials add constraint testimonials_one_work
+  check (num_nonnulls(project_id,design_id,client_id,campaign_id) <= 1);
+create index if not exists testimonials_client_active_idx on public.testimonials(client_id) where active;
+create index if not exists testimonials_design_active_idx on public.testimonials(design_id) where active;
+create index if not exists testimonials_campaign_active_idx on public.testimonials(campaign_id) where active;
+
+-- Update the earlier generated copy. Keep independently edited case-study text.
+update public.client_logos
+set summary = $study$## Design work for UMT Entrepreneurial Society
+My work for the UMT Entrepreneurial Society (UES) includes the event graphics for UMT Business Fest 2026. The project brought together printed material for the venue and digital designs for Instagram.
+
+## One event across many formats
+I designed ID cards, flexes, banners and standees alongside social media posts, Instagram grid posts and Stories. The collection includes registration announcements and material for Students Expo and CEO Talks.
+
+## Reading the work
+An ID card has to work at close range. A standee or banner needs to communicate from farther away. A grid post can be encountered as one image or as part of a larger composition, while a Story is viewed vertically on a phone. These differences in scale and placement provide the context for the designs below.
+
+## Explore the collection
+The Business Fest campaign brings the event pieces together in one case study. Open an individual design to view its complete artwork, or save examples to a project brief if you are planning a similar event.$study$
+where (lower(trim(name)) in ('ues','umt entrepreneurial society') or slug='ues')
+  and (nullif(trim(summary),'') is null or summary like '## UMT Business Fest 2026%');
+
+update public.design_campaigns
+set summary = $study$## UMT Business Fest 2026
+I created print and digital graphics for UMT Business Fest 2026 with the UMT Entrepreneurial Society. The scope covered the materials people would encounter while discovering the event online and attending it on campus.
+
+## The design challenge
+The collection had to work across very different sizes and placements. Registration information on a phone, an ID card worn at the venue, and a large event display each ask the viewer to read in a different way. This case study brings those formats together so they can be viewed in context.
+
+## Print and venue graphics
+My deliverables included ID cards, flexes, banners and standees. The posters shown in this portfolio combine event information, typography, architectural imagery and registration details. They include material for Students Expo and CEO Talks, alongside broader event and registration announcements.
+
+## Instagram and social media
+I also designed social media posts, Instagram grid posts and Stories. The grid work uses connected compositions across several posts, while other pieces present a single announcement. The gallery preserves the full artwork so the complete layout can be explored.
+
+## Project scope
+This collection documents my graphic design contribution across the event's print and social formats. The artwork below shows the deliverables, and approved testimonials record the experiences of the people I worked with.$study$
+where title='UMT Business Fest 2026'
+  and client_id in (select id from public.client_logos where lower(trim(name)) in ('ues','umt entrepreneurial society') or slug='ues')
+  and (nullif(trim(summary),'') is null or summary like 'For UMT Business Fest 2026, I designed event graphics for the UMT Entrepreneurial Society.%');
+notify pgrst, 'reload schema';
+commit;

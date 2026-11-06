@@ -9,6 +9,7 @@ import { sanitizeRichHtml } from '@/lib/sanitizeRichHtml'
 // isn't enough if the table name is an open parameter, since that would
 // still let a stolen session reach tables like `login_attempts`.
 const ALLOWED_TABLES = new Set([
+  'design_campaigns',
   'private_settings',
   'discount_codes',
   'invoices',

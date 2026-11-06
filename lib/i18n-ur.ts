@@ -2,6 +2,19 @@
 // shows in English, so nothing can break. To change a translation, find the English and edit the Urdu.
 // (Sentences split around a link or amount are translated in Urdu word order.)
 export const UR: Record<string, string> = {
+  "What do you need?": "آپ کو کس چیز کی ضرورت ہے؟",
+  "Browse by need": "ضرورت کے مطابق ڈیزائن دیکھیں",
+  "Promote an event": "کسی تقریب کی تشہیر",
+  "Recruit members": "نئے اراکین کی بھرتی",
+  "Launch a campaign": "مہم کا آغاز",
+  "Build a brand": "برانڈ کی شناخت",
+  "Create social content": "سوشل میڈیا کے لیے مواد",
+  "Design a digital product": "ڈیجیٹل پروڈکٹ کا ڈیزائن",
+  "Clients & case studies": "کلائنٹس اور کیس اسٹڈیز",
+  "Select a client to read the case study and see their designs.": "کیس اسٹڈی پڑھنے اور ڈیزائن دیکھنے کے لیے کسی کلائنٹ کو منتخب کریں۔",
+  "Loading clients…": "کلائنٹس کی فہرست لوڈ ہو رہی ہے…",
+  "The client list could not be loaded.": "کلائنٹس کی فہرست لوڈ نہیں ہو سکی۔",
+  "No client case studies have been published yet.": "ابھی کسی کلائنٹ کی کیس اسٹڈی شائع نہیں ہوئی۔",
   "No photo added yet": "ابھی کوئی تصویر شامل نہیں کی گئی",
   "A journal": "ایک روزنامچہ",
   "Not a resume. A running log of how a Computer Science student ended up also being a designer, a game developer, and whatever comes next.": "یہ ریزیومے نہیں۔ یہ اس سفر کا جاری روزنامچہ ہے کہ کمپیوٹر سائنس کا ایک طالبِ علم کیسے ڈیزائنر، گیم ڈیولپر اور آگے جو کچھ بھی آئے، وہ بھی بن گیا۔",

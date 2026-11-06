@@ -1,5 +1,6 @@
 'use client'
 
+import DesignAssignment from '@/app/components/admin/DesignAssignment'
 import VideoLinksField from '@/app/components/admin/VideoLinksField'
 import { parseVideoLinks, youtubeClip } from '@/lib/portfolioVideo'
 import SiteImage from '@/components/SiteImage'
@@ -21,8 +22,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState('Graphic Design')
   const [clientId, setClientId] = useState('')
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([])
-  useEffect(() => { adminApi.list('client_logos', { orderBy: 'order_index', ascending: true }).then((d) => setClients((d as { id: string; name: string }[]) || [])).catch(() => {}) }, [])
+  const [campaignId, setCampaignId] = useState('')
+  const [needs, setNeeds] = useState<string[]>([])
   const [images, setImages] = useState<string[]>([])
   const [newImageFiles, setNewImageFiles] = useState<File[]>([])
   const [beforeImage, setBeforeImage] = useState<string | null>(null)
@@ -45,6 +46,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
         setTitle(data.title)
         setCategory(data.category)
         setClientId(data.client_id || '')
+        setCampaignId(data.campaign_id || '')
+        setNeeds(data.needs || [])
         const media: string[] = data.images || []
         setImages(media.filter((src) => !youtubeClip(src)))
         setVideoLinks(media.filter((src) => youtubeClip(src)).join('\n'))
@@ -128,7 +131,7 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
     }
 
     let error: Error | null = null
-    try { await adminApi.update('designs', id, { title, category, client_id: clientId || null, images: [...finalImages, ...clips], before_image: finalBeforeImage, featured, published }) } catch (cause) { error = asError(cause) }
+    try { await adminApi.update('designs', id, { title, category, client_id: clientId || null, campaign_id: campaignId || null, needs, images: [...finalImages, ...clips], before_image: finalBeforeImage, featured, published }) } catch (cause) { error = asError(cause) }
     if (error) {
       alert('Error updating design: ' + error.message)
       setIsSubmitting(false)
@@ -188,9 +191,8 @@ export default function EditDesignPage({ params }: { params: Promise<{ id: strin
                 <option value="Illustration">Illustration</option>
                 <option value="Graphic Design">Graphic Design (Other)</option>
               </select>
-              <label className="mt-4 block text-[10px] font-bold tracking-widest uppercase text-ink-500">Client (optional)
-                <select value={clientId} onChange={(e) => setClientId(e.target.value)} className="mt-1 block w-full border-b border-ink-100 bg-transparent py-2 text-sm normal-case tracking-normal text-ink-900 outline-none"><option value="">Personal work (no client)</option>{clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select>
-              </label>
+              <DesignAssignment clientId={clientId} campaignId={campaignId} needs={needs}
+                onChange={(client, campaign, purposes) => { setClientId(client); setCampaignId(campaign); setNeeds(purposes) }} />
             </div>
 
             <VideoLinksField value={videoLinks} onChange={setVideoLinks} />

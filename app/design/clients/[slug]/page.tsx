@@ -1,3 +1,5 @@
+import DesignTestimonials from '@/app/components/DesignTestimonials'
+import { getDesignClient } from '@/lib/designCaseStudy'
 import { mediaCover } from '@/lib/portfolioVideo'
 import SiteImage from '@/components/SiteImage'
 import type { Metadata } from 'next'
@@ -10,27 +12,29 @@ import ClientGallery from './ClientGallery'
 
 const db = () => createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 async function get(slug: string) {
-  const { data: c } = await db().from('client_logos').select('id, name, slug, image_url, dark_image_url, link_url, role, period, summary, testimonial_quote, testimonial_author').eq('slug', slug).maybeSingle()
+  const c = await getDesignClient(slug)
   if (!c) return null
   const { data: designs } = await db().from('designs').select('id, title, category, images, created_at').eq('client_id', c.id).eq('published', true).order('created_at', { ascending: false })
-  return { c, designs: designs || [] }
+  const {data: campaigns, error} = await db().from('design_campaigns').select('id,title,role').eq('client_id',c.id).eq('published',true).order('created_at',{ascending:false})
+  if (error) throw new Error('Could not load client campaigns')
+  return { c, designs: designs || [], campaigns: campaigns || [] }
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const r = await get((await params).slug)
   if (!r) return { title: 'Client not found', robots: { index: false } }
-  return pageMeta({ title: `Design work for ${r.c.name}`, description: r.c.summary || `${r.c.role ? r.c.role + ' at ' : 'Design work for '}${r.c.name}.`, path: `/design/clients/${r.c.slug}`, image: mediaCover(r.designs[0]?.images?.[0]) || r.c.image_url })
+  return pageMeta({ title: `Design work for ${r.c.name}`, description: r.c.summary || `${r.c.role ? r.c.role + ' at ' : 'Design work for '}${r.c.name}.`, path: `/design/clients/${encodeURIComponent(r.c.slug || r.c.id)}`, image: r.c.share_image_url || '/design/clients/'+encodeURIComponent(r.c.slug || r.c.id)+'/share-image' })
 }
 
 // A client's own page: a short case study (role, period, what I did, their testimonial) and only their designs.
 export default async function ClientPage({ params }: { params: Promise<{ slug: string }> }) {
   const r = await get((await params).slug)
   if (!r) notFound()
-  const { c, designs } = r
+  const { c, designs, campaigns } = r
   const paras: string[] = String(c.summary || '').split(/\n\s*\n/).filter(Boolean)
   return (
     <main className="container-page pb-24 pt-12 md:pt-20">
-      <JsonLd data={{ '@type': 'CollectionPage', name: `Design work for ${c.name}`, description: clip(c.summary), url: `${SITE_URL}/design/clients/${c.slug}`, author,
+      <JsonLd data={{ '@type': 'CollectionPage', name: `Design work for ${c.name}`, description: clip(c.summary), url: `${SITE_URL}/design/clients/${encodeURIComponent(c.slug || c.id)}`, author,
         about: { '@type': 'Organization', name: c.name, ...(c.link_url ? { url: c.link_url } : {}), ...(c.image_url ? { logo: absolute(c.image_url) } : {}) },
         hasPart: designs.slice(0, 20).map((d) => ({ '@type': 'CreativeWork', name: d.title, image: absolute(mediaCover(d.images?.[0])) })) }} />
       <Link href="/design" className="type-meta hover:text-ink-900">&larr; All design work</Link>
@@ -40,16 +44,37 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
           <p className="mt-2 text-ink-500" dir="auto">{[c.role, c.period].filter(Boolean).join(' \u00b7 ')}</p></div>
       </div>
       <div className="mt-12 grid gap-10 lg:grid-cols-12">
-        <div className="space-y-4 lg:col-span-7">{paras.length ? paras.map((p, i) => <p key={i} className="text-lg leading-relaxed text-ink-700" dir="auto">{p}</p>) : <p className="text-lg text-ink-700">A selection of my design work for {c.name}.</p>}</div>
+        <div className="space-y-4 lg:col-span-7">{paras.length ? paras.map((p, i) => {
+          const heading = /^## ([^\n]+)\n([\s\S]+)$/.exec(p)
+          return heading ? <section key={i} className="mb-8"><h2 className="mb-3 text-2xl font-medium text-ink-900" dir="auto">{heading[1]}</h2><p className="text-lg leading-relaxed text-ink-700" dir="auto">{heading[2]}</p></section>
+            : <p key={i} className="text-lg leading-relaxed text-ink-700" dir="auto">{p}</p>
+        }) : <p className="text-lg text-ink-700">A selection of my design work for {c.name}.</p>}</div>
         <aside className="space-y-6 lg:col-span-4 lg:col-start-9">
           <div className="grid grid-cols-2 gap-px border border-ink-100 bg-ink-100">
             <div className="bg-paper p-5"><p className="font-display text-4xl leading-none text-ink-900">{designs.length}</p><p className="mt-2 text-sm text-ink-500">design{designs.length === 1 ? '' : 's'}</p></div>
-            <div className="bg-paper p-5"><p className="font-display text-4xl leading-none text-ink-900">{new Set(designs.map((d) => d.category).filter(Boolean)).size || 1}</p><p className="mt-2 text-sm text-ink-500">kind{new Set(designs.map((d) => d.category).filter(Boolean)).size === 1 ? '' : 's'} of work</p></div>
+            <div className="bg-paper p-5"><p className="font-display text-4xl leading-none text-ink-900">{new Set(designs.map((d) => d.category).filter(Boolean)).size}</p><p className="mt-2 text-sm text-ink-500">kind{new Set(designs.map((d) => d.category).filter(Boolean)).size === 1 ? '' : 's'} of work</p></div>
           </div>
-          {c.testimonial_quote && <blockquote className="border-s-2 border-accent-600 ps-5"><p className="text-[17px] italic leading-relaxed text-ink-900" dir="auto">&ldquo;{c.testimonial_quote}&rdquo;</p>{c.testimonial_author && <footer className="mt-2 text-sm text-ink-500" dir="auto">{c.testimonial_author}</footer>}</blockquote>}
+
           {c.link_url && <a href={c.link_url} target="_blank" rel="noopener noreferrer" className="link-draw text-sm">Visit {c.name} &rarr;</a>}
         </aside>
       </div>
+      {campaigns.length > 0 && <section className="mt-16">
+        <h2 className="type-h2">Campaigns</h2>
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+          {campaigns.map(campaign => <li key={campaign.id}>
+            <Link className="block border border-ink-100 p-6 hover:border-ink-900" href={'/design/clients/'+encodeURIComponent(c.slug || c.id)+'/campaigns/'+campaign.id}>
+              <h3 className="text-xl font-medium">{campaign.title}</h3>
+              {campaign.role && <p className="mt-2 text-sm text-ink-500">{campaign.role}</p>}
+              <span className="mt-4 inline-block text-sm underline">Read case study</span>
+            </Link>
+          </li>)}
+        </ul>
+      </section>}
+      <DesignTestimonials references={[
+        {column:'client_id', ids:[c.id]},
+        {column:'campaign_id', ids:campaigns.map(campaign => campaign.id)},
+        {column:'design_id', ids:designs.map(design => design.id)},
+      ]} legacy={{quote:c.testimonial_quote, author:c.testimonial_author}} />
       <h2 className="type-h2 mt-20 text-ink-900">The work</h2>
       <ClientGallery designs={designs} />
     </main>

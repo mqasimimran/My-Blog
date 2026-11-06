@@ -1,16 +1,30 @@
 'use client'
 
-import { Suspense, useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { CheckCircle } from '@phosphor-icons/react'
 import SplitText from '@/app/components/ui/SplitText'
 import { siteConfig } from '@/site.config'
 import { useLocale, useFirstName } from '@/app/components/LocaleProvider'
 
+import { supabase } from '@/lib/supabase'
+import { loadWorks, type Work } from '@/lib/testimonialWork'
+
 function TestimonialForm() {
   const { tx } = useLocale()
   const first = useFirstName()
-  const code = useSearchParams().get('code') || ''
+  const params = useSearchParams()
+  const code = params.get('code') || ''
+  const key = params.get('work') || ''
+  const [selection,setSelection] = useState<{key:string; work?:Work}>()
+  useEffect(() => {
+    if (!key) return
+    let current = true
+    loadWorks(supabase,key).then(([work]) => { if (current) setSelection({key,work}) })
+      .catch(() => { if (current) setSelection({key}) })
+    return () => { current = false }
+  },[key])
+  const selected = selection?.key === key ? selection.work : undefined
   const [sending, setSending] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState('')
@@ -21,6 +35,7 @@ function TestimonialForm() {
     setError('')
     const data = new FormData(e.currentTarget)
     data.set('code', code)
+    data.set('work', key)
     try {
       const res = await fetch('/api/testimonials/submit', { method: 'POST', body: data })
       const json = await res.json()
@@ -59,6 +74,7 @@ function TestimonialForm() {
       <h1 className="type-display max-w-[14ch] text-ink-900"><SplitText text={tx("Share your experience")} /></h1>
       <p className="type-lead mt-6 max-w-[52ch]">{tx('A few honest sentences about working with {name}. It will appear on the site once it\u2019s been reviewed.').replace('{name}', first)}</p>
 
+      {key && <p className="mt-6">{selected ? <>Your review is about <a className="underline" href={selected.href} target="_blank" rel="noreferrer">{selected.title}</a>.</> : selection?.key === key ? 'This work is unavailable. Please ask for a new link.' : 'Loading related work…'}</p>}
       <form onSubmit={submit} className="mt-12 max-w-2xl space-y-6 border border-ink-100 bg-paper-raised p-6 md:p-10">
         <div style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clipPath: 'inset(50%)', whiteSpace: 'nowrap' }} aria-hidden="true">
           <label htmlFor="t-website">{tx("Leave this field empty")}</label>
@@ -89,7 +105,7 @@ function TestimonialForm() {
           {tx("I agree that my name, role, words and photo can be shown on this website.")}
         </label>
         {error && <p role="alert" className="text-sm text-error">{error}</p>}
-        <button type="submit" disabled={sending} className="h-12 bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color] duration-300 hover:bg-accent-600 hover:text-on-accent disabled:opacity-60">
+        <button type="submit" disabled={sending || (!!key && !selected)} className="h-12 bg-ink-900 px-6 text-sm font-medium tracking-tight text-paper transition-[background-color,color] duration-300 hover:bg-accent-600 hover:text-on-accent disabled:opacity-60">
           {sending ? tx('Sending...') : tx('Send testimonial')}
         </button>
       </form>

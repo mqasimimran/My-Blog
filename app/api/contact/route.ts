@@ -19,7 +19,8 @@ function getClientIp(request: NextRequest): string {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, subject, message, website } = body
+    const { name, email, subject, website } = body
+    let message = body.message
 
     // Honeypot — checked server-side now, so it can't be bypassed by a
     // script that skips the browser entirely and calls this route directly.
@@ -58,6 +59,25 @@ export async function POST(request: NextRequest) {
         { error: 'Too many messages sent recently. Please try again in a bit.' },
         { status: 429 }
       )
+    }
+
+    if (body.brief_ids !== undefined) {
+      const ids = body.brief_ids
+      const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
+      if (!Array.isArray(ids) || ids.length > 12 || ids.some(id => typeof id !== 'string' || !uuid.test(id))) {
+        return NextResponse.json({error:'Please choose up to 12 portfolio examples.'},{status:400})
+      }
+      const uniqueIds = [...new Set(ids)] as string[]
+      if (uniqueIds.length) {
+        const {data: examples, error} = await supabase.from('designs').select('id,title').in('id',uniqueIds).eq('published',true)
+        if (error) return NextResponse.json({error:'Could not check the examples. Please try again.'},{status:503})
+        if (examples.length !== uniqueIds.length) return NextResponse.json({error:'An example is no longer available. Remove it from your brief and try again.'},{status:400})
+        const links = uniqueIds.map(id => {
+          const example = examples.find(item => item.id === id)!
+          return oneLine(example.title) + '\n' + siteConfig.url + '/design?item=' + id
+        })
+        message += '\n\nSelected portfolio examples\n' + links.join('\n\n')
+      }
     }
 
     // Package requests (service page configurator): re-price on the server from the service's own
