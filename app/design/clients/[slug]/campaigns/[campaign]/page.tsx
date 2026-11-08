@@ -1,3 +1,4 @@
+import ClientLinks from '@/app/components/ClientLinks'
 import DesignTestimonials from '@/app/components/DesignTestimonials'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -22,6 +23,7 @@ export default async function CampaignPage({params}: Params) {
     <Link href={'/design/clients/'+encodeURIComponent(slug)} className="text-sm underline">All work for {client.name}</Link>
     <h1 className="type-display mt-6">{campaign.title}</h1>
     <p className="mt-4 text-ink-500">{client.name}{campaign.role ? ' · '+campaign.role : ''}</p>
+    <ClientLinks name={client.name} website={client.link_url} socials={client.social_links} />
     <div className="my-10 max-w-3xl space-y-5">{campaign.summary.split(/\n\s*\n/).filter(Boolean).map((paragraph: string, i: number) => {
       const heading = /^## ([^\n]+)\n([\s\S]+)$/.exec(paragraph)
       return heading ? <section key={i}><h2 className="mb-3 text-2xl font-medium">{heading[1]}</h2><p className="text-lg leading-relaxed whitespace-pre-line">{heading[2]}</p></section>

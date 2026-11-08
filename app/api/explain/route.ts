@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 import { complete, provider } from '@/lib/ai'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 
 // "Explain it to me" on project pages: rewrites a published case study for a chosen reader.
 // Answers are cached for 6 hours and limited per visitor, to save your AI quota.
@@ -40,7 +40,6 @@ ${locale === 'ur' ? 'Write in natural Urdu (Urdu script). Keep tool and product 
   try {
     const text = (await complete(system, [{ role: 'user', content: facts }], 700)).trim()
     if (!text) throw new Error('empty')
-    await recordEvent(ip, 'explain')
     cache.set(key, { at: Date.now(), text })
     return NextResponse.json({ text })
   } catch (err) {

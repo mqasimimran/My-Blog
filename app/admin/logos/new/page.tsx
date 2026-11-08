@@ -5,6 +5,8 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
+import ClientSocialField from '@/app/components/admin/ClientSocialField'
+import { parseSocialLinks } from '@/lib/clientSocialLinks'
 import AdminNav from '@/app/admin/AdminNav'
 
 const slugifyClient = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 60)
@@ -14,6 +16,7 @@ export default function NewLogoPage() {
   const [loading, setLoading] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [darkFile, setDarkFile] = useState<File | null>(null)
+  const [socialText, setSocialText] = useState('')
   const [formData, setFormData] = useState({ name: '', link_url: '', order_index: 0, slug: '', role: '', period: '', summary: '', share_image_url: '', testimonial_quote: '', testimonial_author: '', show_on_design: true })
 
   async function uploadImage(f: File): Promise<string> {
@@ -27,6 +30,8 @@ export default function NewLogoPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const socialLinks = parseSocialLinks(socialText)
+    if (!socialLinks) return alert('Check the social media links. Use one web address per line or an Instagram @username.')
     if (!file) return alert('Please select a logo image.')
 
     setLoading(true)
@@ -40,6 +45,7 @@ export default function NewLogoPage() {
         slug: formData.slug || slugifyClient(formData.name) || null, role: formData.role || null, period: formData.period || null, summary: formData.summary || null, share_image_url: formData.share_image_url || null,
         testimonial_quote: formData.testimonial_quote || null, testimonial_author: formData.testimonial_author || null, show_on_design: formData.show_on_design,
         link_url: formData.link_url || null,
+        ...(socialLinks.length ? { social_links: socialLinks } : {}),
         order_index: formData.order_index,
         image_url: imageUrl,
         dark_image_url: darkImageUrl,
@@ -74,6 +80,7 @@ export default function NewLogoPage() {
               className="w-full p-3 border border-ink-100 rounded-none text-sm bg-paper text-ink-900"
               onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
             />
+            <ClientSocialField value={socialText} onChange={setSocialText} />
             <input
               type="number" placeholder="Order (lower shows first)" required
               className="w-full p-3 border border-ink-100 rounded-none text-sm bg-paper text-ink-900"

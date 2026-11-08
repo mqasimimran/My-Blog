@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createHash } from 'node:crypto'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { getProposalByToken } from '@/lib/invoiceServer'
 import { invoiceTotals, money } from '@/lib/invoice'
 import { escapeHtml } from '@/lib/escapeHtml'
@@ -15,7 +15,6 @@ import { whatsappMe } from '@/lib/notify'
 export async function POST(request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const ip = getClientIp(request)
   if (await isRateLimited({ identifier: ip, action: 'proposal_accept', max: 10, windowMinutes: 15 })) return NextResponse.json({ error: 'Too many attempts. Please try again shortly.' }, { status: 429 })
-  await recordEvent(ip, 'proposal_accept')
   const p = await getProposalByToken((await params).token)
   if (!p) return NextResponse.json({ error: 'This proposal could not be found.' }, { status: 404 })
   if (p.status !== 'sent') return NextResponse.json({ error: p.status === 'accepted' ? 'This proposal has already been accepted.' : 'This proposal can no longer be accepted.' }, { status: 409 })

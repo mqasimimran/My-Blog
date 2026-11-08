@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { matchesInvite } from '@/lib/testimonialInvite'
 import { loadWorks, workColumns } from '@/lib/testimonialWork'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { escapeHtml, oneLine } from '@/lib/escapeHtml'
 import { sendEmail } from '@/lib/mail'
 import { siteConfig } from '@/site.config'
@@ -61,7 +61,6 @@ export async function POST(request: NextRequest) {
 
   const { error } = await supabaseAdmin.from('testimonials').insert([{ ...(work ? workColumns(work) : {}), name, role: role || null, quote, avatar_url: avatarUrl, active: false, order_index: 1000 }])
   if (error) return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
-  await recordEvent(ip, 'testimonial')
 
   const to = process.env.NOTIFY_TO_EMAIL
   if (to) {

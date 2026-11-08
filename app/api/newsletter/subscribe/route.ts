@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
@@ -30,6 +30,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 })
   }
 
-  await recordEvent(ip, 'subscribe')
   return NextResponse.json({ success: true })
 }

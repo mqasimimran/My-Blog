@@ -7,6 +7,8 @@ import { verifyTotp } from '@/lib/totp'
 import { logSecurityEvent } from '@/lib/audit'
 import { claimTotpStep } from '@/lib/totpReplay'
 
+import { clientIp } from '@/lib/clientIp'
+import { isRateLimited } from '@/lib/rateLimit'
 import { siteConfig } from '@/site.config'
 // Hashing both sides to a fixed-length digest first lets us use
 // timingSafeEqual regardless of the two strings' actual lengths.
@@ -18,14 +20,7 @@ function safeCompare(a: string, b: string): boolean {
 
 const MAX_ATTEMPTS = 5
 const LOCKOUT_WINDOW_MINUTES = 15
-let warnedLegacyPassword = false
 
-function getClientIp(req: { headers?: Record<string, unknown> }): string {
-  const forwarded = req?.headers?.['x-forwarded-for']
-  if (typeof forwarded === 'string') return forwarded.split(',')[0].trim()
-  const real = req.headers?.['x-real-ip']
-  return typeof real === 'string' ? real : 'unknown'
-}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -37,7 +32,11 @@ export const authOptions: NextAuthOptions = {
         code: { label: "Authentication code", type: "text" },
       },
       async authorize(credentials, req) {
-        const ip = getClientIp(req)
+        const ip = clientIp(name => {
+          const value = req.headers?.[name]
+          return typeof value === 'string' ? value : null
+        })
+        if (await isRateLimited({identifier:ip, action:'admin-login', max:20, windowMinutes:15})) return null
         const userAgent = (req?.headers?.['user-agent'] as string | undefined)?.slice(0, 300) ?? null
         const windowStart = new Date(Date.now() - LOCKOUT_WINDOW_MINUTES * 60 * 1000).toISOString()
 
@@ -49,8 +48,9 @@ export const authOptions: NextAuthOptions = {
           .eq('success', false)
           .gte('created_at', windowStart)
 
-        if (lockoutError) {
-          console.error('Login lockout check FAILED — brute-force protection is not active:', lockoutError.message)
+        if (lockoutError || count === null) {
+          console.error('Login protection unavailable:', lockoutError?.code)
+          return null
         }
         if ((count || 0) >= MAX_ATTEMPTS) {
           console.warn(`Login blocked — too many failed attempts from ${ip}`)
@@ -58,14 +58,9 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Preferred: ADMIN_PASSWORD_HASH (scrypt — generate with
-        // `node scripts/admin-setup.mjs hash`). Legacy: ADMIN_PASSWORD in
-        // plain text, still accepted so existing deployments keep working.
-        // With neither set, login fails closed — there is no default password.
         const passwordHash = process.env.ADMIN_PASSWORD_HASH
-        const legacyPassword = process.env.ADMIN_PASSWORD
-        if (!passwordHash && !legacyPassword) {
-          console.error('Neither ADMIN_PASSWORD_HASH nor ADMIN_PASSWORD is set — refusing all admin logins.')
+        if (!passwordHash) {
+          console.error('Missing ADMIN_PASSWORD_HASH. Admin login is unavailable.')
           return null
         }
 
@@ -76,16 +71,7 @@ export const authOptions: NextAuthOptions = {
         // Always evaluate EVERY factor, even once one has failed, so response
         // timing doesn't reveal which part was wrong.
         const userOk = safeCompare(givenUser, adminUsername)
-        let passOk: boolean
-        if (passwordHash) {
-          passOk = !!givenPass && verifyPassword(givenPass, passwordHash)
-        } else {
-          if (!warnedLegacyPassword) {
-            console.warn('Using plain-text ADMIN_PASSWORD. Switch to ADMIN_PASSWORD_HASH: node scripts/admin-setup.mjs hash')
-            warnedLegacyPassword = true
-          }
-          passOk = !!givenPass && safeCompare(givenPass, legacyPassword!)
-        }
+        const passOk = !!givenPass && verifyPassword(givenPass, passwordHash)
 
         // Optional two-factor code, enabled by setting ADMIN_TOTP_SECRET.
         const totpSecret = process.env.ADMIN_TOTP_SECRET
@@ -109,7 +95,10 @@ export const authOptions: NextAuthOptions = {
         }
 
         const { error: attemptError } = await supabase.from('login_attempts').insert([{ identifier: ip, success: ok }])
-        if (attemptError) console.error('Could not record login attempt — lockout counting is not working:', attemptError.message)
+        if (attemptError) {
+          console.error('Could not record login attempt:', attemptError.message)
+          return null
+        }
         await logSecurityEvent({ event: ok ? 'login_success' : 'login_failed', ip, userAgent, detail: ok ? undefined : { reason } })
 
         if (!ok) return null

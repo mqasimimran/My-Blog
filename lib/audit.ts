@@ -1,8 +1,9 @@
+import { clientIp } from '@/lib/clientIp'
 import 'server-only'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
 
 export function requestMeta(headers: Headers) {
-  const ip = (headers.get('x-forwarded-for') || '').split(',')[0].trim() || headers.get('x-real-ip') || 'unknown'
+  const ip = clientIp(name => headers.get(name))
   return { ip, userAgent: (headers.get('user-agent') || '').slice(0, 300) || null }
 }
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { emailMe, whatsappMe } from '@/lib/notify'
 import { escapeHtml } from '@/lib/escapeHtml'
 
@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
   const token = typeof b.token === 'string' ? b.token : '', rating = Math.round(Number(b.rating))
   const name = typeof b.name === 'string' ? b.name.trim().slice(0, 60) : '', body = typeof b.body === 'string' ? b.body.trim().slice(0, 2000) : ''
   if (!token || !(rating >= 1 && rating <= 5) || !name) return NextResponse.json({ error: 'Choose a star rating and add your name.' }, { status: 400 })
-  await recordEvent(ip, 'review')
   const { data: order } = await supabaseAdmin.from('orders').select('id, product_id, product_name, status').eq('download_token', token).maybeSingle()
   if (!order || order.status !== 'paid' || !order.product_id) return NextResponse.json({ error: 'Only buyers can review this product.' }, { status: 403 })
   const { error } = await supabaseAdmin.from('product_reviews').insert([{ product_id: order.product_id, order_id: order.id, name, rating, body: body || null }])

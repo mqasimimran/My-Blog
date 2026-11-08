@@ -5,6 +5,8 @@ import { useState, useEffect, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { adminStorage } from '@/lib/adminStorage'
 import { adminApi } from '@/lib/adminApi'
+import ClientSocialField from '@/app/components/admin/ClientSocialField'
+import { parseSocialLinks } from '@/lib/clientSocialLinks'
 import AdminNav from '@/app/admin/AdminNav'
 
 const slugifyClient = (s: string) => s.toLowerCase().normalize('NFKD').replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 60)
@@ -18,6 +20,8 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
   const [darkFile, setDarkFile] = useState<File | null>(null)
   const [currentImageUrl, setCurrentImageUrl] = useState('')
   const [currentDarkImageUrl, setCurrentDarkImageUrl] = useState<string | null>(null)
+  const [socialText, setSocialText] = useState('')
+  const [originalSocialText, setOriginalSocialText] = useState('')
   const [formData, setFormData] = useState({ name: '', link_url: '', order_index: 0, slug: '', role: '', period: '', summary: '', share_image_url: '', testimonial_quote: '', testimonial_author: '', show_on_design: true })
 
   useEffect(() => {
@@ -29,6 +33,9 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
         alert('Error loading logo: ' + error.message)
       } else if (data) {
         setFormData({ name: data.name, link_url: data.link_url || '', order_index: data.order_index, slug: data.slug || '', role: data.role || '', period: data.period || '', summary: data.summary || '', share_image_url: data.share_image_url || '', testimonial_quote: data.testimonial_quote || '', testimonial_author: data.testimonial_author || '', show_on_design: data.show_on_design !== false })
+        const profiles = (data.social_links || []).join('\n')
+        setSocialText(profiles)
+        setOriginalSocialText(profiles)
         setCurrentImageUrl(data.image_url)
         setCurrentDarkImageUrl(data.dark_image_url)
       }
@@ -48,6 +55,8 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const socialLinks = parseSocialLinks(socialText)
+    if (!socialLinks) return alert('Check the social media links. Use one web address per line or an Instagram @username.')
     setLoading(true)
     try {
       const imageUrl = file ? await uploadImage(file) : currentImageUrl
@@ -59,6 +68,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
         slug: formData.slug || slugifyClient(formData.name) || null, role: formData.role || null, period: formData.period || null, summary: formData.summary || null, share_image_url: formData.share_image_url || null,
         testimonial_quote: formData.testimonial_quote || null, testimonial_author: formData.testimonial_author || null, show_on_design: formData.show_on_design,
         link_url: formData.link_url || null,
+        ...(socialText !== originalSocialText ? { social_links: socialLinks } : {}),
         order_index: formData.order_index,
         image_url: imageUrl,
         dark_image_url: darkImageUrl,
@@ -102,6 +112,7 @@ export default function EditLogoPage({ params }: { params: Promise<{ id: string 
               className="w-full p-3 border border-ink-100 rounded-none text-sm bg-paper text-ink-900"
               onChange={(e) => setFormData({ ...formData, link_url: e.target.value })}
             />
+            <ClientSocialField value={socialText} onChange={setSocialText} />
             <input
               type="number" value={formData.order_index} required
               placeholder="Order (lower shows first)"

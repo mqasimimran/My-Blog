@@ -1,3 +1,4 @@
+import { sanitizeRichHtml } from '@/lib/sanitizeRichHtml'
 import SiteImage from '@/components/SiteImage'
 import { supabase } from '@/lib/supabase'
 import { notFound } from 'next/navigation'
@@ -153,7 +154,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         )}
         <div
           className="prose prose-lg mx-auto mt-12 max-w-3xl md:mt-16 prose-headings:font-semibold prose-headings:tracking-[-0.025em] prose-headings:text-ink-900 prose-p:leading-[1.8] prose-p:text-ink-700 prose-li:text-ink-700 prose-strong:text-ink-900 prose-a:text-ink-900 prose-a:decoration-accent-600 prose-a:decoration-2 prose-a:underline-offset-4 hover:prose-a:text-accent-600 prose-blockquote:border-l-2 prose-blockquote:border-accent-600 prose-blockquote:pl-6 prose-blockquote:font-medium prose-blockquote:not-italic prose-blockquote:text-ink-900 prose-code:text-ink-900 prose-code:before:content-none prose-code:after:content-none prose-pre:rounded-none prose-pre:bg-ink-900 prose-pre:text-paper prose-img:w-full prose-hr:border-ink-100 prose-figcaption:text-ink-500 prose-th:text-ink-900 prose-td:text-ink-700"
-          dangerouslySetInnerHTML={{ __html: urdu ? view.content : addTermExplainers(view.content) }}
+          dangerouslySetInnerHTML={{ __html: urdu ? sanitizeRichHtml(view.content) : addTermExplainers(sanitizeRichHtml(view.content)) }}
           id="post-body"
           dir={urdu ? 'rtl' : 'ltr'}
           lang={urdu ? 'ur' : 'en'}

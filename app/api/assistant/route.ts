@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { buildAssistantContext } from '@/lib/assistantContext'
 import { siteConfig } from '@/site.config'
 import { complete, provider, AssistantError } from '@/lib/ai'
@@ -53,7 +53,6 @@ ${await buildAssistantContext()}`
 
   try {
     const reply = await complete(system, messages)
-    await recordEvent(ip, 'assistant')
     return NextResponse.json({ reply: reply || "Sorry, I don't have an answer for that." })
   } catch (err) {
     const detail = err instanceof Error ? err.message : String(err)

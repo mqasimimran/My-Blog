@@ -1,3 +1,4 @@
+import { isRateLimited, getClientIp } from '@/lib/rateLimit'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { escapeHtml, oneLine, EMAIL_RE } from '@/lib/escapeHtml'
@@ -10,11 +11,6 @@ import { whatsappMe } from '@/lib/notify'
 const MAX_SUBMISSIONS = 5
 const WINDOW_MINUTES = 60
 
-function getClientIp(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
-  return request.headers.get('x-real-ip') || 'unknown'
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,16 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     const ip = getClientIp(request)
-    const windowStart = new Date(Date.now() - WINDOW_MINUTES * 60 * 1000).toISOString()
-
-    const { count } = await supabase
-      .from('rate_limit_log')
-      .select('*', { count: 'exact', head: true })
-      .eq('identifier', ip)
-      .eq('action', 'contact')
-      .gte('created_at', windowStart)
-
-    if ((count || 0) >= MAX_SUBMISSIONS) {
+    if (await isRateLimited({identifier:ip, action:'contact', max:MAX_SUBMISSIONS, windowMinutes:WINDOW_MINUTES})) {
       return NextResponse.json(
         { error: 'Too many messages sent recently. Please try again in a bit.' },
         { status: 429 }
@@ -92,12 +79,11 @@ export async function POST(request: NextRequest) {
     const { error: insertError } = await supabase.from('messages').insert([{ name, email, subject, message, ...(request_items ? { request_items } : {}) }])
     if (insertError) {
       console.error('Error saving message:', insertError)
-      return NextResponse.json({ error: insertError.message }, { status: 500 })
+      return NextResponse.json({ error: 'Could not save your message. Please try again.' }, { status: 500 })
     }
     await whatsappMe(`\u{1F4E9} ${request_items ? 'Package request' : 'New message'} from ${name}${subject ? `: ${String(subject).slice(0, 80)}` : ''}. Check Admin -> Leads.`)
 
     // Log this submission for rate limiting purposes
-    await supabase.from('rate_limit_log').insert([{ identifier: ip, action: 'contact' }])
 
     // Best-effort email notification — failure here doesn't fail the request,
     // since the message is already safely saved either way.

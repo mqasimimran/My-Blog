@@ -14,4 +14,35 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm audit --audit-level=high
       - run: npx tsc --noEmit
+
+  database-controls:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: local-ci-only
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: local-ci-only
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install schema in disposable PostgreSQL
+        run: |
+          psql -v ON_ERROR_STOP=1 -c "create role anon; create role authenticated; create role service_role bypassrls; create schema storage; create table storage.buckets(id text primary key, name text, public boolean, file_size_limit bigint); create table storage.objects(id uuid primary key, bucket_id text);"
+          psql -q -v ON_ERROR_STOP=1 -f supabase/setup.sql
+          psql -v ON_ERROR_STOP=1 -f supabase/tests/rate-limit.sql
+      - name: Exercise simultaneous rate-limit requests
+        shell: bash
+        run: |
+          set -euo pipefail
+          seq 12 | xargs -P 12 -I '{}' psql -XAtq -v ON_ERROR_STOP=1 -c "select public.consume_rate_limit('ci','burst',3,10)" > "$RUNNER_TEMP/claims"
+          test "$(grep -cx t "$RUNNER_TEMP/claims")" = 3
+          test "$(grep -cx f "$RUNNER_TEMP/claims")" = 9

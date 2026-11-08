@@ -773,6 +773,7 @@ alter table client_logos add column if not exists period text;             -- e.
 alter table client_logos add column if not exists summary text;            -- the case study
 alter table client_logos add column if not exists testimonial_quote text;
 alter table client_logos add column if not exists testimonial_author text;
+alter table client_logos add column if not exists social_links text[] not null default '{}';
 alter table client_logos add column if not exists show_on_design boolean not null default true;
 alter table designs add column if not exists client_id uuid references client_logos(id) on delete set null;
 -- Services: options customers pick for a live price estimate (see lib/serviceOptions.ts).

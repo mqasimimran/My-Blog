@@ -1,3 +1,4 @@
+import ClientLinks from '@/app/components/ClientLinks'
 import DesignTestimonials from '@/app/components/DesignTestimonials'
 import { getDesignClient } from '@/lib/designCaseStudy'
 import { mediaCover } from '@/lib/portfolioVideo'
@@ -21,9 +22,9 @@ async function get(slug: string) {
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const r = await get((await params).slug)
-  if (!r) return { title: 'Client not found', robots: { index: false } }
-  return pageMeta({ title: `Design work for ${r.c.name}`, description: r.c.summary || `${r.c.role ? r.c.role + ' at ' : 'Design work for '}${r.c.name}.`, path: `/design/clients/${encodeURIComponent(r.c.slug || r.c.id)}`, image: r.c.share_image_url || '/design/clients/'+encodeURIComponent(r.c.slug || r.c.id)+'/share-image' })
+  const c = await getDesignClient((await params).slug)
+  if (!c) return { title: 'Client not found', robots: { index: false } }
+  return pageMeta({ title: `Design work for ${c.name}`, description: c.summary || `${c.role ? c.role + ' at ' : 'Design work for '}${c.name}.`, path: `/design/clients/${encodeURIComponent(c.slug || c.id)}`, image: c.share_image_url || '/design/clients/'+encodeURIComponent(c.slug || c.id)+'/share-image' })
 }
 
 // A client's own page: a short case study (role, period, what I did, their testimonial) and only their designs.
@@ -55,7 +56,7 @@ export default async function ClientPage({ params }: { params: Promise<{ slug: s
             <div className="bg-paper p-5"><p className="font-display text-4xl leading-none text-ink-900">{new Set(designs.map((d) => d.category).filter(Boolean)).size}</p><p className="mt-2 text-sm text-ink-500">kind{new Set(designs.map((d) => d.category).filter(Boolean)).size === 1 ? '' : 's'} of work</p></div>
           </div>
 
-          {c.link_url && <a href={c.link_url} target="_blank" rel="noopener noreferrer" className="link-draw text-sm">Visit {c.name} &rarr;</a>}
+          <ClientLinks name={c.name} website={c.link_url} socials={c.social_links} />
         </aside>
       </div>
       {campaigns.length > 0 && <section className="mt-16">

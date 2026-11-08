@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { getBoard } from '@/lib/feedbackServer'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { sendEmail } from '@/lib/mail'
@@ -10,7 +10,6 @@ import { siteConfig } from '@/site.config'
 export async function POST(request: NextRequest, { params }: { params: Promise<{ token: string }> }) {
   const ip = getClientIp(request)
   if (await isRateLimited({ identifier: ip, action: 'feedback_approve', max: 10, windowMinutes: 15 })) return NextResponse.json({ error: 'Too many attempts.' }, { status: 429 })
-  await recordEvent(ip, 'feedback_approve')
   const board = await getBoard((await params).token)
   if (!board) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   const b = await request.json().catch(() => ({}))

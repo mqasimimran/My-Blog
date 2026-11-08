@@ -34,7 +34,7 @@ const ALLOWED_TABLES = new Set([
 ])
 
 // Tables whose `content` column is rendered as raw HTML on the public site.
-const HTML_CONTENT_TABLES = new Set(['articles', 'projects'])
+const HTML_CONTENT_TABLES = new Set(['articles', 'projects', 'course_lessons'])
 
 const MAX_BODY_BYTES = 4 * 1024 * 1024 // 4 MB — comfortably above any real article
 const SELECT_RE = /^[A-Za-z0-9_,*():!.\s]{1,500}$/
@@ -62,6 +62,7 @@ function cleanContent(table: string, obj: Record<string, unknown>) {
   if (HTML_CONTENT_TABLES.has(table) && typeof obj.content === 'string') {
     obj.content = sanitizeRichHtml(obj.content)
   }
+  if (table === 'articles' && typeof obj.content_ur === 'string') obj.content_ur = sanitizeRichHtml(obj.content_ur)
   return obj
 }
 

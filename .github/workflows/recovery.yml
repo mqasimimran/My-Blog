@@ -1,0 +1,36 @@
+name: Encrypted recovery backup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '19 2 * * 0'
+permissions:
+  contents: read
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    container: postgres:18-bookworm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci --ignore-scripts
+      - run: apt-get update -qq && apt-get install -y -qq age
+      - name: Back up and encrypt
+        shell: bash
+        env:
+          RECOVERY_DATABASE_URL: ${{ secrets.RECOVERY_DATABASE_URL }}
+          RECOVERY_SUPABASE_URL: ${{ secrets.RECOVERY_SUPABASE_URL }}
+          RECOVERY_SERVICE_ROLE_KEY: ${{ secrets.RECOVERY_SERVICE_ROLE_KEY }}
+          BACKUP_AGE_RECIPIENT: ${{ secrets.BACKUP_AGE_RECIPIENT }}
+        run: |
+          set -euo pipefail
+          : "${BACKUP_AGE_RECIPIENT:?Set the age encryption recipient}"
+          node scripts/recovery.mjs create "$RUNNER_TEMP/recovery"
+          tar -C "$RUNNER_TEMP" -czf - recovery | age -r "$BACKUP_AGE_RECIPIENT" -o "$RUNNER_TEMP/recovery.tar.gz.age"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/recovery.tar.gz.age
+          retention-days: 30
+          if-no-files-found: error

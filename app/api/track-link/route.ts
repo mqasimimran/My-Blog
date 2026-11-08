@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 
 // Counts taps on the Links page (link name + day only).
 export async function POST(request: NextRequest) {
@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
   const b = await request.json().catch(() => ({}))
   const label = typeof b.label === 'string' ? b.label.trim().replace(/\s+/g, ' ').slice(0, 80) : ''
   if (!label) return NextResponse.json({ ok: true })
-  await recordEvent(ip, 'link_click')
   await supabaseAdmin.rpc('log_link_click', { p_label: label })
   return NextResponse.json({ ok: true })
 }

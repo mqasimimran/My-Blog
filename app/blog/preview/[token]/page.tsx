@@ -1,3 +1,4 @@
+import { sanitizeRichHtml } from '@/lib/sanitizeRichHtml'
 import SiteImage from '@/components/SiteImage'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { notFound } from 'next/navigation'
@@ -55,7 +56,7 @@ export default async function PreviewPage({ params }: { params: Promise<{ token:
 
         <div
           className="prose prose-lg prose-slate max-w-2xl mx-auto prose-headings:font-sans prose-headings:font-bold prose-headings:tracking-tight prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-loose prose-p:font-light prose-a:text-gray-900 prose-a:underline hover:prose-a:no-underline prose-img:rounded-none prose-img:border-none prose-img:shadow-none prose-img:w-full"
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: sanitizeRichHtml(article.content || '') }}
         />
       </div>
     </article>

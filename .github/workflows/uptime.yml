@@ -1,0 +1,21 @@
+name: Website availability
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+permissions: {}
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    env:
+      SITE_URL: ${{ vars.PORTFOLIO_SITE_URL || 'https://www.muhammadqasimimran.me' }}
+    steps:
+      - name: Check homepage, database and signed-out admin redirect
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 20 --retry 2 "$SITE_URL/" >/dev/null
+          curl --fail --silent --show-error --max-time 20 --retry 2 "$SITE_URL/api/health" | jq -e '.status == "ok"' >/dev/null
+          curl --silent --show-error --max-time 20 -D headers.txt -o /dev/null "$SITE_URL/admin"
+          grep -Eiq '^location: (https?://[^/]+)?/admin/login([?[:space:]]|$)' headers.txt

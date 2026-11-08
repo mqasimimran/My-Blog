@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 
 // "Loved this" counter. The old client code did
 //   supabase.from('articles').update({ reaction_count: count + 1 })
@@ -16,6 +16,9 @@ export async function POST(request: NextRequest) {
   if (!slug || slug.length > 200) return NextResponse.json({ error: 'Missing slug' }, { status: 400 })
 
   const ip = getClientIp(request)
+  if (await isRateLimited({ identifier: ip, action: 'reactions', max: 30, windowMinutes: 15 })) {
+    return NextResponse.json({ error: 'Please try again later.' }, { status: 429 })
+  }
   const action = `react:${slug}`
   if (await isRateLimited({ identifier: ip, action, max: 1, windowMinutes: 60 * 24 })) {
     return NextResponse.json({ error: 'Already reacted' }, { status: 429 })
@@ -33,6 +36,5 @@ export async function POST(request: NextRequest) {
   const { error } = await supabaseAdmin.from('articles').update({ reaction_count: next }).eq('id', article.id)
   if (error) return NextResponse.json({ error: 'Failed' }, { status: 500 })
 
-  await recordEvent(ip, action)
   return NextResponse.json({ count: next })
 }

@@ -782,6 +782,7 @@ alter table client_logos add column if not exists period text;             -- e.
 alter table client_logos add column if not exists summary text;            -- the case study
 alter table client_logos add column if not exists testimonial_quote text;
 alter table client_logos add column if not exists testimonial_author text;
+alter table client_logos add column if not exists social_links text[] not null default '{}';
 alter table client_logos add column if not exists show_on_design boolean not null default true;
 alter table designs add column if not exists client_id uuid references client_logos(id) on delete set null;
 -- Services: options customers pick for a live price estimate (see lib/serviceOptions.ts).
@@ -1371,4 +1372,36 @@ where title='UMT Business Fest 2026'
   and client_id in (select id from public.client_logos where lower(trim(name)) in ('ues','umt entrepreneurial society') or slug='ues')
   and (nullif(trim(summary),'') is null or summary like 'For UMT Business Fest 2026, I designed event graphics for the UMT Entrepreneurial Society.%');
 notify pgrst, 'reload schema';
+commit;
+
+begin;
+-- One transaction per allowance. Serialize contenders for the same action and identifier.
+create or replace function public.consume_rate_limit(p_identifier text, p_action text, p_max integer, p_minutes integer)
+returns boolean language plpgsql volatile security invoker set search_path = '' as $$
+begin
+  if nullif(p_identifier,'') is null or nullif(p_action,'') is null
+      or p_max is null or p_minutes is null or p_max < 1 or p_minutes < 1 then
+    return false;
+  end if;
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtext(p_identifier), pg_catalog.hashtext(p_action));
+  if (select count(*) from public.rate_limit_log
+      where identifier = p_identifier and action = p_action
+        and created_at >= clock_timestamp() - make_interval(mins => p_minutes)) >= p_max then
+    return false;
+  end if;
+  insert into public.rate_limit_log(identifier, action, created_at) values (p_identifier, p_action, clock_timestamp());
+  return true;
+end $$;
+revoke all on function public.consume_rate_limit(text,text,integer,integer) from public, anon, authenticated;
+grant execute on function public.consume_rate_limit(text,text,integer,integer) to service_role;
+grant select, insert, delete on public.rate_limit_log to service_role;
+-- The client portfolio lists published designs by date. Older installations can
+-- install the limiter independently of the optional client gallery.
+do $$ begin
+  if exists (select 1 from information_schema.columns
+             where table_schema='public' and table_name='designs' and column_name='client_id') then
+    create index if not exists designs_client_recent on public.designs(client_id, created_at desc) where published;
+  end if;
+end $$;
+notify pgrst,'reload schema';
 commit;

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { computeDiscount, type DiscountKind } from '@/lib/discount'
 import { CARD_PROVIDER, cardEnabled, createCardCheckout } from '@/lib/cardPayments'
 import { siteConfig } from '@/site.config'
@@ -29,7 +29,6 @@ export async function POST(request: NextRequest) {
   }
   const { data: product } = await supabaseAdmin.from('products').select('id, name, price, type, active, ls_variant_id').eq('id', body.productId).maybeSingle()
   if (!product?.active || !product.ls_variant_id || product.type === 'physical') return NextResponse.json({ error: 'Card payment isn\u2019t available for this product.' }, { status: 400 })
-  await recordEvent(ip, 'card_checkout')
 
   // The price is always worked out here; a discount code is used up atomically (as for other payments).
   let price = Number(product.price), discountCode: string | null = null, discountAmount = 0

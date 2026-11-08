@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { escapeHtml } from '@/lib/escapeHtml'
 import { sendEmail } from '@/lib/mail'
 import { siteConfig } from '@/site.config'
@@ -33,7 +33,6 @@ export async function POST(request: NextRequest) {
     if (!p) return NextResponse.json({ error: 'The comment you\u2019re replying to wasn\u2019t found.' }, { status: 400 })
     parent_id = p.parent_id || p.id   // replies stay one level deep
   }
-  await recordEvent(ip, 'post_comment')
   const { error } = await supabaseAdmin.from('post_comments').insert([{ article_slug: slug, parent_id, name, email: email || null, body }])
   if (error) return NextResponse.json({ error: 'Could not save your comment.' }, { status: 500 })
   if (process.env.RESEND_API_KEY && process.env.NOTIFY_TO_EMAIL) await sendEmail({ from: siteConfig.mail.contactFormFrom, to: [process.env.NOTIFY_TO_EMAIL], subject: `New comment on "${article.title}"`,

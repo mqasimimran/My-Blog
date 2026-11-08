@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 
 // A buyer checks their order: it needs BOTH the order number and the email used at checkout, and
 // answers "not found" the same way for either mismatch, so it can't be used to discover orders.
@@ -9,7 +9,6 @@ export async function POST(request: NextRequest) {
   if (await isRateLimited({ identifier: ip, action: 'order_status', max: 20, windowMinutes: 15 })) {
     return NextResponse.json({ error: 'Too many lookups. Please try again in a few minutes.' }, { status: 429 })
   }
-  await recordEvent(ip, 'order_status')
 
   let body: { orderNumber?: unknown; email?: unknown }
   try {

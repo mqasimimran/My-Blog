@@ -3,7 +3,7 @@ import { headers } from "next/headers"
 import { NextResponse } from "next/server"
 import { authOptions } from "@/lib/authOptions"
 import { logSecurityEvent, requestMeta } from "@/lib/audit"
-import { isRateLimited, recordEvent } from "@/lib/rateLimit"
+import { isRateLimited } from "@/lib/rateLimit"
 
 /**
  * Gate for every admin-only API route. Returns null when the request is
@@ -42,7 +42,6 @@ export async function requireAdminSession() {
     // Log unauthorized probing, but at most once a minute per address so
     // an attacker hammering the endpoint can't flood the audit table.
     if (!(await isRateLimited({ identifier: ip, action: 'audit-unauthorized', max: 1, windowMinutes: 1 }))) {
-      await recordEvent(ip, 'audit-unauthorized')
       await logSecurityEvent({ event: 'admin_unauthorized', ip, userAgent })
     }
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

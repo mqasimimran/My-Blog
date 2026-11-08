@@ -1,3 +1,4 @@
+import { isRateLimited, getClientIp } from '@/lib/rateLimit'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { escapeHtml, oneLine, EMAIL_RE } from '@/lib/escapeHtml'
@@ -9,11 +10,6 @@ import { sendEmail } from '@/lib/mail'
 import { computeDiscount, type DiscountKind } from '@/lib/discount'
 import { siteConfig } from '@/site.config'
 import { whatsappMe } from '@/lib/notify'
-function getClientIp(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) return forwarded.split(',')[0].trim()
-  return request.headers.get('x-real-ip') || 'unknown'
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,15 +37,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limit: max 5 order submissions per hour per IP
     const ip = getClientIp(request)
-    const windowStart = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    const { count } = await supabase
-      .from('rate_limit_log')
-      .select('*', { count: 'exact', head: true })
-      .eq('identifier', ip)
-      .eq('action', 'order')
-      .gte('created_at', windowStart)
-
-    if ((count || 0) >= 5) {
+    if (await isRateLimited({identifier:ip, action:'order', max:5, windowMinutes:60})) {
       return NextResponse.json({ error: 'Too many submissions recently. Please try again later.' }, { status: 429 })
     }
 
@@ -135,7 +123,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: insertError.code === 'P0001' ? insertError.message : 'Could not save order' }, { status: insertError.code === 'P0001' ? 409 : 500 })
     }
 
-    await supabase.from('rate_limit_log').insert([{ identifier: ip, action: 'order' }])
 
     // Notify me to go verify the payment
     const toEmail = process.env.NOTIFY_TO_EMAIL

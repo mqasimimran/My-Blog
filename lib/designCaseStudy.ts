@@ -5,7 +5,7 @@ const UUID = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
 export const getDesignClient = cache(async (slug: string) => {
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
   const {data, error} = await db.from('client_logos')
-    .select('id,name,slug,image_url,dark_image_url,link_url,role,period,summary,testimonial_quote,testimonial_author,share_image_url')
+    .select('*')
     .eq(UUID.test(slug) ? 'id' : 'slug',slug).eq('show_on_design',true).maybeSingle()
   if (error) throw new Error('Could not load client case study')
   return data

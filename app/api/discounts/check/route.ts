@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabaseAdmin'
-import { getClientIp, isRateLimited, recordEvent } from '@/lib/rateLimit'
+import { getClientIp, isRateLimited } from '@/lib/rateLimit'
 import { computeDiscount, type DiscountKind } from '@/lib/discount'
 
 // Checkout preview: is this code usable, and what's the new total? This does NOT use the code up;
@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
   if (await isRateLimited({ identifier: ip, action: 'discount_check', max: 30, windowMinutes: 15 })) {
     return NextResponse.json({ error: 'Too many attempts. Please try again in a few minutes.' }, { status: 429 })
   }
-  await recordEvent(ip, 'discount_check')
 
   let body: { code?: unknown; productId?: unknown }
   try { body = await request.json() } catch { return NextResponse.json({ error: 'Enter a code.' }, { status: 400 }) }

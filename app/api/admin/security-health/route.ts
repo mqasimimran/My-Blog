@@ -18,11 +18,9 @@ export async function GET() {
   const totp = !!process.env.ADMIN_TOTP_SECRET
 
   checks.push(
-    hasHash
-      ? { id: 'pw', label: 'Admin password is stored as a hash', status: 'ok' }
-      : hasLegacy
-        ? { id: 'pw', label: 'Admin password is stored in plain text', status: 'warn', hint: 'Run `node scripts/admin-setup.mjs hash`, add ADMIN_PASSWORD_HASH, then delete ADMIN_PASSWORD.' }
-        : { id: 'pw', label: 'No admin password configured', status: 'fail', hint: 'Set ADMIN_PASSWORD_HASH — logins are being refused.' }
+    !hasHash ? { id:'pw', label:'Admin password hash missing', status:'fail', hint:'Set ADMIN_PASSWORD_HASH to enable login.' }
+    : hasLegacy ? { id:'pw', label:'Unused plaintext admin password is configured', status:'warn', hint:'Remove ADMIN_PASSWORD from this environment.' }
+    : { id:'pw', label:'Admin password is stored as a hash', status:'ok' }
   )
   checks.push(
     totp
@@ -59,13 +57,14 @@ export async function GET() {
   )
 
   // Public-form rate limiting: do a real write + cleanup.
-  const w = await supabaseAdmin.from('rate_limit_log').insert([{ identifier: 'healthcheck', action: 'healthcheck' }])
-  if (w.error) {
-    checks.push({ id: 'ratelimit', label: 'Rate limiting (contact, newsletter, reactions) is NOT working', status: 'fail', hint: `Database said: ${w.error.message}` })
-  } else {
-    await supabaseAdmin.from('rate_limit_log').delete().eq('identifier', 'healthcheck')
-    checks.push({ id: 'ratelimit', label: 'Rate limiting can record events', status: 'ok' })
-  }
+  const probeId = 'healthcheck:'+crypto.randomUUID()
+  const budget = {p_identifier:probeId,p_action:'healthcheck',p_max:1,p_minutes:1}
+  const first = await supabaseAdmin.rpc('consume_rate_limit',budget)
+  const second = await supabaseAdmin.rpc('consume_rate_limit',budget)
+  const healthy = first.data === true && second.data === false
+  await supabaseAdmin.from('rate_limit_log').delete().eq('identifier',probeId)
+  checks.push({id:'ratelimit', label:'Rate limiter enforces the configured budget', status:healthy ? 'ok' : 'fail',
+    hint:healthy ? undefined : 'Apply supabase/migrations/2026-11-rate-limit.sql and check service-role access.'})
 
   const audit = await supabaseAdmin.from('security_audit_log').select('id').limit(1)
   checks.push(

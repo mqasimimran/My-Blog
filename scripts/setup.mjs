@@ -40,7 +40,8 @@ function buildSetupSql() {
   const reviews = readFileSync(join(ROOT, 'supabase/migrations/2026-11-testimonial-work.sql'), 'utf8')
   const campaigns = readFileSync(join(ROOT, 'supabase/migrations/2026-11-design-campaigns.sql'), 'utf8')
   const caseReviews = readFileSync(join(ROOT, 'supabase/migrations/2026-11-case-study-testimonials.sql'), 'utf8')
-  return SETUP_HEADER + schema + SETUP_MIDDLE + lock + '\n' + audit + '\n' + reviews + '\n' + campaigns + '\n' + caseReviews
+  const limiter = readFileSync(join(ROOT, 'supabase/migrations/2026-11-rate-limit.sql'), 'utf8')
+  return SETUP_HEADER + schema + SETUP_MIDDLE + lock + '\n' + audit + '\n' + reviews + '\n' + campaigns + '\n' + caseReviews + '\n' + limiter
 }
 if (args[0] === 'build-sql') {
   writeFileSync(join(ROOT, 'supabase/setup.sql'), buildSetupSql())
@@ -140,10 +141,8 @@ const hash = env('ADMIN_PASSWORD_HASH'), plain = env('ADMIN_PASSWORD')
 if (hash) {
   if (/^scrypt:\d+:\d+:\d+:[\w-]+:[\w-]+$/.test(hash)) ok('Admin password is stored as a hash')
   else fail('ADMIN_PASSWORD_HASH is malformed', 'Regenerate it:  node scripts/admin-setup.mjs hash')
-} else if (plain) {
-  warn('Admin password is stored in plain text (ADMIN_PASSWORD)', 'Switch:  node scripts/admin-setup.mjs hash  ->  set ADMIN_PASSWORD_HASH  ->  delete ADMIN_PASSWORD.')
-  if (plain.length < 12) warn(`ADMIN_PASSWORD is only ${plain.length} characters`, 'Use a long passphrase (12+ characters).')
-} else fail('No admin password configured', ['Admin login is refused until one is set.', 'Run:  node scripts/admin-setup.mjs hash'])
+} else fail('Admin password hash is missing', 'Generate ADMIN_PASSWORD_HASH with node scripts/admin-setup.mjs hash.')
+if (plain) warn('Legacy plaintext credential is still configured', 'Remove ADMIN_PASSWORD after setting the hash.')
 if (env('ADMIN_TOTP_SECRET')) ok('Two-factor login is ON')
 else warn('Two-factor login is OFF', 'Recommended:  node scripts/admin-setup.mjs totp')
 
