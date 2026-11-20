@@ -82,16 +82,19 @@ export const siteConfig = {
     /** Hero portrait. A transparent PNG (about 806 x 1050) works best. */
     image: '/profile.png',
     /** The rotating "I'm a ..." words under the greeting */
-    roles: ['Software Engineer', 'Graphic Designer', 'Game Developer', 'AI Builder'],
+    roles: [
+      'Software Engineer',
+      'Graphic Designer',
+    ],
     bio: [
       'I am a Software Engineer and Graphic Designer bridging the gap between highly functional code and minimalist aesthetic design. Currently pursuing a BS in Computer Science, my focus lies in crafting seamless digital experiences.',
-      "From engineering robust game mechanics in Unity and building scalable web architecture with Next.js, to designing complete brand identities utilizing the Adobe Suite, I thrive at the intersection of logic and creativity. I've also sharpened that eye for detail through a Software Quality Engineering internship at Big Brains Learning, focused on UI/UX testing and boundary-value analysis.",
+      'From engineering robust game mechanics in Unity and building scalable web architecture with Next.js, to designing complete brand identities utilizing the Adobe Suite, I thrive at the intersection of logic and creativity. I\'ve also sharpened that eye for detail through a Software Quality Engineering internship at Big Brains Learning, focused on UI/UX testing and boundary-value analysis.',
     ],
   },
 
   contact: {
     intro:
-      "Whether you are a recruiter looking for a software engineer, a founder needing full-stack architecture, or a collaborator for a 3D game project, I'd love to hear from you.",
+      'Whether you are a recruiter looking for a software engineer, a founder needing full-stack architecture, or a collaborator for a 3D game project, I\'d love to hear from you.',
   },
 
   // ---- Resume generator ---------------------------------------------------
