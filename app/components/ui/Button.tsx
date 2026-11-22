@@ -24,7 +24,7 @@ const variants = {
 
 /** One button style for the whole site. Labels stay short enough to never wrap. */
 export function ButtonLink({ href, children, variant = 'primary', external = false, className = '' }: Props) {
-  const cls = `${base} ${variants[variant]} ${className}`
+  const cls = `public-button public-button-${variant} ${base} ${variants[variant]} ${className}`
   const Icon = external ? ArrowUpRight : ArrowRight
   const content = (
     <>

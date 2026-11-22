@@ -1,5 +1,6 @@
 'use client'
 
+import { siteConfig } from '@/site.config'
 import SiteImage from '@/components/SiteImage'
 import { useState, useEffect } from 'react'
 import { ButtonLink } from '@/app/components/ui/Button'
@@ -40,12 +41,17 @@ export default function AboutJourneyPage() {
 
   return (
     <main>
-      <header className="container-page pb-12 pt-12 md:pb-20 md:pt-20">
+      <header className="container-page grid items-center gap-8 pb-12 pt-12 md:grid-cols-[1.4fr_1fr] md:gap-16 md:pb-20 md:pt-20">
+        <div>
         <p className="text-sm font-medium text-ink-500">{tx("A journal")}</p>
         <h1 className="type-display mt-4 text-ink-900"><SplitText text={tx("My Journey")} /></h1>
         <p className="type-lead mt-6 max-w-[52ch]">
           {tx("Not a resume. A running log of how a Computer Science student ended up also being a designer, a game developer, and whatever comes next.")}
         </p>
+        </div>
+        <div className="flex justify-center border-b border-ink-100 bg-ink-50 px-6 pt-6">
+          <SiteImage src={(siteConfig as { photo?: string }).photo || siteConfig.hero.image} alt={siteConfig.name} loading="eager" sizes="(min-width: 768px) 35vw, 90vw" className="h-auto max-h-[460px] w-full object-contain object-bottom" />
+        </div>
       </header>
 
       {/* Timeline: the date stays in view on the left while you read each entry */}

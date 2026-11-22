@@ -83,6 +83,7 @@ export default function ClientProjectsPage() {
             </div>
             <div>
               <p className={label}>Files</p>
+              <p className="mb-3 text-sm text-ink-500">Use Add a link for Google Drive files or folders. For confidential work, keep Drive access restricted to the client’s Google account. Uploaded files use public media storage.</p>
               <ul className="space-y-2">{d.files.map((f, i) => (
                 <li key={i} className="flex items-center gap-2"><input aria-label={`File ${i + 1} name`} value={f.label} onChange={(e) => setD({ ...d, files: d.files.map((x, k) => (k === i ? { ...x, label: e.target.value } : x)) })} className={`${field} flex-1`} />
                   <input aria-label={`File ${i + 1} link`} value={f.url} onChange={(e) => setD({ ...d, files: d.files.map((x, k) => (k === i ? { ...x, url: e.target.value } : x)) })} className={`${field} flex-1 font-mono text-xs`} />

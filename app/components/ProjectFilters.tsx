@@ -1,5 +1,7 @@
 'use client'
 
+import { projectTitle, projectCategory } from '@/lib/projectPresentation'
+
 import { mediaCover } from '@/lib/portfolioVideo'
 import SiteImage from '@/components/SiteImage'
 import { useState, useEffect, useRef } from 'react'
@@ -132,17 +134,17 @@ function ProjectCard({ project }: { project: Project }) {
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
-      <div className="relative aspect-[16/10] w-full overflow-hidden border border-ink-100 bg-ink-50">
+      <div className="relative aspect-[16/10] w-full portfolio-image overflow-hidden border border-ink-100 bg-ink-50">
         {hasThumbnail ? (
           project.preview_video_url ? (
             <>
               {cover && (
-                <SiteImage src={cover} sizes={'(min-width: 1024px) 50vw, 100vw'} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
+                <SiteImage src={cover} sizes={'(min-width: 1024px) 50vw, 100vw'} alt={projectTitle(project.title)} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
               )}
               {isHovering && <video src={project.preview_video_url} autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover" />}
             </>
           ) : (
-            <SiteImage src={cover} sizes={'(min-width: 1024px) 50vw, 100vw'} alt={project.title} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
+            <SiteImage src={cover} sizes={'(min-width: 1024px) 50vw, 100vw'} alt={projectTitle(project.title)} className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]" />
           )
         ) : (
           <div className="absolute inset-0 grid place-items-center text-ink-300" aria-hidden>
@@ -153,9 +155,9 @@ function ProjectCard({ project }: { project: Project }) {
 
       <div className="mt-5 flex flex-wrap items-start justify-between gap-x-8 gap-y-2">
         <div>
-          <h3 className="type-h3 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{project.title}</h3>
+          <h3 className="type-h3 text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{projectTitle(project.title)}</h3>
           <p className="type-meta mt-2 flex flex-wrap gap-x-3">
-            <span>{project.category}</span>
+            <span>{projectCategory(project.category)}</span>
             {project.status && <span>{tx(project.status)}</span>}
           </p>
         </div>

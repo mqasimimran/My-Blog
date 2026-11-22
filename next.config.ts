@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   images: {
     qualities: [40, 75, 80, 85],
     remotePatterns: [
+      ...(process.env.R2_PUBLIC_URL ? [new URL(`${process.env.R2_PUBLIC_URL.replace(/\/$/, '')}/**`)] : []),
       {
         // Matches any Supabase project's storage URLs, e.g.
         // https://<project-ref>.supabase.co/storage/v1/object/public/...

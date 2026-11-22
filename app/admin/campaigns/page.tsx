@@ -5,6 +5,7 @@ import Link from 'next/link'
 import AdminNav from '@/app/admin/AdminNav'
 import { adminApi } from '@/lib/adminApi'
 import type { Campaign } from '@/lib/designNeeds'
+import { businessFestCaseStudy, caseStudyOutline } from '@/lib/caseStudyCopy'
 
 const empty = { id: '', client_id: '', title: '', summary: '', role: '', share_image_url: '', published: false }
 
@@ -64,6 +65,13 @@ export default function CampaignsPage() {
           <label className="block text-sm">Campaign title<input required maxLength={160} value={form.title} onChange={e => setForm({...form,title:e.target.value})} className={field} /></label>
           <label className="block text-sm">Your role<input value={form.role} onChange={e => setForm({...form,role:e.target.value})} className={field} /></label>
           <label className="block text-sm">Case study<textarea rows={8} value={form.summary} onChange={e => setForm({...form,summary:e.target.value})} className={field} /></label>
+          <p className="text-xs text-ink-500">Use ## headings for the brief, your role, key decisions and deliverables. Explain decisions from your own experience; include outcomes only when you have evidence.</p>
+          <button type="button" className="text-sm underline" onClick={() => setForm({...form, summary: form.summary ? form.summary + '\n\n' + caseStudyOutline : caseStudyOutline})}>Append case-study outline</button>
+          {form.title.toLowerCase().includes('umt business fest') && <details className="border border-ink-100 p-3">
+            <summary className="cursor-pointer text-sm">UMT Business Fest draft</summary>
+            <p className="mt-3 whitespace-pre-line text-sm text-ink-700">{businessFestCaseStudy}</p>
+            <button type="button" className="mt-3 text-sm underline" onClick={() => { if (!form.summary || window.confirm('Replace the text in this editor with the Business Fest draft? Your saved campaign will not change until you save.')) setForm({...form, summary: businessFestCaseStudy, role: form.role || 'Graphic designer'}) }}>Use this draft</button>
+          </details>}
           <label className="block text-sm">Share image URL (optional)<input type="url" placeholder="https://…" value={form.share_image_url} onChange={e => setForm({...form,share_image_url:e.target.value})} className={field} /></label>
           <p className="text-xs text-ink-500">Use an uploaded artwork URL. Leave blank for an automatic title card.</p>
           <label className="flex gap-2"><input type="checkbox" checked={form.published} onChange={e => setForm({...form,published:e.target.checked})} />Publish campaign</label>

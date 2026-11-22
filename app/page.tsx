@@ -3,123 +3,68 @@ import ProjectFilters from '@/app/components/ProjectFilters'
 import FeaturedDesigns from '@/app/components/FeaturedDesigns'
 import FeaturedBlogPosts from '@/app/components/FeaturedBlogPosts'
 import Testimonials from '@/app/components/Testimonials'
-import CertificationsWall from '@/app/components/CertificationsWall'
 import LogosStrip from '@/app/components/LogosStrip'
 import NewsletterSignup from '@/app/components/NewsletterSignup'
-import AvailabilityBadge from '@/app/components/AvailabilityBadge'
 import NowWidget from '@/app/components/NowWidget'
 import HomeStats from '@/app/components/HomeStats'
-import BlurLens from '@/app/components/BlurLens'
 import LatestVideos from '@/app/components/LatestVideos'
 import RoleCycler from '@/app/components/RoleCycler'
 import Reveal from '@/app/components/Reveal'
-import MagneticButton from '@/app/components/MagneticButton'
-import Link from 'next/link'
-import Image from 'next/image'
+import HomeHeroBackdrop from '@/app/components/HomeHeroBackdrop'
 
 import { siteConfig } from '@/site.config'
 import { getT } from '@/lib/locale'
+import Link from 'next/link'
+import type { Metadata } from 'next'
+import { GithubLogo, InstagramLogo, LinkedinLogo, YoutubeLogo } from '@phosphor-icons/react/dist/ssr'
 
-// Your photo. To change it, add a new file to /public with a NEW name and set `photo` in site.config.ts
-// (a new name makes browsers and Vercel fetch it fresh instead of showing a cached copy for hours).
-const PHOTO = (siteConfig as { photo?: string }).photo || '/profile.png'
+const SOCIAL = [
+  { href: siteConfig.social.linkedin, label: 'LinkedIn', Icon: LinkedinLogo },
+  { href: siteConfig.social.github, label: 'GitHub', Icon: GithubLogo },
+  { href: siteConfig.social.youtube, label: 'YouTube', Icon: YoutubeLogo },
+  { href: siteConfig.social.instagramPersonal, label: 'IG: Personal', Icon: InstagramLogo },
+  { href: siteConfig.social.instagramDev, label: 'IG: Dev', Icon: InstagramLogo },
+]
+
+export const metadata: Metadata = { title: { absolute: `${siteConfig.name} — Developer & Designer` } }
 
 export default async function HomePage() {
-  const { tx } = await getT()
   const t = await getT()
   const ur = t.locale === 'ur'
   return (
     <main className="min-h-screen flex flex-col">
-      {/* Hero Section — note: the photo is anchored to THIS section's own
-          height (absolute, bottom:0). The tech ticker below is a SEPARATE
-          sibling <section>, not nested in here — nesting it would grow this
-          section's height and push the photo past the divider line. */}
-      <section className="relative pt-16 md:pt-20 overflow-hidden" style={{ minHeight: 560 }}>
-
-        {/* Desktop: frameless photo bleeding to the right edge, anchored to
-            the bottom of the hero — relies on /profile.png having a
-            transparent background for the "floating" cutout look. */}
-        <div className="hero-photo hidden lg:flex absolute top-0 bottom-0 end-[max(0px,calc((100vw-1360px)/2+1px))] items-end justify-end" style={{ width: '46%' }}>
-          <Image
-            src={PHOTO}
-            alt={tx("Portrait")}
-            width={806}
-            // Shown only on large screens; on phones the browser fetches a tiny placeholder instead of 1920px.
-            sizes="(min-width: 1024px) 46vw, 1px"
-            height={1050}
-            priority
-            className="h-full w-auto max-w-full object-contain object-bottom"
-          />
-        </div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-6 h-full flex items-end" style={{ minHeight: 560 }}>
-          <div className="hero-enter space-y-8 pb-16 md:pb-20 lg:max-w-[46%] min-w-0">
-            <AvailabilityBadge />
-
-            <div>
-              <p className="text-ink-500 text-sm font-bold tracking-[0.2em] uppercase mb-3">
-                {ur ? siteConfig.urdu.greeting : siteConfig.hero.greeting}
-              </p>
-              <BlurLens>
-                <h1 className="type-display text-ink-900 break-words">
-                {t('home.iam')} <RoleCycler />{ur && <> {t('home.iamEnd')}</>}
-              </h1>
-              </BlurLens>
-            </div>
-
-            <div className="text-ink-700 space-y-6 leading-relaxed max-w-lg text-sm sm:text-base">
-              {(ur ? siteConfig.urdu.bio : siteConfig.hero.bio).map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
-              ))}
-            </div>
-
-            <MagneticButton>
-              <Link
-                href="/projects"
-                className="text-ink-900 border-accent-600 hover:text-accent-600 inline-block text-sm font-bold uppercase tracking-widest pb-1 transition-colors border-b-2"
-              >
-                {t('home.viewWork')}
-              </Link>
-            </MagneticButton>
-
-            {/* Social Links with Maroon Hover Accent */}
-            <div className="text-ink-900 flex flex-wrap items-center gap-3 text-xs font-bold tracking-[0.2em] uppercase pt-4">
-              <a href={siteConfig.social.youtube} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("YouTube")}</a>
-              <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.linkedin} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("LinkedIn")}</a>
-              <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.instagramPersonal} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("IG: Personal")}</a>
-              <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.instagramDev} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("IG: Dev")}</a>
-              <span className="text-ink-300">/</span>
-              <a href={siteConfig.social.portfolio} target="_blank" rel="noopener noreferrer" className="hover:text-accent-600 transition-colors">{tx("Portfolio")}</a>
-            </div>
-
-            {/* Mobile/tablet: photo falls back in-flow below the bio since
-                there's no room to bleed it off the edge at this width.
-                The negative bottom margin cancels this column's own
-                pb-16/md:pb-20, pulling the photo flush against the hero's
-                bottom edge — same zero-gap divider treatment as desktop. */}
-            <div className="lg:hidden pt-8 -mb-16 md:-mb-20 flex justify-center">
-              <Image
-                src={PHOTO}
-                alt={tx("Portrait")}
-                width={560}
-                sizes="(min-width: 1024px) 1px, 300px"
-                // On phones this photo is the largest thing on the page, so load it straight away.
-                loading="eager"
-                height={729}
-                className="w-auto max-h-[360px] max-w-full object-contain"
-              />
-            </div>
+      <section className="cinematic-hero">
+        <HomeHeroBackdrop />
+        <div className="cinematic-shade" aria-hidden />
+        <div className="cinematic-content">
+          <p className="cinematic-eyebrow">{ur ? siteConfig.urdu.name : siteConfig.name}</p>
+          <h1 className={`cinematic-title ${ur ? 'cinematic-title-ur' : ''}`}>
+            {t('home.iam')} <RoleCycler />{ur && <> {t('home.iamEnd')}</>}
+          </h1>
+          <p className="cinematic-intro">
+            {ur ? 'میں ویب ایپس، یونٹی گیمز اور برانڈز اور تقریبات کے لیے بصری ڈیزائن بناتا ہوں۔' : 'I build web apps and Unity games, and create visual designs for brands and events.'}
+          </p>
+          <div className="cinematic-actions">
+            <Link href="#featured-work" className="cinematic-primary">{t('home.viewWork').replace(/\s*[→↗]\s*$/, '')} <span aria-hidden>↗</span></Link>
+            <Link href="/contact" className="cinematic-secondary">{t('nav.contact')}</Link>
           </div>
+          <nav aria-label={ur ? 'سوشل میڈیا' : 'Social profiles'} className="cinematic-socials">
+            {SOCIAL.filter(link => link.href).map(({ href, label, Icon }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={t.tx(label)} title={t.tx(label)}>
+                <Icon size={22} aria-hidden /><span className="sr-only">{t.tx(label)}</span>
+              </a>
+            ))}
+          </nav>
         </div>
+        <a href="#featured-work" className="cinematic-scroll">{ur ? 'میرا کام دیکھیں' : 'Explore the work'} <span aria-hidden>↓</span></a>
       </section>
 
-      <TechMarquee />
-
-      {/* Client / event logos */}
       <LogosStrip />
+      <div id="featured-work" className="scroll-mt-24"><Reveal><ProjectFilters /></Reveal></div>
+      <Reveal><FeaturedDesigns /></Reveal>
+      <Reveal><Testimonials /></Reveal>
+
+      <TechMarquee />
 
       {/* "Right now" note: hidden unless set in /admin/settings */}
       <NowWidget />
@@ -127,12 +72,8 @@ export default async function HomePage() {
       {/* Numbers that count up, from the site's real content */}
       <HomeStats />
 
-      <Reveal><ProjectFilters /></Reveal>
-      <Reveal><FeaturedDesigns /></Reveal>
       <Reveal><FeaturedBlogPosts /></Reveal>
       <LatestVideos />
-      <Reveal><CertificationsWall /></Reveal>
-      <Reveal><Testimonials /></Reveal>
       <Reveal><NewsletterSignup /></Reveal>
     </main>
   )

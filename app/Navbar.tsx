@@ -39,6 +39,14 @@ const isGroup = (e: Item | Group): e is Group => 'children' in e
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
+  const home = pathname === '/' || pathname === '/ur'
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const update = () => setScrolled(window.scrollY > 48)
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    return () => window.removeEventListener('scroll', update)
+  }, [])
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -142,11 +150,11 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-nav">
+      <header className={`fixed inset-x-0 top-0 z-nav public-nav hero-nav ${home ? '' : 'inner-nav'} ${scrolled ? 'hero-nav-scrolled' : ''}`}>
         {/* A row of boxed cells, like a printed grid. Contact is the solid cell at the end. */}
         <nav ref={navRef} aria-label="Main" className="relative mx-auto flex h-12 max-w-[1360px] items-stretch border-b border-ink-100 bg-paper/90 backdrop-blur-xl md:border-x">
           <Link href="/" className="flex items-center px-4 font-display text-lg uppercase leading-none tracking-wide text-ink-900 xl:hidden">
-            {siteConfig.firstName}
+            Qasim Imran
           </Link>
 
           <ul className="hidden flex-1 items-stretch divide-x divide-ink-100 xl:flex">

@@ -1,4 +1,5 @@
 const platforms: Record<string, string> = {
+  'drive.google.com': 'View full-resolution files on Google Drive',
   'instagram.com': 'Instagram',
   'facebook.com': 'Facebook',
   'linkedin.com': 'LinkedIn',
@@ -8,6 +9,10 @@ const platforms: Record<string, string> = {
   'twitter.com': 'X',
   'threads.net': 'Threads',
   'threads.com': 'Threads',
+}
+
+export function isDriveLink(value: string) {
+  try { return new URL(value).hostname === 'drive.google.com' } catch { return false }
 }
 
 export function socialProfile(value: string) {

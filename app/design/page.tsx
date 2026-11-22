@@ -136,7 +136,7 @@ function DesignGalleryInner() {
             <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
               {filteredDesigns.map((item) => (
                 <div key={item.id} className="mb-10 break-inside-avoid"><button type="button" onClick={() => openModal(item)} data-cursor="Open" className="group block w-full text-left">
-                  <div className="overflow-hidden bg-ink-50">
+                  <div className="portfolio-image overflow-hidden bg-ink-50">
                     {item.images?.[0] && (
                       <SiteImage
                         src={mediaCover(item.images[0])}

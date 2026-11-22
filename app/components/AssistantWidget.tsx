@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { ChatCircleDots, PaperPlaneRight, X } from '@phosphor-icons/react'
+import { ChatCircleDots, PaperPlaneRight, WhatsappLogo, X } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { siteConfig } from '@/site.config'
 import { useLocale, useFirstName } from '@/app/components/LocaleProvider'
@@ -33,11 +33,20 @@ function Linkified({ text }: { text: string }) {
 
 type Msg = { role: 'user' | 'assistant'; content: string }
 
-// The "Ask about me" chat. Only appears when the assistant is switched on (ANTHROPIC_API_KEY).
+// One contact launcher; AI is offered only when the server enables it.
 export default function AssistantWidget() {
   const { tx } = useLocale()
   const [enabled, setEnabled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [contactsOpen, setContactsOpen] = useState(false)
+  const launcher = useRef<HTMLButtonElement>(null)
+  const panel = useRef<HTMLDivElement>(null)
+  const expanded = open || contactsOpen
+  function close() {
+    setOpen(false)
+    setContactsOpen(false)
+    launcher.current?.focus()
+  }
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
   const [busy, setBusy] = useState(false)
@@ -55,11 +64,18 @@ export default function AssistantWidget() {
     list.current?.scrollTo({ top: list.current.scrollHeight, behavior: 'smooth' })
   }, [messages, busy])
   useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    if (!expanded) return
+    panel.current?.querySelector<HTMLElement>('button, a, input')?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        setContactsOpen(false)
+        launcher.current?.focus()
+      }
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  }, [expanded, open])
 
   async function ask(question: string) {
     const q = question.trim()
@@ -80,25 +96,34 @@ export default function AssistantWidget() {
     setBusy(false)
   }
 
-  if (!enabled) return null
-
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? t('assistant.close') : t('assistant.open', { name: first })}
-        aria-expanded={open}
-        className={`fixed bottom-[76px] right-5 z-nav grid h-12 w-12 place-items-center bg-ink-900 text-paper transition-[background-color,color,opacity,translate] duration-300 hover:bg-accent-600 active:translate-y-px md:bottom-[84px] md:right-6 duration-300 ${hideFab && !open ? 'pointer-events-none translate-y-6 opacity-0' : ''}`}
+        ref={launcher}
+        onClick={() => expanded ? close() : setContactsOpen(true)}
+        aria-label={expanded ? tx('Close contact options') : tx('Contact options')}
+        aria-expanded={expanded}
+        aria-controls={expanded ? 'contact-panel' : undefined}
+        className={`fixed bottom-5 right-5 z-nav grid h-12 w-12 place-items-center rounded-full bg-ink-900 text-paper shadow-lg transition-[background-color,color,opacity,translate] duration-300 hover:bg-accent-600 active:translate-y-px md:bottom-6 md:right-6 ${hideFab && !expanded ? 'pointer-events-none translate-y-6 opacity-0' : ''}`}
       >
-        {open ? <X size={22} aria-hidden /> : <ChatCircleDots size={24} aria-hidden />}
+        {expanded ? <X size={22} aria-hidden /> : <ChatCircleDots size={24} aria-hidden />}
       </button>
 
+      {contactsOpen && (
+        <div ref={panel} id="contact-panel" role="dialog" aria-label={tx('Contact options')} className="fixed bottom-20 right-5 z-nav w-[min(300px,calc(100vw-40px))] rounded-2xl border border-ink-100 bg-paper-raised p-4 shadow-xl md:right-6">
+          <p className="mb-3 font-semibold text-ink-900">{tx('Let’s talk')}</p>
+          <a href={`https://wa.me/${siteConfig.whatsapp.number}?text=${encodeURIComponent(siteConfig.whatsapp.message)}`} target="_blank" rel="noopener noreferrer" className="flex min-h-12 items-center gap-3 rounded-lg px-3 text-ink-900 hover:bg-ink-50"><WhatsappLogo size={22} aria-hidden />WhatsApp</a>
+          {enabled && <button type="button" onClick={() => { setContactsOpen(false); setOpen(true) }} className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 text-left text-ink-900 hover:bg-ink-50"><ChatCircleDots size={22} aria-hidden />{t('assistant.open', { name: first })}</button>}
+          <Link href="/contact" onClick={close} className="flex min-h-12 items-center rounded-lg px-3 text-ink-900 hover:bg-ink-50">{tx('Send an enquiry')} →</Link>
+        </div>
+      )}
+
       {open && (
-        <div role="dialog" aria-label={t('assistant.open', { name: first })} className="fixed bottom-[136px] right-5 z-nav flex h-[min(520px,70vh)] w-[min(380px,calc(100vw-40px))] flex-col border border-ink-100 bg-paper-raised md:bottom-[144px] md:right-6">
+        <div ref={panel} id="contact-panel" role="dialog" aria-label={t('assistant.open', { name: first })} className="fixed bottom-20 right-5 z-nav flex h-[min(520px,70dvh)] w-[min(380px,calc(100vw-40px))] flex-col overflow-hidden rounded-2xl border border-ink-100 bg-paper-raised shadow-xl md:right-6">
           <div className="flex items-center justify-between border-b border-ink-100 px-4 py-3">
             <p className="font-display text-lg uppercase leading-none text-ink-900">{t('assistant.open', { name: first })}</p>
-            <button onClick={() => setOpen(false)} aria-label={tx("Close")} className="grid h-8 w-8 place-items-center text-ink-500 hover:text-ink-900"><X size={18} aria-hidden /></button>
+            <button onClick={close} aria-label={tx("Close")} className="grid h-11 w-11 place-items-center text-ink-500 hover:text-ink-900"><X size={18} aria-hidden /></button>
           </div>
 
           <div ref={list} className="flex-1 space-y-3 overflow-y-auto px-4 py-4" aria-live="polite">

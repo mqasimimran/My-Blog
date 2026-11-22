@@ -38,6 +38,7 @@ const NAV_ITEMS = [
   { href: '/admin/security', label: 'Security' },
   { href: '/admin/searches', label: 'Site Insights' },
   { href: '/admin/setup', label: 'Setup' },
+  { href: '/admin/storage', label: 'Storage' },
   { href: '/admin/settings', label: 'Site Settings' },
 ]
 

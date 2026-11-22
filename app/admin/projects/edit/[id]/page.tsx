@@ -295,7 +295,7 @@ export default function EditProjectPage({ params }: { params: Promise<{ id: stri
                 value={content} 
                 onChange={(e) => setContent(e.target.value)} 
                 rows={6} 
-                placeholder="Optional — anything extra beyond Problem/Approach/Outcome, as HTML."
+                placeholder="Optional — add your role, deliverables and supporting evidence with clear headings, as HTML."
                 className="w-full border border-ink-100 p-4 font-mono text-xs outline-none focus:border-ink-900 text-ink-700 rounded-none" 
               />
             </div>

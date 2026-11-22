@@ -2,7 +2,6 @@ import Link from 'next/link'
 import { GithubLogo, InstagramLogo, LinkedinLogo, YoutubeLogo } from '@phosphor-icons/react/dist/ssr'
 import { ButtonLink } from '@/app/components/ui/Button'
 import { siteConfig } from '@/site.config'
-import FitText from '@/app/components/ui/FitText'
 import { getT } from '@/lib/locale'
 import type { Key } from '@/lib/i18n'
 
@@ -29,10 +28,10 @@ export default async function SiteFooter() {
   const { tx } = await getT()
   const t = await getT()
   return (
-    <footer className="relative border-t border-ink-100">
-      <div className="container-page grid gap-16 py-20 md:grid-cols-12 md:py-28">
-        <div className="md:col-span-6">
-          <p className="type-h2 max-w-[14ch] text-ink-900">{t('footer.cta')}</p>
+    <footer className="public-footer relative border-t border-ink-100">
+      <div className="container-page grid grid-cols-2 gap-x-8 gap-y-10 py-20 md:grid-cols-12 md:gap-16 md:py-28">
+        <div className="col-span-2 md:col-span-6">
+          <h2 className="type-h2 max-w-[18ch] text-ink-900">{t('footer.cta')}</h2>
           <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
             <ButtonLink href="/contact">{t('nav.contact')}</ButtonLink>
             <a href={`mailto:${siteConfig.email}`} className="link-draw text-sm font-medium text-ink-700">
@@ -72,11 +71,6 @@ export default async function SiteFooter() {
             ))}
           </ul>
         </div>
-      </div>
-
-      {/* The name across the footer, measured to fill the width exactly */}
-      <div aria-hidden className="container-page select-none pb-6">
-        <FitText text={siteConfig.name} className="font-display uppercase leading-[0.85] text-ink-900" />
       </div>
 
       <div className="border-t border-ink-100">

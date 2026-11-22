@@ -206,12 +206,12 @@ export default function NewProjectPage() {
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">The Approach</label>
-              <textarea value={approach} onChange={(e) => setApproach(e.target.value)} rows={3} placeholder="How did you tackle it? Key decisions, trade-offs, architecture." className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              <textarea value={approach} onChange={(e) => setApproach(e.target.value)} rows={3} placeholder="Describe your role, the key decisions you made and why. Credit collaborators." className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
             </div>
 
             <div>
               <label className="block text-[10px] font-bold tracking-widest uppercase text-ink-500 mb-2">The Outcome</label>
-              <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={3} placeholder="What shipped, what you learned, results if measurable." className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
+              <textarea value={outcome} onChange={(e) => setOutcome(e.target.value)} rows={3} placeholder="List what you delivered. Include measured results only with evidence; otherwise describe what the finished project does." className="w-full border border-ink-100 p-3 outline-none focus:border-ink-900 text-ink-700 text-sm" />
             </div>
 
             <div>
@@ -241,7 +241,7 @@ export default function NewProjectPage() {
                 value={content} 
                 onChange={(e) => setContent(e.target.value)} 
                 rows={6} 
-                placeholder="Optional — anything extra beyond Problem/Approach/Outcome, as HTML."
+                placeholder="Optional — add your role, deliverables and supporting evidence with clear headings, as HTML."
                 className="w-full border border-ink-100 p-4 font-mono text-xs outline-none focus:border-ink-900 text-ink-700 rounded-none" 
               />
             </div>

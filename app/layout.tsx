@@ -7,7 +7,6 @@ import ReadingProgress from '@/app/components/ReadingProgress'
 import { Analytics } from '@vercel/analytics/next'
 import ConsoleEasterEgg from '@/app/components/ConsoleEasterEgg'
 import CommandPalette from '@/app/components/CommandPalette'
-import WhatsAppButton from '@/app/components/WhatsAppButton'
 import SiteFooter from '@/app/components/SiteFooter'
 import ScrollAnimator from '@/app/components/ScrollAnimator'
 import PublicOnly from '@/app/components/PublicOnly'
@@ -166,7 +165,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <PublicOnly>
             <Navbar />
             {/* Spacer: the nav floats (position: fixed), so this keeps pages starting below it */}
-            <div aria-hidden className="h-12" />
+            <div aria-hidden className="public-nav-spacer h-12" />
           </PublicOnly>
 
           <div id="main" tabIndex={-1} className="min-h-[100dvh] outline-none">
@@ -182,7 +181,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Analytics />
         <ConsoleEasterEgg />
         <CommandPalette />
-        <PublicOnly><WhatsAppButton /></PublicOnly>
         <PublicOnly><AssistantWidget /></PublicOnly>
         <RegisterServiceWorker />
         <ErrorReporter />

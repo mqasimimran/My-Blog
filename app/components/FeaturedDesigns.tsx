@@ -60,7 +60,7 @@ export default function FeaturedDesigns() {
             <div className={`columns-1 gap-6 sm:columns-2 ${designs.length <= 2 ? 'lg:columns-2' : designs.length === 3 ? 'lg:columns-3' : 'lg:columns-4'}`}>
               {designs.map((item) => (
                 <Link href={`/design?item=${item.id}`} key={item.id} data-cursor="View" className="group mb-10 block break-inside-avoid">
-                  <div className="overflow-hidden bg-ink-50">
+                  <div className="portfolio-image overflow-hidden bg-ink-50">
                     {item.images?.[0] && (
                       <SiteImage
                         src={mediaCover(item.images[0])}

@@ -1,5 +1,7 @@
 'use client'
 
+import { projectTitle, projectMeta } from '@/lib/projectPresentation'
+
 import { youtubeClip } from '@/lib/portfolioVideo'
 import PortfolioVideo from '@/app/components/PortfolioVideo'
 import SiteImage from '@/components/SiteImage'
@@ -78,6 +80,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
           .select('title, slug, category, feature_image')
           .eq('category', data.category)
           .neq('slug', slug)
+          .eq('published', true)
           .limit(3)
 
         setRelatedProjects(related || [])
@@ -119,7 +122,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'CreativeWork',
-    name: project.title,
+    name: projectTitle(project.title),
     description: project.description,
     image: project.feature_image || undefined,
     keywords: project.tech_stack || undefined,
@@ -149,8 +152,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
             <span className="text-ink-900">{project.category}</span>
             {project.status && <span className="border border-ink-100 px-1.5 py-0.5">{tx(project.status)}</span>}
           </p>
-          <h1 className="type-title mt-5 text-ink-900"><SplitText text={project.title} /></h1>
-          {project.tech_stack && <p className="type-meta mt-5">{project.tech_stack}</p>}
+          <h1 className="type-title mt-5 text-ink-900"><SplitText text={projectTitle(project.title)} /></h1>
+          {project.tech_stack && <p className="type-meta mt-5">{projectMeta(project.tech_stack, project.category)}</p>}
           <p className="type-lead mt-6 max-w-[52ch]">{project.description}</p>
 
           {(project.live_url || project.github_url) && (
@@ -165,7 +168,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
       {project.feature_image && (
         <figure className="container-page mt-14 md:mt-20">
           <div className="overflow-hidden bg-ink-50">
-            <SiteImage src={project.feature_image} alt={project.title} className="h-auto max-h-[80vh] w-full object-cover" />
+            <SiteImage src={project.feature_image} alt={projectTitle(project.title)} className="h-auto max-h-[80vh] w-full object-contain" />
           </div>
         </figure>
       )}
@@ -181,7 +184,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
         <section className="container-page mt-14 md:mt-20" aria-label={tx("Play the game")}>
           <h2 className="type-h2 text-ink-900"><SplitText text={tx("Play it in your browser")} /></h2>
           <div className="mt-8">
-            <GamePlayer src={project.play_url} title={project.title} poster={project.feature_image} />
+            <GamePlayer src={project.play_url} title={projectTitle(project.title)} poster={project.feature_image} />
           </div>
         </section>
       )}
@@ -223,7 +226,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
               <div className="grid grid-cols-1 gap-6 border-t border-ink-100 py-12 sm:grid-cols-2 md:py-16">
                 {project.screenshots.filter((src) => !youtubeClip(src)).map((src, i) => (
                   <div key={i} className="overflow-hidden bg-ink-50">
-                    <SiteImage src={src} alt={`${project.title} screenshot ${i + 1}`} loading="lazy" className="h-auto w-full" />
+                    <SiteImage src={src} alt={`${projectTitle(project.title)} screenshot ${i + 1}`} loading="lazy" className="h-auto w-full" />
                   </div>
                 ))}
               </div>
@@ -247,7 +250,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
 
         {/* Share */}
         <div className="mt-12 border-t border-ink-100 pt-10">
-          <ShareButtons url={`${SITE_URL}/projects/${slug}`} title={project.title} />
+          <ShareButtons url={`${SITE_URL}/projects/${slug}`} title={projectTitle(project.title)} />
         </div>
 
         {/* Related projects */}
@@ -261,7 +264,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                     {related.feature_image && (
                       <Image
                         src={related.feature_image}
-                        alt={related.title}
+                        alt={projectTitle(related.title)}
                         fill
                         sizes="(max-width: 640px) 100vw, 33vw"
                         className="object-cover transition-transform duration-[900ms] ease-[var(--ease-smooth)] group-hover:scale-[1.03]"
@@ -270,7 +273,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ slug: 
                   </div>
                   <div className="p-5">
                     <p className="type-meta">{related.category}</p>
-                    <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{related.title}</h3>
+                    <h3 className="mt-2 text-lg font-medium leading-snug tracking-tight text-ink-900 transition-colors duration-300 group-hover:text-accent-600">{projectTitle(related.title)}</h3>
                   </div>
                 </Link>
               ))}
